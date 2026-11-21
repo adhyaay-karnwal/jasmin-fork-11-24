@@ -4,12 +4,13 @@ name: sandbox-bench
 # quick tunnel, so Warren gets no localhost advantage over hosted providers.
 on:
   push:
-    paths: ["integrations/**", ".github/workflows/sandbox-bench.yml", "crates/**"]
+    paths: ["integrations/sandbox-sdk/warren/**", "integrations/sandbox-sdk/apply.py", ".github/workflows/sandbox-bench.yml"]
   workflow_dispatch:
     inputs:
       runs: { description: "iterations per scenario (published runs use 100)", default: "100" }
       scenarios: { description: "scenario list or all", default: "all" }
       track: { description: "same-spec or default", default: "same-spec" }
+      suites: { description: "main,snapshot,burst", default: "main,snapshot,burst" }
 
 env:
   HARNESS_REPO: https://github.com/opencoredev/sandbox-sdk
@@ -71,12 +72,13 @@ jobs:
                   --account-limits warren=200 --omit-network-download true --seed 45 --max-dollars 25)
           MAIN=command,files-1kb,files-10mb,reconnect,pause-resume,perf,git-clone,npm-install,dev-server,preview-first-byte,edit-loop,tool-replay,pip-install
           rc=0
-          bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs "$RUNS" --workload-runs "$WRUNS" \
-            --scenarios "$MAIN" --bursts '' --timeout-ms 180000 --max-sandboxes 1000 --run warren-main --out /tmp/results/main 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1
-          bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs $(( RUNS < 30 ? RUNS : 30 )) \
-            --scenarios snapshot --bursts '' --timeout-ms 600000 --max-sandboxes 1000 --run warren-snapshot --out /tmp/results/snapshot 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1
-          bun src/cli.ts "${COMMON[@]}" --runs 1 --scenarios burst --bursts 10,25 --burst-cohorts 3 --concurrency 25 \
-            --timeout-ms 180000 --max-sandboxes 1000 --run warren-burst --out /tmp/results/burst 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1
+          SUITES="${{ inputs.suites || 'main,snapshot,burst' }}"
+          [[ ,$SUITES, == *,main,* ]] && { bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs "$RUNS" --workload-runs "$WRUNS" \
+            --scenarios "$MAIN" --bursts '' --timeout-ms 180000 --max-sandboxes 1000 --run warren-main --out /tmp/results/main 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
+          [[ ,$SUITES, == *,snapshot,* ]] && { bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs $(( RUNS < 30 ? RUNS : 30 )) \
+            --scenarios snapshot --bursts '' --timeout-ms 600000 --max-sandboxes 1000 --run warren-snapshot --out /tmp/results/snapshot 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
+          [[ ,$SUITES, == *,burst,* ]] && { bun src/cli.ts "${COMMON[@]}" --runs 1 --scenarios burst --bursts 10,25 --burst-cohorts 3 --concurrency 25 \
+            --timeout-ms 180000 --max-sandboxes 1000 --run warren-burst --out /tmp/results/burst 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
           exit $rc
       - name: Report
         if: always()

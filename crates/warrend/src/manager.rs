@@ -331,9 +331,25 @@ impl Manager {
             }
             let t3 = Instant::now();
             // Fresh clock and entropy: every restore of a snapshot must diverge.
-            if let Err(e) = AgentClient::new(dir).ping(Some(now_ns()), Some(random_bytes(64))).await {
-                vm.kill().await;
-                return Err(e);
+            // Right after restore the guest must first process a vsock transport
+            // reset; under load the first connection can be refused or reset, so
+            // retry briefly instead of failing the create.
+            let agent = AgentClient::new(dir);
+            let deadline = Instant::now() + Duration::from_secs(3);
+            let mut backoff = Duration::from_millis(1);
+            loop {
+                match agent.ping(Some(now_ns()), Some(random_bytes(64))).await {
+                    Ok(_) => break,
+                    Err(e) if Instant::now() < deadline => {
+                        tracing::debug!("post-restore ping retry: {e:#}");
+                        tokio::time::sleep(backoff).await;
+                        backoff = (backoff * 2).min(Duration::from_millis(50));
+                    }
+                    Err(e) => {
+                        vm.kill().await;
+                        return Err(e.context("agent not ready after restore"));
+                    }
+                }
             }
             let t4 = Instant::now();
             Ok((
