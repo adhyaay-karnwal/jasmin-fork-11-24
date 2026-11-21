@@ -3,7 +3,7 @@ use crate::fc::{clone_file, merge_sparse, Vm, ROOTFS};
 use crate::net::{NetPool, Slot};
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -44,6 +44,10 @@ pub struct Sandbox {
     pub id: String,
     pub template: String,
     pub created_unix: u64,
+    pub key: Option<String>,
+    pub labels: BTreeMap<String, String>,
+    /// Default environment for every exec in this sandbox.
+    pub env: BTreeMap<String, String>,
     pub agent: AgentClient,
     vm: Mutex<Option<(Vm, Slot)>>,
     dir: PathBuf,
@@ -56,11 +60,35 @@ pub struct SandboxInfo {
     pub id: String,
     pub template: String,
     pub created_unix: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub key: Option<String>,
+    pub labels: BTreeMap<String, String>,
+}
+
+#[derive(Default, Deserialize)]
+pub struct CreateOpts {
+    #[serde(default)]
+    pub key: Option<String>,
+    #[serde(default)]
+    pub labels: BTreeMap<String, String>,
+    #[serde(default)]
+    pub env: BTreeMap<String, String>,
+    /// Requested machine size; resolved to a template built at that size.
+    #[serde(default)]
+    pub cpu: Option<u32>,
+    #[serde(default)]
+    pub memory_mib: Option<u32>,
 }
 
 impl Sandbox {
     pub fn info(&self) -> SandboxInfo {
-        SandboxInfo { id: self.id.clone(), template: self.template.clone(), created_unix: self.created_unix }
+        SandboxInfo {
+            id: self.id.clone(),
+            template: self.template.clone(),
+            created_unix: self.created_unix,
+            key: self.key.clone(),
+            labels: self.labels.clone(),
+        }
     }
 }
 
@@ -150,6 +178,7 @@ impl Manager {
         std::fs::create_dir_all(tree.join(".warren"))?;
         std::fs::copy(&self.cfg.agent_bin, tree.join(".warren/agent")).context("install agent")?;
         std::fs::create_dir_all(tree.join("root"))?;
+        std::fs::create_dir_all(tree.join("workspace"))?;
         std::fs::create_dir_all(tree.join("etc"))?;
         let _ = std::fs::remove_file(tree.join("etc/resolv.conf"));
         std::fs::write(tree.join("etc/resolv.conf"), "nameserver 1.1.1.1\nnameserver 8.8.8.8\n")?;
@@ -221,9 +250,31 @@ impl Manager {
         Ok(meta)
     }
 
-    pub async fn create(&self, template: &str) -> Result<(Arc<Sandbox>, CreateTimings)> {
+    /// Pick the template for a request: `<template>-<cpu>x<mem>` if a size is
+    /// asked for and that exists, else `<template>` if its size matches.
+    pub fn resolve_template(&self, template: &str, cpu: Option<u32>, mem: Option<u32>) -> Result<String> {
         if !valid_name(template) {
             bail!("invalid template name");
+        }
+        let (Some(cpu), Some(mem)) = (cpu, mem) else { return Ok(template.into()) };
+        let sized = format!("{template}-{cpu}x{mem}");
+        if self.template_dir(&sized).join("meta.json").exists() {
+            return Ok(sized);
+        }
+        let meta: Option<TemplateMeta> =
+            std::fs::read(self.template_dir(template).join("meta.json")).ok().and_then(|b| serde_json::from_slice(&b).ok());
+        match meta {
+            Some(m) if m.vcpus == cpu && m.mem_mib == mem => Ok(template.into()),
+            _ => bail!("no template {sized:?} (build one with: warrend build {sized} <image> --vcpus {cpu} --mem-mib {mem})"),
+        }
+    }
+
+    pub async fn create(&self, template: &str, opts: CreateOpts) -> Result<(Arc<Sandbox>, CreateTimings)> {
+        let template = &self.resolve_template(template, opts.cpu, opts.memory_mib)?;
+        if let Some(k) = &opts.key {
+            if self.sandboxes.lock().await.values().any(|s| s.key.as_deref() == Some(k)) {
+                bail!("a sandbox with key {k:?} already exists");
+            }
         }
         let tdir = self.template_dir(template);
         if !tdir.join("meta.json").exists() {
@@ -244,6 +295,9 @@ impl Manager {
             id: id.clone(),
             template: template.into(),
             created_unix: now_ns() / 1_000_000_000,
+            key: opts.key,
+            labels: opts.labels,
+            env: opts.env,
             agent: AgentClient::new(&dir),
             vm: Mutex::new(Some((vm, slot))),
             dir,
@@ -433,8 +487,19 @@ impl Manager {
         self.sandboxes.lock().await.get(id).cloned()
     }
 
-    pub async fn list(&self) -> Vec<SandboxInfo> {
-        self.sandboxes.lock().await.values().map(|s| s.info()).collect()
+    /// Sandboxes whose labels include every `labels` pair (and `key`, if given).
+    pub async fn list(&self, labels: &BTreeMap<String, String>, key: Option<&str>) -> Vec<SandboxInfo> {
+        let mut out: Vec<SandboxInfo> = self
+            .sandboxes
+            .lock()
+            .await
+            .values()
+            .filter(|s| labels.iter().all(|(k, v)| s.labels.get(k) == Some(v)))
+            .filter(|s| key.is_none_or(|k| s.key.as_deref() == Some(k)))
+            .map(|s| s.info())
+            .collect();
+        out.sort_by_key(|s| s.created_unix);
+        out
     }
 
     pub async fn delete(&self, id: &str) -> bool {

@@ -114,6 +114,16 @@ impl AgentClient {
         }
     }
 
+    /// Raw byte stream to 127.0.0.1:`port` inside the guest.
+    pub async fn connect_port(&self, port: u16) -> Result<UnixStream> {
+        let mut c = self.request(&Request::Connect { port }).await?;
+        expect(&mut c, kind::OK).await?;
+        if !c.buffer().is_empty() {
+            bail!("unexpected bytes after connect");
+        }
+        Ok(c.into_inner())
+    }
+
     pub async fn read_file(&self, path: &str) -> Result<Vec<u8>> {
         let mut c = self.request(&Request::ReadFile { path: path.into() }).await?;
         let mut out = Vec::new();

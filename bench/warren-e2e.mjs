@@ -161,6 +161,25 @@ await del(d.id);
 await api("DELETE", `/v1/templates/${snap2.name}`);
 console.log(`second pause ${pause2Ms.toFixed(0)} ms`);
 
+// Preview URLs: HTTP proxied into a port inside the sandbox.
+await exec(a.id, "mkdir -p /workspace/site && echo preview-ok > /workspace/site/index.html && cd /workspace/site && (nohup python3 -m http.server 3000 >/dev/null 2>&1 &) && for i in $(seq 100); do python3 -c 'import socket;socket.create_connection((\"127.0.0.1\",3000),1)' 2>/dev/null && break; sleep 0.05; done");
+let pr = await fetch(`${URL_}/v1/sandboxes/${a.id}/ports/3000/index.html?x=1`, { headers: KEY ? { authorization: `Bearer ${KEY}` } : {} });
+let body = await pr.text();
+check("preview URL proxies HTTP into the sandbox", pr.status === 200 && body.trim() === "preview-ok", { status: pr.status, body });
+pr = await fetch(`${URL_}/v1/sandboxes/${a.id}/ports/3999`);
+check("preview to a closed port is a 502", pr.status === 502, { status: pr.status });
+
+// Labels, keys, default env.
+const lb = await api("POST", "/v1/sandboxes", { template: TEMPLATE, key: "k-" + Date.now(), labels: { suite: "e2e", role: "x" }, env: { GREETING: "hi" } });
+const found = await api("GET", "/v1/sandboxes?label.suite=e2e&label.role=x");
+const none = await api("GET", "/v1/sandboxes?label.suite=other");
+check("list filters by labels", found.length === 1 && found[0].id === lb.id && none.length === 0, { found, none });
+const byKey = await api("GET", `/v1/sandboxes?key=${lb.key}`);
+check("find by key", byKey.length === 1 && byKey[0].id === lb.id, byKey);
+r = await exec(lb.id, "echo $GREETING; pwd; test -d /workspace && echo ws");
+check("sandbox default env + /workspace exists", r.stdout === "hi\n/root\nws\n", r);
+await del(lb.id);
+
 r = await exec(a.id, "cat /proc/1/comm; uname -r; nproc");
 console.log("guest:", r.stdout.trim().replace(/\n/g, " | "));
 

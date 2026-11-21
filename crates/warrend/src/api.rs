@@ -1,4 +1,4 @@
-use crate::manager::Manager;
+use crate::manager::{CreateOpts, Manager};
 use axum::body::Bytes;
 use axum::extract::{DefaultBodyLimit, Path, Query, Request, State};
 use axum::http::{header, StatusCode};
@@ -50,6 +50,8 @@ pub fn router(mgr: Arc<Manager>, api_key: Option<String>) -> Router {
         .route("/v1/sandboxes/{id}/pause", post(pause))
         .route("/v1/sandboxes/{id}/resume", post(resume))
         .route("/v1/sandboxes/{id}/snapshot", post(snapshot))
+        .route("/v1/sandboxes/{id}/ports/{port}", axum::routing::any(preview_root))
+        .route("/v1/sandboxes/{id}/ports/{port}/{*rest}", axum::routing::any(preview))
         .route("/v1/sandboxes/{id}/files", get(read_file).put(write_file))
         .layer(middleware::from_fn_with_state(state.clone(), auth))
         .route("/healthz", get(|| async { "ok" }))
@@ -110,21 +112,44 @@ async fn build_template(State(st): State<AppState>, Json(b): Json<BuildTemplate>
 struct CreateSandbox {
     #[serde(default = "default_template")]
     template: String,
+    #[serde(flatten)]
+    opts: CreateOpts,
 }
 fn default_template() -> String {
     "default".into()
 }
 
 async fn create_sandbox(State(st): State<AppState>, body: Option<Json<CreateSandbox>>) -> ApiResult<impl IntoResponse> {
-    let template = body.map(|b| b.0.template).unwrap_or_else(default_template);
-    let (sbx, timings) = st.mgr.create(&template).await?;
+    let (template, opts) = body.map(|b| (b.0.template, b.0.opts)).unwrap_or_else(|| (default_template(), CreateOpts::default()));
+    let (sbx, timings) = st.mgr.create(&template, opts).await.map_err(|e| {
+        let msg = format!("{e:#}");
+        if msg.contains("not found") || msg.contains("no template") {
+            ApiError(StatusCode::NOT_FOUND, msg)
+        } else if msg.contains("already exists") {
+            ApiError(StatusCode::CONFLICT, msg)
+        } else {
+            ApiError(StatusCode::INTERNAL_SERVER_ERROR, msg)
+        }
+    })?;
     let mut v = serde_json::to_value(sbx.info()).unwrap();
     v["timings"] = serde_json::to_value(timings).unwrap();
     Ok((StatusCode::CREATED, Json(v)))
 }
 
-async fn list_sandboxes(State(st): State<AppState>) -> impl IntoResponse {
-    Json(st.mgr.list().await)
+/// `GET /v1/sandboxes?key=K&label.team=x&label.run=y`
+async fn list_sandboxes(State(st): State<AppState>, Query(q): Query<Vec<(String, String)>>) -> impl IntoResponse {
+    let labels: BTreeMap<String, String> =
+        q.iter().filter_map(|(k, v)| k.strip_prefix("label.").map(|k| (k.to_string(), v.clone()))).collect();
+    let key = q.iter().find(|(k, _)| k == "key").map(|(_, v)| v.as_str());
+    let mut out = Vec::new();
+    for info in st.mgr.list(&labels, key).await {
+        let mut v = serde_json::to_value(&info).unwrap();
+        if let Some(s) = st.mgr.get(&info.id).await {
+            v["state"] = json!(if st.mgr.is_paused(&s).await { "paused" } else { "running" });
+        }
+        out.push(v);
+    }
+    Json(out)
 }
 
 async fn get_sandbox(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<impl IntoResponse> {
@@ -191,10 +216,12 @@ async fn exec(State(st): State<AppState>, Path(id): Path<String>, Json(e): Json<
         Cmd::Argv(a) => a,
     };
     st.mgr.ensure_running(&sbx).await?;
+    let mut env = sbx.env.clone();
+    env.extend(e.env);
     let t = Instant::now();
     let out = sbx
         .agent
-        .exec(ExecRequest { argv, env: e.env, cwd: e.cwd, timeout_ms: e.timeout_ms, stdin: false }, e.stdin.map(String::into_bytes))
+        .exec(ExecRequest { argv, env, cwd: e.cwd, timeout_ms: e.timeout_ms, stdin: false }, e.stdin.map(String::into_bytes))
         .await?;
     let mut v = serde_json::to_value(out).unwrap();
     v["duration_ms"] = json!((t.elapsed().as_secs_f64() * 1e6).round() / 1e3);
@@ -223,4 +250,48 @@ async fn write_file(State(st): State<AppState>, Path(id): Path<String>, Query(q)
     st.mgr.ensure_running(&sbx).await?;
     sbx.agent.write_file(&q.path, mode, &body).await?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+async fn preview_root(st: State<AppState>, Path((id, port)): Path<(String, u16)>, req: Request) -> Response {
+    proxy(st, id, port, String::new(), req).await
+}
+
+async fn preview(st: State<AppState>, Path((id, port, rest)): Path<(String, u16, String)>, req: Request) -> Response {
+    proxy(st, id, port, rest, req).await
+}
+
+/// Reverse-proxy HTTP to `127.0.0.1:<port>` inside the sandbox, over vsock.
+/// The guest sees `Host: localhost:<port>`, so dev servers with host checks
+/// (Vite, Next) accept it without configuration.
+async fn proxy(State(st): State<AppState>, id: String, port: u16, rest: String, req: Request) -> Response {
+    let result: Result<Response, ApiError> = async {
+        let sbx = st.mgr.get(&id).await.ok_or_else(not_found)?;
+        st.mgr.ensure_running(&sbx).await?;
+        let stream = sbx
+            .agent
+            .connect_port(port)
+            .await
+            .map_err(|e| ApiError(StatusCode::BAD_GATEWAY, format!("nothing listening on port {port}: {e:#}")))?;
+        let (mut parts, body) = req.into_parts();
+        let path = format!("/{rest}{}", parts.uri.query().map(|q| format!("?{q}")).unwrap_or_default());
+        parts.uri = path.parse().map_err(|_| ApiError(StatusCode::BAD_REQUEST, "bad path".into()))?;
+        parts.headers.remove(header::AUTHORIZATION);
+        for h in ["connection", "keep-alive", "proxy-connection", "transfer-encoding", "upgrade", "te", "trailer"] {
+            parts.headers.remove(h);
+        }
+        parts.headers.insert(header::HOST, format!("localhost:{port}").parse().unwrap());
+        let (mut sender, conn) = hyper::client::conn::http1::handshake(hyper_util::rt::TokioIo::new(stream))
+            .await
+            .map_err(|e| ApiError(StatusCode::BAD_GATEWAY, format!("handshake: {e}")))?;
+        tokio::spawn(async move {
+            let _ = conn.await;
+        });
+        let res = sender
+            .send_request(axum::http::Request::from_parts(parts, body))
+            .await
+            .map_err(|e| ApiError(StatusCode::BAD_GATEWAY, format!("upstream: {e}")))?;
+        Ok(res.map(axum::body::Body::new))
+    }
+    .await;
+    result.unwrap_or_else(|e| e.into_response())
 }

@@ -46,6 +46,7 @@ pub fn handle(mut conn: UnixStream) -> io::Result<()> {
         Request::ReadFile { path } => read_file(conn, &path),
         Request::WriteFile { path, mode } => write_file(conn, &path, mode),
         Request::Exec(e) => exec(conn, e),
+        Request::Connect { port } => connect(conn, port),
     }
 }
 
@@ -189,4 +190,24 @@ fn exec(conn: UnixStream, req: ExecRequest) -> io::Result<()> {
     o.closed = true;
     let body = serde_json::to_vec(&exit).unwrap();
     write_frame(&mut o.w, kind::EXIT, &body)
+}
+
+/// Splice a host connection to a TCP port inside the guest (preview URLs).
+fn connect(mut conn: UnixStream, port: u16) -> io::Result<()> {
+    let tcp = match std::net::TcpStream::connect(("127.0.0.1", port)).or_else(|_| std::net::TcpStream::connect(("::1", port))) {
+        Ok(t) => t,
+        Err(e) => return write_frame(&mut conn, kind::ERROR, format!("connect 127.0.0.1:{port}: {e}").as_bytes()),
+    };
+    let _ = tcp.set_nodelay(true);
+    write_frame(&mut conn, kind::OK, b"{}")?;
+    let (mut c2, mut t2) = (conn.try_clone()?, tcp.try_clone()?);
+    let up = std::thread::spawn(move || {
+        let _ = io::copy(&mut c2, &mut t2);
+        let _ = t2.shutdown(std::net::Shutdown::Write);
+    });
+    let (mut t1, mut c1) = (tcp, conn);
+    let _ = io::copy(&mut t1, &mut c1);
+    let _ = c1.shutdown(std::net::Shutdown::Write);
+    let _ = up.join();
+    Ok(())
 }

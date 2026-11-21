@@ -48,6 +48,9 @@ pub enum Request {
     },
     /// Flush guest filesystems to the block device (before snapshot or fork).
     Sync,
+    /// Open a TCP connection to 127.0.0.1:`port` inside the guest. After the
+    /// agent answers OK the connection carries raw bytes both ways (no frames).
+    Connect { port: u16 },
 }
 
 fn default_mode() -> u32 {
