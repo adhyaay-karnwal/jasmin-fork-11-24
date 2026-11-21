@@ -162,7 +162,11 @@ await api("DELETE", `/v1/templates/${snap2.name}`);
 console.log(`second pause ${pause2Ms.toFixed(0)} ms`);
 
 // Preview URLs: HTTP proxied into a port inside the sandbox.
-await exec(a.id, "mkdir -p /workspace/site && echo preview-ok > /workspace/site/index.html && cd /workspace/site && (nohup python3 -m http.server 3000 >/dev/null 2>&1 &) && for i in $(seq 100); do python3 -c 'import socket;socket.create_connection((\"127.0.0.1\",3000),1)' 2>/dev/null && break; sleep 0.05; done");
+await api("PUT", `/v1/sandboxes/${a.id}/files?path=/workspace/site/index.html`, new TextEncoder().encode("preview-ok\n"));
+await api("PUT", `/v1/sandboxes/${a.id}/files?path=/workspace/wait_port.py`, new TextEncoder().encode(
+  "import socket,sys,time\nfor _ in range(200):\n  try: socket.create_connection(('127.0.0.1',int(sys.argv[1])),1); print('up'); break\n  except OSError: time.sleep(0.05)\nelse: print('down')\n"));
+r = await exec(a.id, "cd /workspace/site && setsid nohup python3 -m http.server 3000 --bind 127.0.0.1 > /tmp/http.log 2>&1 < /dev/null & python3 /workspace/wait_port.py 3000; cat /tmp/http.log");
+console.log("preview server:", JSON.stringify(r.stdout));
 let pr = await fetch(`${URL_}/v1/sandboxes/${a.id}/ports/3000/index.html?x=1`, { headers: KEY ? { authorization: `Bearer ${KEY}` } : {} });
 let body = await pr.text();
 check("preview URL proxies HTTP into the sandbox", pr.status === 200 && body.trim() === "preview-ok", { status: pr.status, body });
