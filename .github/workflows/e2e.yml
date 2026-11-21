@@ -1,0 +1,51 @@
+name: e2e
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      samples: { description: "samples per metric", default: "100" }
+      burst: { description: "concurrent creates", default: "20" }
+      image: { description: "template image", default: "python:3.12-slim" }
+
+jobs:
+  firecracker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host info
+        run: |
+          nproc; free -h; uname -r; ls -l /dev/kvm
+          grep -m1 'model name' /proc/cpuinfo || true
+      - name: Build
+        run: |
+          rustup target add x86_64-unknown-linux-musl
+          cargo test -q -p warren-proto
+          cargo build -q --release -p warren-agent --target x86_64-unknown-linux-musl
+          cargo build -q --release -p warrend
+          ls -la target/x86_64-unknown-linux-musl/release/warren-agent target/release/warrend
+      - name: Set up host (Firecracker, kernel, XFS reflink data dir)
+        run: |
+          sudo dev/setup-host.sh
+          sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
+          sudo install -m 0755 target/release/warrend /usr/local/bin/warrend
+      - name: Build template
+        run: time sudo warrend build default "${{ inputs.image || 'python:3.12-slim' }}"
+      - name: Start daemon
+        run: |
+          sudo bash -c 'nohup warrend serve > /tmp/warrend.log 2>&1 &'
+          for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
+      - name: E2E checks + benchmark
+        run: node bench/warren-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
+      - name: Diagnostics
+        if: always()
+        run: |
+          echo "== warrend log"; sudo tail -50 /tmp/warrend.log || true
+          echo "== template console"; sudo tail -c 4000 /var/lib/warren/templates/default/console.log || true
+          for f in $(sudo ls -d /var/lib/warren/sandboxes/*/ 2>/dev/null | head -3); do echo "== $f"; sudo tail -c 2000 "$f/console.log"; done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results
+          path: results.json
+          if-no-files-found: ignore

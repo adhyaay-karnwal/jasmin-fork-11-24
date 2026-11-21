@@ -1,0 +1,18 @@
+[package]
+name = "warrend"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Warren host daemon: Firecracker microVM sandboxes over HTTP"
+
+[dependencies]
+warren-proto = { path = "../proto" }
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+libc.workspace = true
+tokio = { version = "1", features = ["full"] }
+axum = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

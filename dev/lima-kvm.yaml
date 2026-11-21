@@ -3,8 +3,8 @@ vmType: vz
 nestedVirtualization: true
 arch: aarch64
 cpus: 6
-memory: 8GiB
-disk: 40GiB
+memory: 6GiB
+disk: 14GiB
 images:
   - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
     arch: aarch64
