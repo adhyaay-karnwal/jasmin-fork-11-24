@@ -71,7 +71,8 @@ export function createWarrenProvider(options: WarrenOptions = {}): WarrenProvide
       res = await doFetch(base + path, { method, headers, body: payload, signal: opts.signal });
     } catch (cause) {
       if (opts.signal?.aborted) throw fail("Request aborted", "aborted", { cause, sandboxId: opts.sandboxId });
-      throw fail(`warrend unreachable at ${base}`, "unavailable", { cause, retryable: true, sandboxId: opts.sandboxId });
+      const why = cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause);
+      throw fail(`warrend unreachable at ${base} (${method} ${path}): ${why}`, "unavailable", { cause, retryable: true, sandboxId: opts.sandboxId });
     }
     if (!res.ok) {
       let msg = await res.text();

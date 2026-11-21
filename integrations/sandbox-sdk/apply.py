@@ -96,4 +96,28 @@ edit(
       case "local": {
         const docker = localDocker(provider, sourceId);''',
 )
+# 5. Pricing. Warren is self-hosted: there is no list price, only your own
+#    hardware. $0 here keeps the harness's budget guard working; it must never be
+#    read as "cheapest", and Warren's cost is excluded from every comparison.
+edit(
+    "bench/src/pricing.ts",
+    "export const pricing: PriceTable = {\n",
+    """export const pricing: PriceTable = {
+  warren: {
+    ...base,
+    cpuSecond: 0,
+    memoryGiBSecond: 0,
+    diskGiBSecond: 0,
+    retrieved: "2026-11-21",
+    source: "https://github.com/arjunkshah12345-hash/warren",
+    offeredSizes: [{ cpu: 2, memoryGiB: 4 }, { cpu: 4, memoryGiB: 8 }],
+    notes: "Self-hosted open source: no list price. You pay for your own servers. Not comparable with hosted list prices; excluded from cost comparisons.",
+  },
+""",
+)
+edit(
+    "bench/src/pricing.ts",
+    "export const defaultCompute: ComputeTable = {\n",
+    "export const defaultCompute: ComputeTable = {\n  warren: { cpu: 2, memoryGiB: 4 },\n",
+)
 print(f"warren adapter applied to {root}")

@@ -60,7 +60,10 @@ jobs:
           bun run --cwd bench typecheck
       - name: Run the harness (Warren)
         run: |
+          set -o pipefail
           cd /tmp/harness/bench
+          # Same call path the harness uses, as a smoke test with the real error visible.
+          bun -e 'const {warren}=await import("@opencoredev/sandbox-sdk/warren"); const p=warren({template:"bench"}); const s=await p.create({labels:{smoke:"1"}}); console.log("smoke create", s.id); await p.destroy(s.id);'
           bun src/cli.ts --providers warren \
             --track "${{ inputs.track || 'same-spec' }}" \
             --size warren=4:8192 --template warren=bench \
