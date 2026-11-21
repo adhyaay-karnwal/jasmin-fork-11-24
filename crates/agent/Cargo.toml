@@ -1,0 +1,15 @@
+[package]
+name = "warren-agent"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Guest agent: runs as PID 1 inside every Warren microVM"
+
+[[bin]]
+name = "warren-agent"
+path = "src/main.rs"
+
+[dependencies]
+warren-proto = { path = "../proto" }
+serde_json.workspace = true
+libc.workspace = true

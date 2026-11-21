@@ -1,0 +1,13 @@
+# Dev host: Linux VM with nested KVM (Apple M3+ / macOS 15+) so Firecracker runs on a Mac.
+vmType: vz
+nestedVirtualization: true
+arch: aarch64
+cpus: 6
+memory: 8GiB
+disk: 40GiB
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: aarch64
+mounts:
+  - location: "/Users/arjunkshah21/.t3/scratch/2026-11-21-there-s-a-lot-of-dd9d00cb"
+    writable: true
