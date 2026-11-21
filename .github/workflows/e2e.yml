@@ -79,6 +79,15 @@ jobs:
           curl -fs localhost:7171/v1/sandboxes/$id/exec -H 'content-type: application/json' -d '{"cmd":["true"]}' | jq -c .
           echo "after 2nd exec:";  ps -o min_flt,maj_flt,rss -C firecracker
           curl -fs localhost:7171/v1/sandboxes/$id/exec -H 'content-type: application/json' -d '{"cmd":"cat /proc/loadavg; dmesg | tail -5"}' | jq -r .stdout
+      - name: Guest network/process probe
+        if: always()
+        run: |
+          J='content-type: application/json'; U=localhost:7171
+          id=$(curl -fs -XPOST $U/v1/sandboxes -H "$J" -d '{}' | jq -r .id)
+          ex() { curl -s $U/v1/sandboxes/$id/exec -H "$J" -d "$(jq -n --arg c "$1" '{cmd:$c, timeout_ms:20000}')" | jq -r '.stdout + .stderr + "exit=" + (.exit_code|tostring)'; }
+          ex 'mkdir -p /tmp/s && cd /tmp/s && echo hi > index.html && (setsid python3 -u -m http.server 3000 --bind 127.0.0.1 > /tmp/h.log 2>&1 < /dev/null &) ; sleep 2; echo "--log"; cat /tmp/h.log; echo "--ps"; ps -ef 2>/dev/null || ls /proc | grep -E "^[0-9]+$" | head -50; echo "--tcp"; cat /proc/net/tcp /proc/net/tcp6 2>/dev/null | head; echo "--ip"; cat /proc/net/if_inet6 2>/dev/null; ls /sys/class/net; cat /sys/class/net/lo/operstate'
+          ex 'python3 -c "import urllib.request as u; print(u.urlopen(\"http://127.0.0.1:3000/\", timeout=3).read())"'
+          curl -s -o /dev/null -w 'proxy status %{http_code}\n' $U/v1/sandboxes/$id/ports/3000/
       - name: Diagnostics
         if: always()
         run: |
