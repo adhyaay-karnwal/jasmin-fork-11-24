@@ -68,7 +68,7 @@ jobs:
             --track "${{ inputs.track || 'same-spec' }}" \
             --size warren=4:8192 --template warren=bench \
             --runs "${{ inputs.runs || '10' }}" --scenarios "${{ inputs.scenarios || 'all' }}" \
-            --bursts 10,25 --account-limits warren=30 --max-dollars 1000 \
+            --bursts 10,25 --account-limits warren=200 --max-dollars 1000 \
             --run warren-ci --out /tmp/results/warren 2>&1 | tail -80
       - name: Report
         if: always()
