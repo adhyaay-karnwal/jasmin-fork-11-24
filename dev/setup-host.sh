@@ -32,10 +32,16 @@ if [ "$(stat -f -c %T "$DATA")" != "xfs" ]; then
 fi
 
 if [ ! -f "$DATA/vmlinux" ]; then
-  FCV="$(firecracker --version | head -1 | grep -oE 'v[0-9]+\.[0-9]+')"
-  KEY="$(curl -fsSL "https://spec.ccfc.min.s3.amazonaws.com/?prefix=firecracker-ci/${FCV}/${ARCH}/vmlinux-&list-type=2" \
-    | grep -oE "firecracker-ci/${FCV}/${ARCH}/vmlinux-[0-9]+\.[0-9]+\.[0-9]{1,3}<" | tr -d '<' | sort -V | tail -1)"
-  [ -n "$KEY" ] || { echo "could not find a CI kernel for $FCV/$ARCH" >&2; exit 1; }
+  # Firecracker's CI kernels. Path-style S3 URL (the bucket name has dots, which breaks TLS
+  # with virtual-hosted URLs). Fall back to earlier minors if this release has none yet.
+  MAJOR_MINOR="$(firecracker --version | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)"
+  MINOR="${MAJOR_MINOR#*.}"; KEY=""
+  for m in $(seq "$MINOR" -1 10); do
+    KEY="$(curl -fsSL "https://s3.amazonaws.com/spec.ccfc.min/?prefix=firecracker-ci/v1.${m}/${ARCH}/vmlinux-&list-type=2" \
+      | grep -oE "firecracker-ci/v1\.${m}/${ARCH}/vmlinux-[0-9]+\.[0-9]+\.[0-9]{1,3}<" | tr -d '<' | sort -V | tail -1 || true)"
+    [ -n "$KEY" ] && break
+  done
+  [ -n "$KEY" ] || { echo "could not find a Firecracker CI kernel" >&2; exit 1; }
   curl -fsSL -o "$DATA/vmlinux" "https://s3.amazonaws.com/spec.ccfc.min/${KEY}"
   echo "kernel: $KEY"
 fi
