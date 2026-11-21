@@ -1,0 +1,13 @@
+{
+  "name": "@warren/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript client for Warren sandboxes",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "engines": { "node": ">=18" },
+  "scripts": { "build": "tsc -p ." },
+  "devDependencies": { "typescript": "^5.6.0" }
+}

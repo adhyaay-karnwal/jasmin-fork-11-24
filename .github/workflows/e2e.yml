@@ -39,6 +39,11 @@ jobs:
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
       - name: E2E checks + benchmark
         run: node bench/warren-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
+      - name: SDK smoke tests
+        run: |
+          (cd sdk/typescript && npm install --silent --no-audit --no-fund && npm run --silent build)
+          node sdk/smoke.mjs
+          python3 sdk/smoke.py
       - name: A/B without page-cache prewarm
         run: WARREN_TEMPLATE=noprewarm node bench/warren-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
       - name: Concurrency A/B (guest shape)
