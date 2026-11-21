@@ -42,6 +42,9 @@ enum Cmd {
         vcpus: u32,
         #[arg(long, default_value_t = 1024)]
         mem_mib: u32,
+        /// Page-cache prewarm budget before snapshotting (0 = off).
+        #[arg(long, default_value_t = 256)]
+        prewarm_mib: u32,
     },
 }
 
@@ -52,8 +55,8 @@ async fn main() -> Result<()> {
     let cfg = manager::Config { data: cli.data, firecracker: cli.firecracker, kernel: cli.kernel, agent_bin: cli.agent };
     let mgr = manager::Manager::new(cfg, matches!(cli.cmd, Cmd::Serve { .. }))?;
     match cli.cmd {
-        Cmd::Build { name, image, vcpus, mem_mib } => {
-            let meta = mgr.build_template(&name, &image, vcpus, mem_mib).await?;
+        Cmd::Build { name, image, vcpus, mem_mib, prewarm_mib } => {
+            let meta = mgr.build_template(&name, &image, vcpus, mem_mib, prewarm_mib).await?;
             println!("{}", serde_json::to_string_pretty(&meta)?);
         }
         Cmd::Serve { listen, api_key } => {

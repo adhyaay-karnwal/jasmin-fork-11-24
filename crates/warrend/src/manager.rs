@@ -22,6 +22,8 @@ pub struct TemplateMeta {
     pub image: String,
     pub vcpus: u32,
     pub mem_mib: u32,
+    #[serde(default)]
+    pub prewarm_mib: u32,
     pub rootfs_bytes: u64,
     pub boot_ms: u64,
     pub built_unix: u64,
@@ -127,7 +129,7 @@ impl Manager {
     }
 
     /// OCI image → ext4 rootfs → cold boot → snapshot. Requires root and `crane`.
-    pub async fn build_template(&self, name: &str, image: &str, vcpus: u32, mem_mib: u32) -> Result<TemplateMeta> {
+    pub async fn build_template(&self, name: &str, image: &str, vcpus: u32, mem_mib: u32, prewarm_mib: u32) -> Result<TemplateMeta> {
         if !valid_name(name) {
             bail!("invalid template name");
         }
@@ -171,6 +173,19 @@ impl Manager {
             let agent = AgentClient::new(&dir);
             agent.wait_ready(Duration::from_secs(30)).await.with_context(|| format!("console: {}", vm.console_tail()))?;
             let boot_ms = t0.elapsed().as_millis() as u64;
+            if prewarm_mib > 0 {
+                let out = agent
+                    .exec(
+                        warren_proto::ExecRequest {
+                            argv: vec!["/bin/sh".into(), "-c".into(), PREWARM.into(), "prewarm".into(), prewarm_mib.to_string()],
+                            timeout_ms: Some(60_000),
+                            ..Default::default()
+                        },
+                        None,
+                    )
+                    .await?;
+                tracing::info!(template = name, "prewarm: {}", out.stdout.trim());
+            }
             agent.sync().await?;
             vm.pause().await?;
             vm.snapshot(&dir.join("vm.snap"), &dir.join("mem.snap")).await?;
@@ -184,6 +199,7 @@ impl Manager {
             image: image.into(),
             vcpus,
             mem_mib,
+            prewarm_mib,
             rootfs_bytes: used,
             boot_ms,
             built_unix: now_ns() / 1_000_000_000,
@@ -277,6 +293,31 @@ impl Manager {
         }
     }
 }
+
+/// Pull the image's executables, shared libraries and language runtimes into the
+/// guest page cache before snapshotting, up to `$1` MiB. Not tailored to any
+/// benchmark command: it is whatever the image ships in standard paths,
+/// binaries and libraries first. The pages live in the snapshot memory file,
+/// which all sandboxes share read-only through the host page cache.
+const PREWARM: &str = r#"
+budget=$(( $1 * 1024 * 1024 )); used=0; n=0
+list() {
+  for d in /lib /lib64 /usr/lib /usr/lib64 /usr/libexec /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/lib; do
+    [ -d "$d" ] && find "$d" -xdev -type f -size -64M "$@" 2>/dev/null
+  done
+}
+{ list \( -perm -u+x -o -name '*.so' -o -name '*.so.*' \); list -name '*.pyc'; list -name '*.js' -path '*node_modules*'; } |
+while IFS= read -r f; do
+  s=$(stat -c %s "$f" 2>/dev/null || echo 0)
+  [ $((used + s)) -gt "$budget" ] && continue
+  cat "$f" > /dev/null 2>&1 && used=$((used + s)) && n=$((n + 1))
+  echo "$n $used" > /run/prewarm.stat
+done
+for py in python3 python; do command -v $py >/dev/null && $py -c 'import os, sys, json, re, subprocess, pathlib, typing, asyncio' && break; done
+command -v node >/dev/null && node -e '0'
+sh -c true
+read n used < /run/prewarm.stat 2>/dev/null; echo "files=$n bytes=$used"
+"#;
 
 fn go_arch() -> &'static str {
     if cfg!(target_arch = "aarch64") {

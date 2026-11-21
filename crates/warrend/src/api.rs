@@ -80,6 +80,11 @@ struct BuildTemplate {
     vcpus: u32,
     #[serde(default = "default_mem")]
     mem_mib: u32,
+    #[serde(default = "default_prewarm")]
+    prewarm_mib: u32,
+}
+fn default_prewarm() -> u32 {
+    256
 }
 fn default_vcpus() -> u32 {
     2
@@ -93,7 +98,7 @@ async fn list_templates(State(st): State<AppState>) -> impl IntoResponse {
 }
 
 async fn build_template(State(st): State<AppState>, Json(b): Json<BuildTemplate>) -> ApiResult<impl IntoResponse> {
-    let meta = st.mgr.build_template(&b.name, &b.image, b.vcpus, b.mem_mib).await?;
+    let meta = st.mgr.build_template(&b.name, &b.image, b.vcpus, b.mem_mib, b.prewarm_mib).await?;
     Ok((StatusCode::CREATED, Json(meta)))
 }
 

@@ -30,13 +30,17 @@ jobs:
           sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
           sudo install -m 0755 target/release/warrend /usr/local/bin/warrend
       - name: Build template
-        run: time sudo warrend build default "${{ inputs.image || 'python:3.12-slim' }}"
+        run: |
+          time sudo warrend build default "${{ inputs.image || 'python:3.12-slim' }}"
+          time sudo warrend build noprewarm "${{ inputs.image || 'python:3.12-slim' }}" --prewarm-mib 0
       - name: Start daemon
         run: |
           sudo bash -c 'nohup warrend serve > /tmp/warrend.log 2>&1 &'
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
       - name: E2E checks + benchmark
         run: node bench/warren-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
+      - name: A/B without page-cache prewarm
+        run: WARREN_TEMPLATE=noprewarm node bench/warren-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
       - name: Page-fault profile of one restore
         run: |
           id=$(curl -fs -XPOST localhost:7171/v1/sandboxes -d '{}' -H 'content-type: application/json' | jq -r .id)
@@ -56,5 +60,5 @@ jobs:
         if: always()
         with:
           name: results
-          path: results.json
+          path: results*.json
           if-no-files-found: ignore
