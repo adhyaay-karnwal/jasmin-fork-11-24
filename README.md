@@ -32,24 +32,25 @@ with Warren().create() as sbx:
 API: `POST /v1/sandboxes`, `POST /v1/sandboxes/{id}/exec`, `GET|PUT /v1/sandboxes/{id}/files?path=`,
 `DELETE /v1/sandboxes/{id}`, `GET|POST /v1/templates`. Optional bearer auth via `WARREN_API_KEY`.
 
-## Current numbers
+## Results on aisandboxbench's harness
 
-GitHub Actions `ubuntu-24.04` runner: 2 vCPU AMD EPYC, nested virtualization (so every guest VM exit is
-several times more expensive than on bare metal). Default template: `python:3.12-slim`, 2 vCPU, 1 GiB.
-Client on the same host. These are not yet competitive claims; see the benchmark rules below.
+Warren was measured with [aisandboxbench.com](https://aisandboxbench.com)'s own open-source harness
+(`opencoredev/sandbox-sdk`) on its same-machine track (4 vCPU / 8 GB), with the flags from its collection plan,
+over the public internet. Against the 13 providers published there on 2026-11-21, Warren's median ranks
+**first on 12 of 25 metrics**:
 
-| metric (p50) | value |
-|---|---|
-| create (client-measured, restore from snapshot) | 28–39 ms |
-| create → first command finished | 37–55 ms |
-| exec round trip, warm sandbox | 2.3–3.8 ms |
-| server-side restore (Firecracker snapshot load) | ~9–11 ms |
-| disk clone (XFS reflink, any image size) | 0.2 ms |
-| template build from an OCI image (pull + mkfs + boot + snapshot) | ~10 s |
-| page-cache prewarm effect on first command | 76 → 37–55 ms (A/B'd every CI run) |
+- **Start-up:** cold start (0.094 s vs 0.376 s best), run a command, reconnect.
+- **Agent work:** agent tool replay (4.3 s vs 10.9 s), git clone, dev server ready, preview URL first byte,
+  edit loop, 10 MB file round trip.
+- **Pause and snapshots:** pause + resume (0.42 s vs 0.73 s), take snapshot, start from snapshot (0.10 s vs 0.55 s).
 
-Ranges span CI runs on different runner hardware. Concurrency numbers from a 2-vCPU nested-virtualization
-runner are not representative, so none are published yet; that needs bare metal.
+It is weaker on 25-at-once bursts (7th–9th), npm install (11th), memory bandwidth and disk write (12th of 14).
+There were 0 failures across about 2,700 observations, including 210 burst creates.
+
+**These are self-run results, not an aisandboxbench.com listing.** The client location (Iowa via a Cloudflare
+tunnel vs their Florida server) and the hardware (one nested-virtualization CI runner vs production fleets)
+differ. Full table, caveats and raw data: [`results/aisandboxbench-2026-11-21.md`](results/aisandboxbench-2026-11-21.md).
+To reproduce, see [`integrations/sandbox-sdk`](integrations/sandbox-sdk).
 
 ## What is verified on every push
 
