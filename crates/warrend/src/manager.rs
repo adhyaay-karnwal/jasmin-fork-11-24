@@ -305,7 +305,9 @@ impl Manager {
         if base.exists() {
             let diff = mem.with_extension("diff");
             vm.snapshot_diff(vmstate, &diff).await?;
+            let diff_alloc = std::fs::metadata(&diff).map(|m| { use std::os::unix::fs::MetadataExt; m.blocks() * 512 }).unwrap_or(0);
             let r = clone_file(&base, mem).and_then(|_| merge_sparse(&diff, mem));
+            tracing::info!(sandbox = %sbx.id, base = %base.display(), diff_alloc, merged = ?r.as_ref().ok(), "diff snapshot");
             let _ = std::fs::remove_file(&diff);
             if r.is_ok() {
                 return Ok(());

@@ -116,7 +116,8 @@ while True: time.sleep(3600)
 `));
 await exec(a.id, "nohup python3 /root/memcheck.py >/dev/null 2>&1 & echo $! > /root/mem.pid; while [ ! -f /root/mem.ready ]; do sleep 0.05; done");
 const memCheck = async (id) =>
-  (await exec(id, "rm -f /root/mem.ok; kill -USR1 $(cat /root/mem.pid); while [ ! -f /root/mem.ok ]; do sleep 0.05; done; cat /root/mem.ok", { timeout_ms: 20000 })).stdout;
+  (await exec(id, "rm -f /root/mem.ok; kill -USR1 $(cat /root/mem.pid); while [ ! -f /root/mem.ok ]; do sleep 0.05; done; cat /root/mem.ok", { timeout_ms: 20000 })).stdout || "(no output)";
+check("memcheck control (no snapshot): hash matches", (await memCheck(a.id)) === "ok", await memCheck(a.id));
 const mutate = (id) => exec(id, "rm -f /root/mem.ok; kill -USR2 $(cat /root/mem.pid); while [ ! -f /root/mem.ok ]; do sleep 0.05; done");
 let t = now();
 const snap = await api("POST", `/v1/sandboxes/${a.id}/snapshot`);
@@ -126,7 +127,7 @@ const c = await api("POST", "/v1/sandboxes", { template: snap.name });
 const fromSnapMs = now() - t;
 r = await exec(c.id, "cat /root/state.txt; kill -0 $(cat /root/bg.pid) && echo alive");
 check("create from snapshot keeps files + running processes", r.stdout === "state\nalive\n", r);
-check("create from snapshot: 64 MiB process memory intact", (await memCheck(c.id)) === "ok", {});
+{ const v = await memCheck(c.id); check("create from snapshot: 64 MiB process memory intact", v === "ok", v); }
 r = await exec(a.id, "echo still-original");
 check("source sandbox keeps running after snapshot", r.stdout === "still-original\n", r);
 console.log(`snapshot ${snapMs.toFixed(0)} ms, create-from-snapshot ${fromSnapMs.toFixed(0)} ms`);
@@ -142,7 +143,7 @@ t = now();
 r = await exec(a.id, "cat /root/state.txt; kill -0 $(cat /root/bg.pid) && echo alive");
 const resumeExecMs = now() - t;
 check("exec auto-resumes a paused sandbox with memory intact", r.stdout === "state\nalive\n", r);
-check("pause/resume: 64 MiB process memory intact", (await memCheck(a.id)) === "ok", {});
+{ const v = await memCheck(a.id); check("pause/resume: 64 MiB process memory intact", v === "ok", v); }
 console.log(`pause ${pauseMs.toFixed(0)} ms, resume+exec ${resumeExecMs.toFixed(0)} ms`);
 // Second cycle after mutating memory: exercises diff-on-top-of-rebased-base.
 await mutate(a.id);
