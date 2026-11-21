@@ -105,6 +105,11 @@ impl Vm {
         self.api("PATCH", "/vm", json!({"state": "Paused"})).await
     }
 
+    /// Write only the pages dirtied since the last restore/snapshot, as a sparse file.
+    pub async fn snapshot_diff(&self, vmstate: &Path, mem: &Path) -> Result<()> {
+        self.api("PUT", "/snapshot/create", json!({"snapshot_type": "Diff", "snapshot_path": vmstate, "mem_file_path": mem})).await
+    }
+
     pub async fn resume(&self) -> Result<()> {
         self.api("PATCH", "/vm", json!({"state": "Resumed"})).await
     }
@@ -119,7 +124,8 @@ impl Vm {
         self.api(
             "PUT",
             "/snapshot/load",
-            json!({"snapshot_path": vmstate, "mem_backend": {"backend_type": "File", "backend_path": mem}, "resume_vm": true}),
+            // Dirty-page tracking makes later snapshots/pauses write only what changed.
+            json!({"snapshot_path": vmstate, "mem_backend": {"backend_type": "File", "backend_path": mem}, "track_dirty_pages": true, "resume_vm": true}),
         )
         .await
     }
@@ -182,4 +188,35 @@ pub fn clone_file(src: &Path, dst: &Path) -> Result<bool> {
     drop(d);
     std::fs::copy(src, dst)?;
     Ok(false)
+}
+
+/// Copy every data extent of the sparse file `diff` into `dst` at the same
+/// offsets (holes are skipped). Returns bytes copied.
+pub fn merge_sparse(diff: &Path, dst: &Path) -> Result<u64> {
+    use std::os::fd::AsRawFd;
+    let src = std::fs::File::open(diff)?;
+    let out = std::fs::OpenOptions::new().write(true).open(dst)?;
+    let len = src.metadata()?.len() as i64;
+    let (sfd, dfd) = (src.as_raw_fd(), out.as_raw_fd());
+    let mut pos: i64 = 0;
+    let mut copied = 0u64;
+    while pos < len {
+        let data = unsafe { libc::lseek(sfd, pos, libc::SEEK_DATA) };
+        if data < 0 {
+            break; // ENXIO: no more data
+        }
+        let hole = unsafe { libc::lseek(sfd, data, libc::SEEK_HOLE) }.min(len);
+        let (mut off_in, mut off_out) = (data, data);
+        let mut remaining = (hole - data) as usize;
+        while remaining > 0 {
+            let n = unsafe { libc::copy_file_range(sfd, &mut off_in, dfd, &mut off_out, remaining, 0) };
+            if n <= 0 {
+                anyhow::bail!("copy_file_range: {}", std::io::Error::last_os_error());
+            }
+            remaining -= n as usize;
+            copied += n as u64;
+        }
+        pos = hole;
+    }
+    Ok(copied)
 }

@@ -1,5 +1,5 @@
 use crate::agent::AgentClient;
-use crate::fc::{clone_file, Vm, ROOTFS};
+use crate::fc::{clone_file, merge_sparse, Vm, ROOTFS};
 use crate::net::{NetPool, Slot};
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
@@ -47,6 +47,8 @@ pub struct Sandbox {
     pub agent: AgentClient,
     vm: Mutex<Option<(Vm, Slot)>>,
     dir: PathBuf,
+    /// Memory file that, plus the pages dirtied since, equals current guest memory.
+    base_mem: std::sync::Mutex<PathBuf>,
 }
 
 #[derive(Serialize)]
@@ -245,6 +247,7 @@ impl Manager {
             agent: AgentClient::new(&dir),
             vm: Mutex::new(Some((vm, slot))),
             dir,
+            base_mem: std::sync::Mutex::new(tdir.join("mem.snap")),
         });
         self.sandboxes.lock().await.insert(id, sbx.clone());
         Ok((sbx, timings))
@@ -294,6 +297,37 @@ impl Manager {
         }
     }
 
+    /// Write `vm`'s state (paused) to `vmstate` + `mem`. If the base memory file
+    /// still exists, write only dirty pages and merge them onto a copy-on-write
+    /// clone of the base; otherwise fall back to a full snapshot.
+    async fn write_state(&self, sbx: &Sandbox, vm: &Vm, vmstate: &Path, mem: &Path) -> Result<()> {
+        let base = sbx.base_mem.lock().unwrap().clone();
+        if base.exists() {
+            let diff = mem.with_extension("diff");
+            vm.snapshot_diff(vmstate, &diff).await?;
+            let r = clone_file(&base, mem).and_then(|_| merge_sparse(&diff, mem));
+            let _ = std::fs::remove_file(&diff);
+            if r.is_ok() {
+                return Ok(());
+            }
+            tracing::warn!("diff snapshot merge failed, taking a full snapshot: {:#}", r.unwrap_err());
+        }
+        vm.snapshot(vmstate, mem).await
+    }
+
+    /// After writing a snapshot, make (a reflink of) it the sandbox's new base,
+    /// since Firecracker resets dirty tracking on every snapshot.
+    fn rebase(&self, sbx: &Sandbox, mem: &Path) -> Result<()> {
+        let base = sbx.dir.join("base.mem");
+        let tmp = sbx.dir.join("base.mem.tmp");
+        if mem != tmp.as_path() {
+            clone_file(mem, &tmp)?;
+        }
+        std::fs::rename(&tmp, &base)?; // the VMM keeps the old file mapped
+        *sbx.base_mem.lock().unwrap() = base;
+        Ok(())
+    }
+
     /// Snapshot a running sandbox (memory, CPU state and disk) into a new
     /// template that any number of sandboxes can be created from. The source
     /// keeps running; it is paused only while state is written.
@@ -309,7 +343,8 @@ impl Manager {
             sbx.agent.sync().await?;
             vm.pause().await?;
             let r = async {
-                vm.snapshot(&dst.join("vm.snap"), &dst.join("mem.snap")).await?;
+                self.write_state(&sbx, vm, &dst.join("vm.snap"), &dst.join("mem.snap")).await?;
+                self.rebase(&sbx, &dst.join("mem.snap"))?;
                 clone_file(&sbx.dir.join(ROOTFS), &dst.join(ROOTFS))?;
                 Ok::<_, anyhow::Error>(())
             }
@@ -350,7 +385,7 @@ impl Manager {
         let res: Result<()> = async {
             sbx.agent.sync().await?;
             vm.pause().await?;
-            vm.snapshot(&sbx.dir.join("paused.vm.snap"), &sbx.dir.join("paused.mem.snap")).await
+            self.write_state(&sbx, &vm, &sbx.dir.join("paused.vm.snap"), &sbx.dir.join("paused.mem.snap")).await
         }
         .await;
         if let Err(e) = res {
@@ -376,9 +411,10 @@ impl Manager {
         }
         let (vmstate, mem) = (sbx.dir.join("paused.vm.snap"), sbx.dir.join("paused.mem.snap"));
         let (vm, slot, t) = self.restore_into(&sbx.dir, &sbx.dir.join(ROOTFS), &vmstate, &mem).await?;
-        // The memory file stays mapped by the VMM; unlinking just frees the name.
+        // The restored memory file becomes the base for the next diff snapshot.
         let _ = std::fs::remove_file(&vmstate);
-        let _ = std::fs::remove_file(&mem);
+        std::fs::rename(&mem, sbx.dir.join("base.mem.tmp"))?;
+        self.rebase(sbx, &sbx.dir.join("base.mem.tmp"))?;
         *guard = Some((vm, slot));
         Ok(Some(t))
     }
