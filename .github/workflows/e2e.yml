@@ -6,6 +6,7 @@ on:
       samples: { description: "samples per metric", default: "100" }
       burst: { description: "concurrent creates", default: "20" }
       image: { description: "template image", default: "python:3.12-slim" }
+      compare_samples: { description: "samples per provider in the comparison", default: "10" }
 
 jobs:
   firecracker:
@@ -44,6 +45,13 @@ jobs:
           (cd sdk/typescript && npm install --silent --no-audit --no-fund && npm run --silent build)
           node sdk/smoke.mjs
           python3 sdk/smoke.py
+      - name: Cross-provider comparison (providers without secrets are skipped)
+        env:
+          E2B_API_KEY: ${{ secrets.E2B_API_KEY }}
+          DAYTONA_API_KEY: ${{ secrets.DAYTONA_API_KEY }}
+        run: |
+          (cd bench/compare && npm install --silent --no-audit --no-fund)
+          node bench/compare/run.mjs --samples "${{ inputs.compare_samples || '10' }}" --out results-compare.json
       - name: A/B without page-cache prewarm
         run: WARREN_TEMPLATE=noprewarm node bench/warren-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
       - name: Concurrency A/B (guest shape)

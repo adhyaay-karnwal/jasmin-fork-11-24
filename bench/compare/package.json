@@ -1,0 +1,10 @@
+{
+  "name": "warren-compare",
+  "private": true,
+  "type": "module",
+  "description": "Provider-neutral sandbox benchmark. Each provider runs through its official SDK.",
+  "dependencies": {
+    "@daytonaio/sdk": "*",
+    "e2b": "*"
+  }
+}
