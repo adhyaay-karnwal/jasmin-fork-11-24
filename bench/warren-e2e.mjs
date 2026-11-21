@@ -102,14 +102,16 @@ check("host services blocked", r.stdout.trim() === "blocked", r);
 await exec(a.id, "echo state > /root/state.txt; nohup sleep 3600 >/dev/null 2>&1 & echo $! > /root/bg.pid");
 await api("PUT", `/v1/sandboxes/${a.id}/files?path=/root/memcheck.py`, new TextEncoder().encode(`
 import hashlib, os, signal, time
+def put(v):  # atomic, so the shell never reads a half-written file
+    open('/root/mem.tmp', 'w').write(v); os.rename('/root/mem.tmp', '/root/mem.ok')
 buf = bytearray(os.urandom(64 << 20))
 want = hashlib.sha256(buf).hexdigest()
 def check(*_):
-    buf[0] ^= 0; open('/root/mem.ok', 'w').write('ok' if hashlib.sha256(buf).hexdigest() == want else 'CORRUPT')
+    put('ok' if hashlib.sha256(buf).hexdigest() == want else 'CORRUPT')
 def mutate(*_):
     global want
     buf[os.getpid() % len(buf)] ^= 0xFF; buf[-1] ^= 0x0F
-    want = hashlib.sha256(buf).hexdigest(); open('/root/mem.ok', 'w').write('mutated')
+    want = hashlib.sha256(buf).hexdigest(); put('mutated')
 signal.signal(signal.SIGUSR1, check); signal.signal(signal.SIGUSR2, mutate)
 open('/root/mem.ready', 'w').write('1')
 while True: time.sleep(3600)
@@ -117,7 +119,7 @@ while True: time.sleep(3600)
 await exec(a.id, "nohup python3 /root/memcheck.py >/dev/null 2>&1 & echo $! > /root/mem.pid; while [ ! -f /root/mem.ready ]; do sleep 0.05; done");
 const memCheck = async (id) =>
   (await exec(id, "rm -f /root/mem.ok; kill -USR1 $(cat /root/mem.pid); while [ ! -f /root/mem.ok ]; do sleep 0.05; done; cat /root/mem.ok", { timeout_ms: 20000 })).stdout || "(no output)";
-check("memcheck control (no snapshot): hash matches", (await memCheck(a.id)) === "ok", await memCheck(a.id));
+{ const v = await memCheck(a.id); check("memcheck control (no snapshot): hash matches", v === "ok", v); }
 const mutate = (id) => exec(id, "rm -f /root/mem.ok; kill -USR2 $(cat /root/mem.pid); while [ ! -f /root/mem.ok ]; do sleep 0.05; done");
 let t = now();
 const snap = await api("POST", `/v1/sandboxes/${a.id}/snapshot`);
@@ -151,10 +153,10 @@ t = now();
 await api("POST", `/v1/sandboxes/${a.id}/pause`);
 const pause2Ms = now() - t;
 await api("POST", `/v1/sandboxes/${a.id}/resume`);
-check("second pause/resume after mutation: memory intact", (await memCheck(a.id)) === "ok", {});
+{ const v = await memCheck(a.id); check("second pause/resume after mutation: memory intact", v === "ok", v); }
 const snap2 = await api("POST", `/v1/sandboxes/${a.id}/snapshot`);
 const d = await api("POST", "/v1/sandboxes", { template: snap2.name });
-check("snapshot after pause cycles: memory intact in the copy", (await memCheck(d.id)) === "ok", {});
+{ const v = await memCheck(d.id); check("snapshot after pause cycles: memory intact in the copy", v === "ok", v); }
 await del(d.id);
 await api("DELETE", `/v1/templates/${snap2.name}`);
 console.log(`second pause ${pause2Ms.toFixed(0)} ms`);
