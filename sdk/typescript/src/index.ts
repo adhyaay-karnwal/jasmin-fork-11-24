@@ -83,7 +83,7 @@ export class Warren {
     const headers: Record<string, string> = {};
     if (this.apiKey) headers.authorization = `Bearer ${this.apiKey}`;
     let payload: BodyInit | undefined;
-    if (body instanceof Uint8Array) payload = body;
+    if (body instanceof Uint8Array) payload = body as unknown as BodyInit;
     else if (body !== undefined) {
       headers["content-type"] = "application/json";
       payload = JSON.stringify(body);
