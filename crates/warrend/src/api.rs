@@ -45,7 +45,7 @@ pub fn router(mgr: Arc<Manager>, api_key: Option<String>) -> Router {
         .route("/v1/templates", get(list_templates).post(build_template))
         .route("/v1/sandboxes", get(list_sandboxes).post(create_sandbox))
         .route("/v1/sandboxes/{id}", get(get_sandbox).delete(delete_sandbox))
-        .route("/v1/templates/{name}", axum::routing::delete(delete_template))
+        .route("/v1/templates/{name}", get(get_template).delete(delete_template))
         .route("/v1/sandboxes/{id}/exec", post(exec))
         .route("/v1/sandboxes/{id}/pause", post(pause))
         .route("/v1/sandboxes/{id}/resume", post(resume))
@@ -175,6 +175,10 @@ async fn resume(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult
 async fn snapshot(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<impl IntoResponse> {
     st.mgr.get(&id).await.ok_or_else(not_found)?;
     Ok((StatusCode::CREATED, Json(st.mgr.snapshot(&id).await?)))
+}
+
+async fn get_template(State(st): State<AppState>, Path(name): Path<String>) -> ApiResult<impl IntoResponse> {
+    st.mgr.template(&name).map(Json).ok_or_else(|| ApiError(StatusCode::NOT_FOUND, "template not found".into()))
 }
 
 async fn delete_template(State(st): State<AppState>, Path(name): Path<String>) -> ApiResult<StatusCode> {

@@ -28,6 +28,9 @@ pub struct TemplateMeta {
     pub rootfs_bytes: u64,
     pub boot_ms: u64,
     pub built_unix: u64,
+    /// For snapshots: the sandbox it was taken from.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_sandbox: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -192,7 +195,7 @@ impl Manager {
             String::from_utf8_lossy(&out.stdout).split_whitespace().next().unwrap_or("0").parse().unwrap_or(0)
         };
         // Sparse file: unused space costs nothing on disk, and reflink clones share the rest.
-        let size_mib = ((used as f64 * 1.2) as u64 / (1 << 20) + 2048).max(4096);
+        let size_mib = ((used as f64 * 1.2) as u64 / (1 << 20) + 4096).max(10240);
         let rootfs = dir.join(ROOTFS);
         run(&format!(
             "truncate -s {size_mib}M {r} && mkfs.ext4 -q -F -L warren -E root_owner=0:0 -d {t} {r}",
@@ -248,6 +251,7 @@ impl Manager {
             rootfs_bytes: used,
             boot_ms,
             built_unix: now_ns() / 1_000_000_000,
+            source_sandbox: None,
         };
         std::fs::write(dir.join("meta.json"), serde_json::to_vec_pretty(&meta)?)?;
         Ok(meta)
@@ -418,9 +422,23 @@ impl Manager {
             return Err(e);
         }
         let base: TemplateMeta = serde_json::from_slice(&std::fs::read(self.template_dir(&sbx.template).join("meta.json"))?)?;
-        let meta = TemplateMeta { name, image: format!("snapshot of {id} ({})", base.image), built_unix: now_ns() / 1_000_000_000, boot_ms: 0, ..base };
+        let meta = TemplateMeta {
+            name,
+            image: format!("snapshot of {id} ({})", base.image),
+            built_unix: now_ns() / 1_000_000_000,
+            boot_ms: 0,
+            source_sandbox: Some(id.to_string()),
+            ..base
+        };
         std::fs::write(dst.join("meta.json"), serde_json::to_vec_pretty(&meta)?)?;
         Ok(meta)
+    }
+
+    pub fn template(&self, name: &str) -> Option<TemplateMeta> {
+        if !valid_name(name) {
+            return None;
+        }
+        std::fs::read(self.template_dir(name).join("meta.json")).ok().and_then(|b| serde_json::from_slice(&b).ok())
     }
 
     pub async fn delete_template(&self, name: &str) -> Result<bool> {
