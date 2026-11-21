@@ -113,6 +113,24 @@ results.create_to_first_exec_ms = stats(ttfc);
 results.server_create_total_ms = stats(serverTotal);
 results.server_restore_ms = stats(restore);
 
+// 1b. Where does cold-path time go? Server-side phases + the first three execs.
+const phases = { clone_disk_ms: [], spawn_vmm_ms: [], restore_ms: [], agent_ready_ms: [] };
+const execN = [[], [], []];
+for (let i = 0; i < Math.min(SAMPLES, 30); i++) {
+  const x = await create();
+  for (const k of Object.keys(phases)) phases[k].push(x.timings[k]);
+  for (let j = 0; j < 3; j++) {
+    const t = now();
+    await exec(x.id, ["true"]);
+    execN[j].push(now() - t);
+  }
+  await del(x.id);
+}
+results.profile = Object.fromEntries([
+  ...Object.entries(phases).map(([k, v]) => [k, stats(v)]),
+  ...execN.map((v, j) => [`exec_${j + 1}_after_restore_ms`, stats(v)]),
+]);
+
 // 2. Exec round trip on a live sandbox.
 const s = await create();
 const rtt = [];

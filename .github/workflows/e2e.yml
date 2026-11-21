@@ -37,6 +37,15 @@ jobs:
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
       - name: E2E checks + benchmark
         run: node bench/warren-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
+      - name: Page-fault profile of one restore
+        run: |
+          id=$(curl -fs -XPOST localhost:7171/v1/sandboxes -d '{}' -H 'content-type: application/json' | jq -r .id)
+          echo "after restore:";   ps -o min_flt,maj_flt,rss,etimes -C firecracker
+          curl -fs localhost:7171/v1/sandboxes/$id/exec -H 'content-type: application/json' -d '{"cmd":["true"]}' | jq -c .
+          echo "after 1st exec:";  ps -o min_flt,maj_flt,rss -C firecracker
+          curl -fs localhost:7171/v1/sandboxes/$id/exec -H 'content-type: application/json' -d '{"cmd":["true"]}' | jq -c .
+          echo "after 2nd exec:";  ps -o min_flt,maj_flt,rss -C firecracker
+          curl -fs localhost:7171/v1/sandboxes/$id/exec -H 'content-type: application/json' -d '{"cmd":"cat /proc/loadavg; dmesg | tail -5"}' | jq -r .stdout
       - name: Diagnostics
         if: always()
         run: |
