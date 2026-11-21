@@ -41,6 +41,13 @@ jobs:
         run: node bench/warren-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
       - name: A/B without page-cache prewarm
         run: WARREN_TEMPLATE=noprewarm node bench/warren-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
+      - name: Concurrency A/B (guest shape)
+        run: |
+          IMG="${{ inputs.image || 'python:3.12-slim' }}"
+          sudo warrend build c1m512 "$IMG" --vcpus 1 --mem-mib 512 >/dev/null
+          sudo warrend build c2m512 "$IMG" --vcpus 2 --mem-mib 512 >/dev/null
+          sudo warrend build c1m1024 "$IMG" --vcpus 1 --mem-mib 1024 >/dev/null
+          for t in default c1m512 c2m512 c1m1024; do node bench/burst.mjs $t 1 2 5 10; done
       - name: Host load during a burst
         run: |
           (vmstat 1 6 > /tmp/vmstat.txt) &
