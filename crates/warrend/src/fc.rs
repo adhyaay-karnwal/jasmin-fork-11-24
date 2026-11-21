@@ -105,6 +105,10 @@ impl Vm {
         self.api("PATCH", "/vm", json!({"state": "Paused"})).await
     }
 
+    pub async fn resume(&self) -> Result<()> {
+        self.api("PATCH", "/vm", json!({"state": "Resumed"})).await
+    }
+
     pub async fn snapshot(&self, vmstate: &Path, mem: &Path) -> Result<()> {
         self.api("PUT", "/snapshot/create", json!({"snapshot_type": "Full", "snapshot_path": vmstate, "mem_file_path": mem})).await
     }

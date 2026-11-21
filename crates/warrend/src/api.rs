@@ -45,7 +45,11 @@ pub fn router(mgr: Arc<Manager>, api_key: Option<String>) -> Router {
         .route("/v1/templates", get(list_templates).post(build_template))
         .route("/v1/sandboxes", get(list_sandboxes).post(create_sandbox))
         .route("/v1/sandboxes/{id}", get(get_sandbox).delete(delete_sandbox))
+        .route("/v1/templates/{name}", axum::routing::delete(delete_template))
         .route("/v1/sandboxes/{id}/exec", post(exec))
+        .route("/v1/sandboxes/{id}/pause", post(pause))
+        .route("/v1/sandboxes/{id}/resume", post(resume))
+        .route("/v1/sandboxes/{id}/snapshot", post(snapshot))
         .route("/v1/sandboxes/{id}/files", get(read_file).put(write_file))
         .layer(middleware::from_fn_with_state(state.clone(), auth))
         .route("/healthz", get(|| async { "ok" }))
@@ -124,7 +128,35 @@ async fn list_sandboxes(State(st): State<AppState>) -> impl IntoResponse {
 }
 
 async fn get_sandbox(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<impl IntoResponse> {
-    Ok(Json(st.mgr.get(&id).await.ok_or_else(not_found)?.info()))
+    let sbx = st.mgr.get(&id).await.ok_or_else(not_found)?;
+    let mut v = serde_json::to_value(sbx.info()).unwrap();
+    v["state"] = json!(if st.mgr.is_paused(&sbx).await { "paused" } else { "running" });
+    Ok(Json(v))
+}
+
+async fn pause(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<StatusCode> {
+    st.mgr.get(&id).await.ok_or_else(not_found)?;
+    st.mgr.pause(&id).await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+async fn resume(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<impl IntoResponse> {
+    st.mgr.get(&id).await.ok_or_else(not_found)?;
+    let t = st.mgr.resume(&id).await?;
+    Ok(Json(json!({ "resumed": t.is_some(), "timings": t })))
+}
+
+async fn snapshot(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<impl IntoResponse> {
+    st.mgr.get(&id).await.ok_or_else(not_found)?;
+    Ok((StatusCode::CREATED, Json(st.mgr.snapshot(&id).await?)))
+}
+
+async fn delete_template(State(st): State<AppState>, Path(name): Path<String>) -> ApiResult<StatusCode> {
+    if st.mgr.delete_template(&name).await? {
+        Ok(StatusCode::NO_CONTENT)
+    } else {
+        Err(ApiError(StatusCode::NOT_FOUND, "template not found".into()))
+    }
 }
 
 async fn delete_sandbox(State(st): State<AppState>, Path(id): Path<String>) -> ApiResult<StatusCode> {
@@ -158,6 +190,7 @@ async fn exec(State(st): State<AppState>, Path(id): Path<String>, Json(e): Json<
         Cmd::Shell(s) => vec!["/bin/sh".into(), "-c".into(), s],
         Cmd::Argv(a) => a,
     };
+    st.mgr.ensure_running(&sbx).await?;
     let t = Instant::now();
     let out = sbx
         .agent
@@ -176,6 +209,7 @@ struct FileQuery {
 
 async fn read_file(State(st): State<AppState>, Path(id): Path<String>, Query(q): Query<FileQuery>) -> ApiResult<impl IntoResponse> {
     let sbx = st.mgr.get(&id).await.ok_or_else(not_found)?;
+    st.mgr.ensure_running(&sbx).await?;
     let data = sbx.agent.read_file(&q.path).await.map_err(|e| ApiError(StatusCode::NOT_FOUND, format!("{e:#}")))?;
     Ok(([(header::CONTENT_TYPE, "application/octet-stream")], data))
 }
@@ -186,6 +220,7 @@ async fn write_file(State(st): State<AppState>, Path(id): Path<String>, Query(q)
         Some(m) => u32::from_str_radix(m, 8).map_err(|_| ApiError(StatusCode::BAD_REQUEST, "mode must be octal".into()))?,
         None => 0o644,
     };
+    st.mgr.ensure_running(&sbx).await?;
     sbx.agent.write_file(&q.path, mode, &body).await?;
     Ok(StatusCode::NO_CONTENT)
 }

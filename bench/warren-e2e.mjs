@@ -97,6 +97,33 @@ check("cloud metadata endpoint blocked", r.stdout.trim() === "blocked", r);
 r = await blocked("10.200.0.1", 22);
 check("host services blocked", r.stdout.trim() === "blocked", r);
 
+// Snapshots and pause keep memory, not just files: a background process must survive.
+await exec(a.id, "echo state > /root/state.txt; nohup sleep 3600 >/dev/null 2>&1 & echo $! > /root/bg.pid");
+let t = now();
+const snap = await api("POST", `/v1/sandboxes/${a.id}/snapshot`);
+const snapMs = now() - t;
+t = now();
+const c = await api("POST", "/v1/sandboxes", { template: snap.name });
+const fromSnapMs = now() - t;
+r = await exec(c.id, "cat /root/state.txt; kill -0 $(cat /root/bg.pid) && echo alive");
+check("create from snapshot keeps files + running processes", r.stdout === "state\nalive\n", r);
+r = await exec(a.id, "echo still-original");
+check("source sandbox keeps running after snapshot", r.stdout === "still-original\n", r);
+console.log(`snapshot ${snapMs.toFixed(0)} ms, create-from-snapshot ${fromSnapMs.toFixed(0)} ms`);
+await del(c.id);
+await api("DELETE", `/v1/templates/${snap.name}`);
+
+t = now();
+await api("POST", `/v1/sandboxes/${a.id}/pause`);
+const pauseMs = now() - t;
+const st = await api("GET", `/v1/sandboxes/${a.id}`);
+check("paused sandbox reports paused", st.state === "paused", st);
+t = now();
+r = await exec(a.id, "cat /root/state.txt; kill -0 $(cat /root/bg.pid) && echo alive");
+const resumeExecMs = now() - t;
+check("exec auto-resumes a paused sandbox with memory intact", r.stdout === "state\nalive\n", r);
+console.log(`pause ${pauseMs.toFixed(0)} ms, resume+exec ${resumeExecMs.toFixed(0)} ms`);
+
 r = await exec(a.id, "cat /proc/1/comm; uname -r; nproc");
 console.log("guest:", r.stdout.trim().replace(/\n/g, " | "));
 

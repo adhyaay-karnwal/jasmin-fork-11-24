@@ -231,21 +231,43 @@ impl Manager {
         let dir = self.cfg.data.join("sandboxes").join(&id);
         std::fs::create_dir_all(&dir)?;
 
+        let (vm, slot, timings) = match self.restore_into(&dir, &tdir.join(ROOTFS), &tdir.join("vm.snap"), &tdir.join("mem.snap")).await {
+            Ok(v) => v,
+            Err(e) => {
+                let _ = std::fs::remove_dir_all(&dir);
+                return Err(e);
+            }
+        };
+        let sbx = Arc::new(Sandbox {
+            id: id.clone(),
+            template: template.into(),
+            created_unix: now_ns() / 1_000_000_000,
+            agent: AgentClient::new(&dir),
+            vm: Mutex::new(Some((vm, slot))),
+            dir,
+        });
+        self.sandboxes.lock().await.insert(id, sbx.clone());
+        Ok((sbx, timings))
+    }
+
+    /// Clone `rootfs` into `dir` (unless it is already there), start a VMM in a
+    /// network slot and restore `vmstate` + `mem` into it. Shared by create,
+    /// create-from-snapshot and resume.
+    async fn restore_into(&self, dir: &Path, rootfs: &Path, vmstate: &Path, mem: &Path) -> Result<(Vm, Slot, CreateTimings)> {
         let t0 = Instant::now();
+        let reflink = if rootfs == dir.join(ROOTFS) { true } else { clone_file(rootfs, &dir.join(ROOTFS))? };
         let slot = self.net.acquire().await?;
-        let netns = slot.netns_path();
         let result: Result<(Vm, CreateTimings)> = async {
-            let reflink = clone_file(&tdir.join(ROOTFS), &dir.join(ROOTFS))?;
             let t1 = Instant::now();
-            let vm = Vm::spawn(&self.cfg.firecracker, &dir, Some(&netns)).await?;
+            let vm = Vm::spawn(&self.cfg.firecracker, dir, Some(&slot.netns_path())).await?;
             let t2 = Instant::now();
-            if let Err(e) = vm.restore(&tdir.join("vm.snap"), &tdir.join("mem.snap")).await {
+            if let Err(e) = vm.restore(vmstate, mem).await {
                 vm.kill().await;
                 return Err(e);
             }
             let t3 = Instant::now();
             // Fresh clock and entropy: every restore of a snapshot must diverge.
-            if let Err(e) = AgentClient::new(&dir).ping(Some(now_ns()), Some(random_bytes(64))).await {
+            if let Err(e) = AgentClient::new(dir).ping(Some(now_ns()), Some(random_bytes(64))).await {
                 vm.kill().await;
                 return Err(e);
             }
@@ -263,24 +285,110 @@ impl Manager {
             ))
         }
         .await;
-        let (vm, timings) = match result {
-            Ok(v) => v,
+        match result {
+            Ok((vm, t)) => Ok((vm, slot, t)),
             Err(e) => {
                 self.net.release(slot).await;
-                let _ = std::fs::remove_dir_all(&dir);
-                return Err(e);
+                Err(e)
             }
-        };
-        let sbx = Arc::new(Sandbox {
-            id: id.clone(),
-            template: template.into(),
-            created_unix: now_ns() / 1_000_000_000,
-            agent: AgentClient::new(&dir),
-            vm: Mutex::new(Some((vm, slot))),
-            dir,
-        });
-        self.sandboxes.lock().await.insert(id, sbx.clone());
-        Ok((sbx, timings))
+        }
+    }
+
+    /// Snapshot a running sandbox (memory, CPU state and disk) into a new
+    /// template that any number of sandboxes can be created from. The source
+    /// keeps running; it is paused only while state is written.
+    pub async fn snapshot(&self, id: &str) -> Result<TemplateMeta> {
+        let sbx = self.get(id).await.ok_or_else(|| anyhow::anyhow!("sandbox not found"))?;
+        self.ensure_running(&sbx).await?;
+        let name = format!("snap_{}", random_bytes(6).iter().map(|b| format!("{b:02x}")).collect::<String>());
+        let dst = self.template_dir(&name);
+        std::fs::create_dir_all(&dst)?;
+        let guard = sbx.vm.lock().await;
+        let (vm, _) = guard.as_ref().ok_or_else(|| anyhow::anyhow!("sandbox is paused"))?;
+        let res: Result<()> = async {
+            sbx.agent.sync().await?;
+            vm.pause().await?;
+            let r = async {
+                vm.snapshot(&dst.join("vm.snap"), &dst.join("mem.snap")).await?;
+                clone_file(&sbx.dir.join(ROOTFS), &dst.join(ROOTFS))?;
+                Ok::<_, anyhow::Error>(())
+            }
+            .await;
+            vm.resume().await?;
+            r
+        }
+        .await;
+        drop(guard);
+        if let Err(e) = res {
+            let _ = std::fs::remove_dir_all(&dst);
+            return Err(e);
+        }
+        let base: TemplateMeta = serde_json::from_slice(&std::fs::read(self.template_dir(&sbx.template).join("meta.json"))?)?;
+        let meta = TemplateMeta { name, image: format!("snapshot of {id} ({})", base.image), built_unix: now_ns() / 1_000_000_000, boot_ms: 0, ..base };
+        std::fs::write(dst.join("meta.json"), serde_json::to_vec_pretty(&meta)?)?;
+        Ok(meta)
+    }
+
+    pub async fn delete_template(&self, name: &str) -> Result<bool> {
+        if !valid_name(name) {
+            bail!("invalid template name");
+        }
+        let dir = self.template_dir(name);
+        if !dir.exists() {
+            return Ok(false);
+        }
+        tokio::fs::remove_dir_all(dir).await?;
+        Ok(true)
+    }
+
+    /// Suspend to disk: write memory + CPU state next to the sandbox's disk and
+    /// stop its VMM, freeing its memory, CPU and network slot. Idempotent.
+    pub async fn pause(&self, id: &str) -> Result<()> {
+        let sbx = self.get(id).await.ok_or_else(|| anyhow::anyhow!("sandbox not found"))?;
+        let mut guard = sbx.vm.lock().await;
+        let Some((vm, slot)) = guard.take() else { return Ok(()) };
+        let res: Result<()> = async {
+            sbx.agent.sync().await?;
+            vm.pause().await?;
+            vm.snapshot(&sbx.dir.join("paused.vm.snap"), &sbx.dir.join("paused.mem.snap")).await
+        }
+        .await;
+        if let Err(e) = res {
+            let _ = vm.resume().await;
+            *guard = Some((vm, slot));
+            return Err(e);
+        }
+        vm.kill().await;
+        self.net.release(slot).await;
+        Ok(())
+    }
+
+    /// Resume a paused sandbox. Exec and file calls resume automatically.
+    pub async fn resume(&self, id: &str) -> Result<Option<CreateTimings>> {
+        let sbx = self.get(id).await.ok_or_else(|| anyhow::anyhow!("sandbox not found"))?;
+        self.resume_sandbox(&sbx).await
+    }
+
+    async fn resume_sandbox(&self, sbx: &Sandbox) -> Result<Option<CreateTimings>> {
+        let mut guard = sbx.vm.lock().await;
+        if guard.is_some() {
+            return Ok(None);
+        }
+        let (vmstate, mem) = (sbx.dir.join("paused.vm.snap"), sbx.dir.join("paused.mem.snap"));
+        let (vm, slot, t) = self.restore_into(&sbx.dir, &sbx.dir.join(ROOTFS), &vmstate, &mem).await?;
+        // The memory file stays mapped by the VMM; unlinking just frees the name.
+        let _ = std::fs::remove_file(&vmstate);
+        let _ = std::fs::remove_file(&mem);
+        *guard = Some((vm, slot));
+        Ok(Some(t))
+    }
+
+    pub async fn ensure_running(&self, sbx: &Sandbox) -> Result<()> {
+        self.resume_sandbox(sbx).await.map(|_| ())
+    }
+
+    pub async fn is_paused(&self, sbx: &Sandbox) -> bool {
+        sbx.vm.lock().await.is_none()
     }
 
     pub async fn get(&self, id: &str) -> Option<Arc<Sandbox>> {
