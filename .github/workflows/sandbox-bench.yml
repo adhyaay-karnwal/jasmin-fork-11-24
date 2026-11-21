@@ -7,7 +7,7 @@ on:
     paths: ["integrations/**", ".github/workflows/sandbox-bench.yml", "crates/**"]
   workflow_dispatch:
     inputs:
-      runs: { description: "iterations per scenario", default: "10" }
+      runs: { description: "iterations per scenario (published runs use 100)", default: "100" }
       scenarios: { description: "scenario list or all", default: "all" }
       track: { description: "same-spec or default", default: "same-spec" }
 
@@ -64,16 +64,24 @@ jobs:
           cd /tmp/harness/bench
           # Same call path the harness uses, as a smoke test with the real error visible.
           bun -e 'const {warren}=await import("@opencoredev/sandbox-sdk/warren"); const p=warren({template:"bench"}); const s=await p.create({labels:{smoke:"1"}}); console.log("smoke create", s.id); await p.destroy(s.id);'
-          bun src/cli.ts --providers warren \
-            --track "${{ inputs.track || 'same-spec' }}" \
-            --size warren=4:8192 --template warren=bench \
-            --runs "${{ inputs.runs || '10' }}" --scenarios "${{ inputs.scenarios || 'all' }}" \
-            --bursts 10,25 --account-limits warren=200 --max-dollars 1000 \
-            --run warren-ci --out /tmp/results/warren 2>&1 | tail -80
+          # Mirrors the harness's own collection plan (bench/src/collection-plan.sh):
+          # main, snapshot and burst suites as separate invocations with its flags.
+          RUNS="${{ inputs.runs || '100' }}"; WRUNS=$(( RUNS < 30 ? RUNS : 30 ))
+          COMMON=(--providers warren --track "${{ inputs.track || 'same-spec' }}" --size warren=4:8192 --template warren=bench
+                  --account-limits warren=200 --omit-network-download true --seed 45 --max-dollars 25)
+          MAIN=command,files-1kb,files-10mb,reconnect,pause-resume,perf,git-clone,npm-install,dev-server,preview-first-byte,edit-loop,tool-replay,pip-install
+          rc=0
+          bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs "$RUNS" --workload-runs "$WRUNS" \
+            --scenarios "$MAIN" --bursts '' --timeout-ms 180000 --max-sandboxes 1000 --run warren-main --out /tmp/results/main 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1
+          bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs $(( RUNS < 30 ? RUNS : 30 )) \
+            --scenarios snapshot --bursts '' --timeout-ms 600000 --max-sandboxes 1000 --run warren-snapshot --out /tmp/results/snapshot 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1
+          bun src/cli.ts "${COMMON[@]}" --runs 1 --scenarios burst --bursts 10,25 --burst-cohorts 3 --concurrency 25 \
+            --timeout-ms 180000 --max-sandboxes 1000 --run warren-burst --out /tmp/results/burst 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1
+          exit $rc
       - name: Report
         if: always()
         run: |
-          cat /tmp/results/warren/results.md 2>/dev/null | head -150 || true
+          for f in /tmp/results/*/results.md; do echo "== $f"; head -80 "$f"; done 2>/dev/null || true
           echo "== warrend log"; sudo tail -40 /tmp/warrend.log
       - uses: actions/upload-artifact@v4
         if: always()
