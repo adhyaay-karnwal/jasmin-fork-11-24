@@ -41,6 +41,15 @@ jobs:
         run: node bench/warren-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
       - name: A/B without page-cache prewarm
         run: WARREN_TEMPLATE=noprewarm node bench/warren-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
+      - name: Host load during a burst
+        run: |
+          (vmstat 1 6 > /tmp/vmstat.txt) &
+          node -e '
+            const U="http://127.0.0.1:7171", j={"content-type":"application/json"};
+            (async()=>{ const xs=await Promise.all(Array.from({length:20},()=>fetch(U+"/v1/sandboxes",{method:"POST",headers:j,body:"{}"}).then(r=>r.json())));
+              await new Promise(r=>setTimeout(r,3000));
+              await Promise.all(xs.map(x=>fetch(U+"/v1/sandboxes/"+x.id,{method:"DELETE"}))); })()'
+          wait; cat /tmp/vmstat.txt
       - name: Page-fault profile of one restore
         run: |
           id=$(curl -fs -XPOST localhost:7171/v1/sandboxes -d '{}' -H 'content-type: application/json' | jq -r .id)

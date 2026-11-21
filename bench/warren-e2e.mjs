@@ -175,19 +175,29 @@ results.download_64mib_ms = Math.round(now() - t0);
 await del(s.id);
 
 // 5. Concurrent burst: BURST creates at once, each runs a command.
-t0 = now();
-const per = await Promise.all(
-  Array.from({ length: BURST }, async () => {
-    const t = now();
-    const x = await create();
-    await exec(x.id, "true");
-    const d = now() - t;
-    await del(x.id);
-    return d;
-  }),
-);
-results.burst_wall_ms = Math.round(now() - t0);
-results.burst_create_to_first_exec_ms = stats(per);
+async function burst(n) {
+  const t0 = now();
+  const runs = await Promise.all(
+    Array.from({ length: n }, async () => {
+      const t = now();
+      const x = await create();
+      const c = now() - t;
+      await exec(x.id, "true");
+      return { id: x.id, total: now() - t, create: c, timings: x.timings };
+    }),
+  );
+  const wall = now() - t0;
+  await Promise.all(runs.map((x) => del(x.id)));
+  const ph = (k) => stats(runs.map((x) => x.timings[k]));
+  return {
+    wall_ms: Math.round(wall),
+    create_to_first_exec_ms: stats(runs.map((x) => x.total)),
+    create_ms: stats(runs.map((x) => x.create)),
+    server: { spawn_vmm_ms: ph("spawn_vmm_ms"), restore_ms: ph("restore_ms"), agent_ready_ms: ph("agent_ready_ms") },
+  };
+}
+results.burst = {};
+for (const n of [2, 5, BURST]) results.burst[n] = await burst(n);
 
 console.log(JSON.stringify(results, null, 2));
 if (OUT) writeFileSync(OUT, JSON.stringify(results, null, 2));
