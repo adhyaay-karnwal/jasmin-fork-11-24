@@ -346,8 +346,14 @@ impl Manager {
                         backoff = (backoff * 2).min(Duration::from_millis(50));
                     }
                     Err(e) => {
+                        let mut vm = vm;
+                        let exited = vm.child.try_wait().ok().flatten();
+                        let console = vm.console_tail();
                         vm.kill().await;
-                        return Err(e.context("agent not ready after restore"));
+                        return Err(e.context(format!(
+                            "agent not ready after restore; vmm exited: {exited:?}; console: {}",
+                            console.chars().rev().take(600).collect::<String>().chars().rev().collect::<String>()
+                        )));
                     }
                 }
             }

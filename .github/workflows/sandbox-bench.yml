@@ -84,7 +84,9 @@ jobs:
         if: always()
         run: |
           for f in /tmp/results/*/results.md; do echo "== $f"; head -80 "$f"; done 2>/dev/null || true
-          echo "== warrend log"; sudo tail -40 /tmp/warrend.log
+          echo "== warrend errors"; sudo grep -E "WARN|ERROR" /tmp/warrend.log | tail -20
+          echo "== host kernel (oom / kvm)"; sudo dmesg | grep -iE "oom|killed process|kvm" | tail -20
+          echo "== memory"; free -h
       - uses: actions/upload-artifact@v4
         if: always()
         with:

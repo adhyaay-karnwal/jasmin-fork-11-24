@@ -124,6 +124,7 @@ async fn create_sandbox(State(st): State<AppState>, body: Option<Json<CreateSand
     let (template, opts) = body.map(|b| (b.0.template, b.0.opts)).unwrap_or_else(|| (default_template(), CreateOpts::default()));
     let (sbx, timings) = st.mgr.create(&template, opts).await.map_err(|e| {
         let msg = format!("{e:#}");
+        tracing::warn!("create failed: {msg}");
         if msg.contains("not found") || msg.contains("no template") {
             ApiError(StatusCode::NOT_FOUND, msg)
         } else if msg.contains("already exists") {
