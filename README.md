@@ -3,7 +3,61 @@
 Open-source sandboxes for AI agents: hardware-isolated microVMs that create, fork and resume in milliseconds,
 run on any Linux box with KVM, and are measured in public against everyone else.
 
-Apache-2.0. Status: early. The guest agent and wire protocol are written; the host daemon is next.
+Apache-2.0. Status: early but working end to end. Sandboxes boot, run commands, move files, reach the internet,
+and pass the full correctness suite on every push (CI runs real Firecracker on KVM runners).
+
+## Quick start (Linux host with KVM)
+
+```sh
+sudo dev/setup-host.sh                    # firecracker, guest kernel, crane, XFS reflink data dir
+cargo build --release -p warrend
+cargo build --release -p warren-agent --target x86_64-unknown-linux-musl
+sudo install -D target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
+sudo target/release/warrend build default python:3.12-slim   # any OCI image
+sudo target/release/warrend serve                              # http://127.0.0.1:7171
+```
+
+```ts
+import { Warren } from "@warren/sdk";                      // sdk/typescript, zero deps
+await using sbx = await new Warren().create();
+console.log((await sbx.exec("python3 -c 'print(6*7)'")).stdout);
+```
+
+```python
+from warren import Warren                                  # sdk/python, stdlib only
+with Warren().create() as sbx:
+    print(sbx.exec("pip install -q requests && echo ok").stdout)
+```
+
+API: `POST /v1/sandboxes`, `POST /v1/sandboxes/{id}/exec`, `GET|PUT /v1/sandboxes/{id}/files?path=`,
+`DELETE /v1/sandboxes/{id}`, `GET|POST /v1/templates`. Optional bearer auth via `WARREN_API_KEY`.
+
+## Current numbers
+
+GitHub Actions `ubuntu-24.04` runner: 2 vCPU AMD EPYC, nested virtualization (so every guest VM exit is
+several times more expensive than on bare metal). Default template: `python:3.12-slim`, 2 vCPU, 1 GiB.
+Client on the same host. These are not yet competitive claims; see the benchmark rules below.
+
+| metric (p50) | value |
+|---|---|
+| create (client-measured, restore from snapshot) | 28–39 ms |
+| create → first command finished | 37–55 ms |
+| exec round trip, warm sandbox | 2.3–3.8 ms |
+| server-side restore (Firecracker snapshot load) | ~9–11 ms |
+| disk clone (XFS reflink, any image size) | 0.2 ms |
+| template build from an OCI image (pull + mkfs + boot + snapshot) | ~10 s |
+| page-cache prewarm effect on first command | 76 → 37–55 ms (A/B'd every CI run) |
+
+Ranges span CI runs on different runner hardware. Concurrency numbers from a 2-vCPU nested-virtualization
+runner are not representative, so none are published yet; that needs bare metal.
+
+## What is verified on every push
+
+Exec (stdout/stderr/exit code, stdin, env, cwd, timeout kills the whole process tree, background jobs
+don't hang), binary file round trip and modes, per-sandbox disk isolation, no shared RNG state between
+sandboxes restored from one snapshot (host-injected entropy plus VMGenID reseed), guest clock sync after
+restore, DNS + HTTPS + `pip install` from inside the sandbox, cloud metadata endpoint blocked, host
+services blocked, no sandbox-to-sandbox traffic, and both SDKs.
 
 ## Design
 
@@ -16,14 +70,17 @@ Apache-2.0. Status: early. The guest agent and wire protocol are written; the ho
 | Guest | `warren-agent` is PID 1: no systemd, no shell, static binary | Nothing to boot; one vsock round trip to first command |
 | Host↔guest | Binary framed protocol over virtio-vsock, one request per connection | Raw bytes for output and files, no JSON/base64 on the hot path |
 | Snapshot safety | Each restore sets the guest clock and injects fresh entropy (`RNDADDENTROPY`) | Sandboxes restored from one snapshot never share RNG state |
-| Per-VM paths | Firecracker runs with cwd in the sandbox dir; snapshot paths are relative; one netns per VM with the same tap name | One snapshot restores into many sandboxes at once without path or tap collisions |
+| Per-VM paths | Firecracker runs with cwd in the sandbox dir; snapshot paths are relative | One snapshot restores into many sandboxes at once without path collisions |
+| Network | One network namespace per sandbox holding the same `tap0`/guest IP; NAT to a unique veth; namespaces pre-built and recycled | Snapshot-baked network config works for every restore; no `ip`/`iptables` calls on the create path |
+| Page cache | Template build reads the image's binaries, libraries and runtimes into the guest page cache before snapshotting | First command doesn't pay cold disk reads; pages are shared across sandboxes via the host page cache |
 
 ## Roadmap
 
-1. **Core.** `warrend`: template build (OCI image → ext4 → boot → snapshot); create, exec, files and delete over HTTP; TypeScript and Python SDKs.
-2. **Agent features.** Fork a *running* sandbox into N copies, PTY, streaming exec, per-sandbox egress allowlists, and a secrets proxy that adds API keys to outbound requests so keys never enter the VM.
-3. **Fleet.** Multi-host scheduler, lazily pulled images, persistent volumes, and GPU support via Cloud Hypervisor.
-4. **Compatibility.** An E2B-compatible API and an MCP server.
+1. ~~**Core.**~~ Done: template build (OCI image → ext4 → boot → snapshot); create, exec, files, delete and networking over HTTP; TypeScript and Python SDKs; cross-provider benchmark harness.
+2. **Performance.** 2 MiB huge pages with a userfaultfd restore handler, to cut post-restore EPT faults about 512×, which is what concurrency currently pays for. Also jailer + cgroups per VM, and bare-metal benchmark runs.
+3. **Agent features.** Fork a *running* sandbox into N copies, PTY, streaming exec, per-sandbox egress allowlists, and a secrets proxy that adds API keys to outbound requests so keys never enter the VM.
+4. **Fleet.** Multi-host scheduler, lazily pulled images, persistent volumes, and GPU support via Cloud Hypervisor.
+5. **Compatibility.** An E2B-compatible API and an MCP server.
 
 ## Benchmark rules (`bench/`)
 
@@ -38,18 +95,26 @@ Apache-2.0. Status: early. The guest agent and wire protocol are written; the ho
 - **Cost:** $ per sandbox-hour at list price, plus density (sandboxes per host) for self-hosted.
 - **Isolation is listed next to speed.** Containers and microVMs are labeled, not ranked together silently.
 
-Metrics: create → first command, exec round trip, snapshot/resume, fork into 1/10/100 copies, file throughput,
-concurrency p99, and the four realistic workloads above.
+`bench/compare/run.mjs` implements this: Warren, E2B and Daytona adapters using each provider's official SDK,
+identical workloads (first command, warm exec, 1 MiB file round trip, Python hello, numpy, `pip install
+requests`, 256 MiB fsync'd disk write), and the measured API round trip printed next to every provider.
+Providers without credentials are skipped, never estimated. In CI, add `E2B_API_KEY` / `DAYTONA_API_KEY`
+as repository secrets.
+
+Until Warren runs on a remote host in the same region as the client, its numbers have no network round trip
+while the hosted providers' do. The harness prints that RTT so readers can account for it. A headline
+comparison will only be published from a setup where every provider is remote.
 
 ## Layout
 
 ```
 crates/proto    host↔guest wire protocol (framing + message types)
 crates/agent    guest PID 1: mounts, reaping, exec/files/ping/sync over vsock
-crates/warrend  host daemon + CLI (next)
-sdk/typescript  client SDK (next)
-bench/          provider-neutral benchmark harness (next)
-dev/            local dev host: Lima VM with nested KVM (Apple M3+ / macOS 15+)
+crates/warrend  host daemon + CLI: Firecracker lifecycle, templates, network slots, HTTP API
+sdk/typescript  TypeScript SDK (zero dependencies)
+sdk/python      Python SDK (stdlib only)
+bench/          e2e correctness suite + micro-benchmarks, concurrency probe, cross-provider harness
+dev/            host setup script; Lima config for a local KVM VM (Apple M3+ / macOS 15+)
 ```
 
 ## Developing on a Mac
