@@ -27,7 +27,7 @@ jobs:
           ls -la target/x86_64-unknown-linux-musl/release/warren-agent target/release/warrend
       - name: Set up host (Firecracker, kernel, XFS reflink data dir)
         run: |
-          sudo dev/setup-host.sh
+          sudo WARREN_XFS_IMG=$( [ -d /mnt ] && echo /mnt/warren-xfs.img || echo /var/warren-xfs.img ) dev/setup-host.sh
           sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
           sudo install -m 0755 target/release/warrend /usr/local/bin/warrend
       - name: Build template

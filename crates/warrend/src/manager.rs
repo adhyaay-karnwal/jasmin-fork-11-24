@@ -319,7 +319,14 @@ impl Manager {
     /// create-from-snapshot and resume.
     async fn restore_into(&self, dir: &Path, rootfs: &Path, vmstate: &Path, mem: &Path) -> Result<(Vm, Slot, CreateTimings)> {
         let t0 = Instant::now();
-        let reflink = if rootfs == dir.join(ROOTFS) { true } else { clone_file(rootfs, &dir.join(ROOTFS))? };
+        // Filesystem syscalls block; keep them off the async workers so concurrent
+        // creates don't serialize behind each other.
+        let reflink = if rootfs == dir.join(ROOTFS) {
+            true
+        } else {
+            let (src, dst) = (rootfs.to_path_buf(), dir.join(ROOTFS));
+            tokio::task::spawn_blocking(move || clone_file(&src, &dst)).await??
+        };
         let slot = self.net.acquire().await?;
         let result: Result<(Vm, CreateTimings)> = async {
             let t1 = Instant::now();
@@ -389,7 +396,8 @@ impl Manager {
             let diff = mem.with_extension("diff");
             vm.snapshot_diff(vmstate, &diff).await?;
             let diff_alloc = std::fs::metadata(&diff).map(|m| { use std::os::unix::fs::MetadataExt; m.blocks() * 512 }).unwrap_or(0);
-            let r = clone_file(&base, mem).and_then(|_| merge_sparse(&diff, mem));
+            let (b, mm, dd) = (base.clone(), mem.to_path_buf(), diff.clone());
+            let r = tokio::task::spawn_blocking(move || clone_file(&b, &mm).and_then(|_| merge_sparse(&dd, &mm))).await?;
             tracing::info!(sandbox = %sbx.id, base = %base.display(), diff_alloc, merged = ?r.as_ref().ok(), "diff snapshot");
             let _ = std::fs::remove_file(&diff);
             if r.is_ok() {
@@ -547,11 +555,21 @@ impl Manager {
 
     pub async fn delete(&self, id: &str) -> bool {
         let Some(sbx) = self.sandboxes.lock().await.remove(id) else { return false };
-        if let Some((vm, slot)) = sbx.vm.lock().await.take() {
-            vm.kill().await;
-            self.net.release(slot).await;
-        }
-        let _ = tokio::fs::remove_dir_all(&sbx.dir).await;
+        let slot = match sbx.vm.lock().await.take() {
+            Some((vm, slot)) => {
+                vm.kill().await; // the VM is gone before we return
+                Some(slot)
+            }
+            None => None,
+        };
+        // Recycling the network slot and removing files don't affect the caller.
+        let (net, dir) = (self.net.clone(), sbx.dir.clone());
+        tokio::spawn(async move {
+            if let Some(slot) = slot {
+                net.release(slot).await;
+            }
+            let _ = tokio::fs::remove_dir_all(&dir).await;
+        });
         true
     }
 

@@ -89,7 +89,7 @@ impl Vm {
             crate::net::KERNEL_IP_ARG
         );
         self.api("PUT", "/boot-source", json!({"kernel_image_path": kernel, "boot_args": args})).await?;
-        self.api("PUT", "/drives/rootfs", json!({"drive_id": "rootfs", "path_on_host": ROOTFS, "is_root_device": true, "is_read_only": false})).await?;
+        self.api("PUT", "/drives/rootfs", json!({"drive_id": "rootfs", "path_on_host": ROOTFS, "is_root_device": true, "is_read_only": false, "io_engine": "Async"})).await?;
         self.api("PUT", "/machine-config", json!({"vcpu_count": vcpus, "mem_size_mib": mem_mib})).await?;
         self.api("PUT", "/vsock", json!({"guest_cid": 3, "uds_path": VSOCK_SOCK})).await?;
         self.api(
