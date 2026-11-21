@@ -128,6 +128,8 @@ t = now();
 const c = await api("POST", "/v1/sandboxes", { template: snap.name });
 const fromSnapMs = now() - t;
 r = await exec(c.id, "cat /root/state.txt; kill -0 $(cat /root/bg.pid) && echo alive");
+{ const n = await exec(c.id, ["python3", "-c", "import urllib.request as u; print(u.urlopen('https://pypi.org/simple/', timeout=15).status)"], { timeout_ms: 30000 });
+  check("internet works in a sandbox created from a snapshot", n.stdout.trim() === "200", n); }
 check("create from snapshot keeps files + running processes", r.stdout === "state\nalive\n", r);
 { const v = await memCheck(c.id); check("create from snapshot: 64 MiB process memory intact", v === "ok", v); }
 r = await exec(a.id, "echo still-original");
@@ -147,6 +149,8 @@ const resumeExecMs = now() - t;
 check("exec auto-resumes a paused sandbox with memory intact", r.stdout === "state\nalive\n", r);
 { const v = await memCheck(a.id); check("pause/resume: 64 MiB process memory intact", v === "ok", v); }
 console.log(`pause ${pauseMs.toFixed(0)} ms, resume+exec ${resumeExecMs.toFixed(0)} ms`);
+r = await pyNet("import urllib.request as u; print(u.urlopen('https://pypi.org/simple/', timeout=15).status)");
+check("internet works after pause/resume (new network slot)", r.stdout.trim() === "200", r);
 // Second cycle after mutating memory: exercises diff-on-top-of-rebased-base.
 await mutate(a.id);
 t = now();

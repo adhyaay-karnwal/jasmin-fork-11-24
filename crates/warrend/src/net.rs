@@ -21,6 +21,9 @@ pub const GUEST_IP: &str = "172.16.0.2";
 pub const GATEWAY_IP: &str = "172.16.0.1";
 pub const GUEST_MAC: &str = "06:00:ac:10:00:02";
 pub const TAP: &str = "tap0";
+/// Every slot's tap gets the same MAC, so a guest restored into a different slot
+/// (resume, create-from-snapshot) still has a valid ARP entry for its gateway.
+pub const GATEWAY_MAC: &str = "06:00:ac:10:00:01";
 /// Kernel cmdline fragment: static IP config, no DHCP.
 pub const KERNEL_IP_ARG: &str = "ip=172.16.0.2::172.16.0.1:255.255.255.252::eth0:off";
 const MAX_SLOTS: u32 = 16_000;
@@ -131,6 +134,7 @@ addr add {ns_ip}/30 dev veth0
 link set veth0 up
 route add default via {host_ip}
 tuntap add {TAP} mode tap
+link set {TAP} address {GATEWAY_MAC}
 addr add {GATEWAY_IP}/30 dev {TAP}
 link set {TAP} up
 EOF

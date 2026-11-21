@@ -183,6 +183,9 @@ impl Manager {
         let _ = std::fs::remove_file(tree.join("etc/resolv.conf"));
         std::fs::write(tree.join("etc/resolv.conf"), "nameserver 1.1.1.1\nnameserver 8.8.8.8\n")?;
         std::fs::write(tree.join("etc/hostname"), "warren\n")?;
+        // Images rarely ship /etc/hosts (Docker injects one at run time). Without it,
+        // localhost lookups go to DNS, and tools like `python -m http.server` stall.
+        std::fs::write(tree.join("etc/hosts"), "127.0.0.1\tlocalhost warren\n::1\tlocalhost ip6-localhost ip6-loopback\n")?;
 
         let used: u64 = {
             let out = tokio::process::Command::new("du").args(["-sb"]).arg(&tree).output().await?;
