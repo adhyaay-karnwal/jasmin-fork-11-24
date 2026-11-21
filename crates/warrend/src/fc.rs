@@ -25,11 +25,26 @@ pub struct Vm {
 
 impl Vm {
     /// Start a Firecracker process in `dir` and wait for its API socket.
-    pub async fn spawn(firecracker: &Path, dir: &Path) -> Result<Vm> {
+    /// `netns`: path of the network namespace to run in (`/var/run/netns/...`).
+    pub async fn spawn(firecracker: &Path, dir: &Path, netns: Option<&str>) -> Result<Vm> {
         let _ = std::fs::remove_file(dir.join(API_SOCK));
         let _ = std::fs::remove_file(dir.join(VSOCK_SOCK));
         let console = std::fs::File::create(dir.join("console.log"))?;
-        let child = Command::new(firecracker)
+        let mut cmd = Command::new(firecracker);
+        if let Some(ns) = netns {
+            use std::os::fd::AsRawFd;
+            let nsf = std::fs::File::open(ns).with_context(|| format!("open netns {ns}"))?;
+            // Enter the slot's netns between fork and exec: no `ip netns exec` hop.
+            unsafe {
+                cmd.pre_exec(move || {
+                    if libc::setns(nsf.as_raw_fd(), libc::CLONE_NEWNET) != 0 {
+                        return Err(std::io::Error::last_os_error());
+                    }
+                    Ok(())
+                });
+            }
+        }
+        let child = cmd
             .args(["--api-sock", API_SOCK, "--level", "Warning"])
             .current_dir(dir)
             .stdin(Stdio::null())
@@ -69,11 +84,20 @@ impl Vm {
 
     /// Cold boot (template builds only; sandboxes are always restored).
     pub async fn boot(&self, kernel: &Path, vcpus: u32, mem_mib: u32) -> Result<()> {
-        let args = "console=ttyS0 reboot=k panic=1 pci=off quiet loglevel=1 root=/dev/vda rw rootfstype=ext4 init=/.warren/agent";
+        let args = format!(
+            "console=ttyS0 reboot=k panic=1 pci=off quiet loglevel=1 root=/dev/vda rw rootfstype=ext4 init=/.warren/agent {}",
+            crate::net::KERNEL_IP_ARG
+        );
         self.api("PUT", "/boot-source", json!({"kernel_image_path": kernel, "boot_args": args})).await?;
         self.api("PUT", "/drives/rootfs", json!({"drive_id": "rootfs", "path_on_host": ROOTFS, "is_root_device": true, "is_read_only": false})).await?;
         self.api("PUT", "/machine-config", json!({"vcpu_count": vcpus, "mem_size_mib": mem_mib})).await?;
         self.api("PUT", "/vsock", json!({"guest_cid": 3, "uds_path": VSOCK_SOCK})).await?;
+        self.api(
+            "PUT",
+            "/network-interfaces/eth0",
+            json!({"iface_id": "eth0", "host_dev_name": crate::net::TAP, "guest_mac": crate::net::GUEST_MAC}),
+        )
+        .await?;
         self.api("PUT", "/actions", json!({"action_type": "InstanceStart"})).await
     }
 

@@ -1,5 +1,6 @@
 use crate::agent::AgentClient;
 use crate::fc::{clone_file, Vm, ROOTFS};
+use crate::net::{NetPool, Slot};
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -44,7 +45,7 @@ pub struct Sandbox {
     pub template: String,
     pub created_unix: u64,
     pub agent: AgentClient,
-    vm: Mutex<Option<Vm>>,
+    vm: Mutex<Option<(Vm, Slot)>>,
     dir: PathBuf,
 }
 
@@ -63,6 +64,7 @@ impl Sandbox {
 
 pub struct Manager {
     pub cfg: Config,
+    net: Arc<NetPool>,
     sandboxes: Mutex<HashMap<String, Arc<Sandbox>>>,
 }
 
@@ -99,14 +101,15 @@ fn shell_quote(p: &Path) -> String {
 impl Manager {
     /// `owns_sandboxes`: true for the server, which clears sandboxes left by a
     /// previous run (they do not survive restarts). False for one-shot CLI use.
-    pub fn new(cfg: Config, owns_sandboxes: bool) -> Result<Arc<Self>> {
+    pub async fn new(cfg: Config, owns_sandboxes: bool, net_pool: usize) -> Result<Arc<Self>> {
         std::fs::create_dir_all(cfg.data.join("templates"))?;
         let sbx = cfg.data.join("sandboxes");
         if owns_sandboxes {
             let _ = std::fs::remove_dir_all(&sbx);
         }
         std::fs::create_dir_all(&sbx)?;
-        Ok(Arc::new(Manager { cfg, sandboxes: Mutex::new(HashMap::new()) }))
+        let net = NetPool::new(net_pool, owns_sandboxes).await?;
+        Ok(Arc::new(Manager { cfg, net, sandboxes: Mutex::new(HashMap::new()) }))
     }
 
     fn template_dir(&self, name: &str) -> PathBuf {
@@ -166,8 +169,15 @@ impl Manager {
         .context("mkfs.ext4")?;
         std::fs::remove_dir_all(&tree)?;
 
+        let slot = self.net.acquire().await?;
         let t0 = Instant::now();
-        let vm = Vm::spawn(&self.cfg.firecracker, &dir).await?;
+        let vm = match Vm::spawn(&self.cfg.firecracker, &dir, Some(&slot.netns_path())).await {
+            Ok(vm) => vm,
+            Err(e) => {
+                self.net.destroy(slot).await;
+                return Err(e);
+            }
+        };
         let res: Result<u64> = async {
             vm.boot(&self.cfg.kernel, vcpus, mem_mib).await?;
             let agent = AgentClient::new(&dir);
@@ -193,6 +203,7 @@ impl Manager {
         }
         .await;
         vm.kill().await;
+        self.net.destroy(slot).await;
         let boot_ms = res?;
         let meta = TemplateMeta {
             name: name.into(),
@@ -221,10 +232,12 @@ impl Manager {
         std::fs::create_dir_all(&dir)?;
 
         let t0 = Instant::now();
+        let slot = self.net.acquire().await?;
+        let netns = slot.netns_path();
         let result: Result<(Vm, CreateTimings)> = async {
             let reflink = clone_file(&tdir.join(ROOTFS), &dir.join(ROOTFS))?;
             let t1 = Instant::now();
-            let vm = Vm::spawn(&self.cfg.firecracker, &dir).await?;
+            let vm = Vm::spawn(&self.cfg.firecracker, &dir, Some(&netns)).await?;
             let t2 = Instant::now();
             if let Err(e) = vm.restore(&tdir.join("vm.snap"), &tdir.join("mem.snap")).await {
                 vm.kill().await;
@@ -253,6 +266,7 @@ impl Manager {
         let (vm, timings) = match result {
             Ok(v) => v,
             Err(e) => {
+                self.net.release(slot).await;
                 let _ = std::fs::remove_dir_all(&dir);
                 return Err(e);
             }
@@ -262,7 +276,7 @@ impl Manager {
             template: template.into(),
             created_unix: now_ns() / 1_000_000_000,
             agent: AgentClient::new(&dir),
-            vm: Mutex::new(Some(vm)),
+            vm: Mutex::new(Some((vm, slot))),
             dir,
         });
         self.sandboxes.lock().await.insert(id, sbx.clone());
@@ -279,8 +293,9 @@ impl Manager {
 
     pub async fn delete(&self, id: &str) -> bool {
         let Some(sbx) = self.sandboxes.lock().await.remove(id) else { return false };
-        if let Some(vm) = sbx.vm.lock().await.take() {
+        if let Some((vm, slot)) = sbx.vm.lock().await.take() {
             vm.kill().await;
+            self.net.release(slot).await;
         }
         let _ = tokio::fs::remove_dir_all(&sbx.dir).await;
         true

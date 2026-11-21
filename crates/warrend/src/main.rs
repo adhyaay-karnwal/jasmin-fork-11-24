@@ -2,6 +2,7 @@ mod agent;
 mod api;
 mod fc;
 mod manager;
+mod net;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -20,6 +21,9 @@ struct Cli {
     /// Static guest agent binary copied into every template.
     #[arg(long, env = "WARREN_AGENT", default_value = "/usr/local/lib/warren/warren-agent", global = true)]
     agent: PathBuf,
+    /// Network namespaces kept ready for new sandboxes.
+    #[arg(long, env = "WARREN_NET_POOL", default_value_t = 32, global = true)]
+    net_pool: usize,
     #[command(subcommand)]
     cmd: Cmd,
 }
@@ -53,7 +57,8 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt().with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into())).init();
     let cli = Cli::parse();
     let cfg = manager::Config { data: cli.data, firecracker: cli.firecracker, kernel: cli.kernel, agent_bin: cli.agent };
-    let mgr = manager::Manager::new(cfg, matches!(cli.cmd, Cmd::Serve { .. }))?;
+    let server = matches!(cli.cmd, Cmd::Serve { .. });
+    let mgr = manager::Manager::new(cfg, server, if server { cli.net_pool } else { 0 }).await?;
     match cli.cmd {
         Cmd::Build { name, image, vcpus, mem_mib, prewarm_mib } => {
             let meta = mgr.build_template(&name, &image, vcpus, mem_mib, prewarm_mib).await?;

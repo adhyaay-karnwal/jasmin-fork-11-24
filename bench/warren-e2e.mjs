@@ -85,6 +85,18 @@ check("restored sandboxes do not share RNG state", ra.stdout && ra.stdout !== rb
 r = await exec(a.id, "date +%s");
 check("guest clock synced after restore", Math.abs(Number(r.stdout) - Date.now() / 1000) < 5, r);
 
+const pyNet = (code) => exec(a.id, ["python3", "-c", code], { timeout_ms: 60000 });
+r = await pyNet("import urllib.request as u; print(u.urlopen('https://pypi.org/simple/', timeout=15).status)");
+check("internet: DNS + HTTPS from sandbox", r.stdout.trim() === "200", r);
+r = await exec(a.id, "pip install -q --disable-pip-version-check --root-user-action=ignore six && python3 -c 'import six; print(six.__version__)'", { timeout_ms: 120000 });
+check("pip install works", r.exit_code === 0 && /^\d+\.\d+/.test(r.stdout.trim()), r);
+const blocked = (host, port) =>
+  pyNet(`import socket\ns=socket.socket(); s.settimeout(2)\ntry:\n  s.connect(('${host}', ${port})); print('reachable')\nexcept Exception as e: print('blocked')`);
+r = await blocked("169.254.169.254", 80);
+check("cloud metadata endpoint blocked", r.stdout.trim() === "blocked", r);
+r = await blocked("10.200.0.1", 22);
+check("host services blocked", r.stdout.trim() === "blocked", r);
+
 r = await exec(a.id, "cat /proc/1/comm; uname -r; nproc");
 console.log("guest:", r.stdout.trim().replace(/\n/g, " | "));
 
