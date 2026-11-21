@@ -44,10 +44,16 @@ jobs:
           sudo WARREN_API_KEY=$KEY WARREN_NET_POOL=48 bash -c 'nohup warrend serve > /tmp/warrend.log 2>&1 &'
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.2; done
           curl -fsSL -o /tmp/cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 && chmod +x /tmp/cloudflared
-          nohup /tmp/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:7171 > /tmp/tunnel.log 2>&1 &
-          for i in $(seq 60); do U=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/tunnel.log | head -1); [ -n "$U" ] && break; sleep 1; done
+          # Quick tunnels sometimes take a while to become reachable; insist on it, retrying with a new tunnel.
+          for attempt in 1 2 3; do
+            pkill cloudflared || true; : > /tmp/tunnel.log
+            nohup /tmp/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:7171 > /tmp/tunnel.log 2>&1 &
+            U=""; for i in $(seq 60); do U=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/tunnel.log | head -1); [ -n "$U" ] && break; sleep 1; done
+            ok=0; for i in $(seq 90); do curl -fs "$U/healthz" >/dev/null && ok=$((ok+1)) || ok=0; [ $ok -ge 5 ] && break; sleep 1; done
+            [ $ok -ge 5 ] && break; echo "tunnel attempt $attempt not reachable"; U=""
+          done
+          [ -n "$U" ] || { echo "no reachable tunnel"; exit 1; }
           echo "WARREN_URL=$U" >> $GITHUB_ENV
-          for i in $(seq 60); do curl -fs "$U/healthz" && break; sleep 1; done; echo
           echo "tunnel: $U"
           for i in $(seq 10); do curl -s -o /dev/null -w '%{time_total}\n' "$U/healthz"; done | sort -n | awk '{a[NR]=$1} END {print "tunnel RTT p50 (s):", a[int(NR/2)+1]}'
       - uses: oven-sh/setup-bun@v2
