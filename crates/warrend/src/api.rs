@@ -51,6 +51,7 @@ pub fn router(mgr: Arc<Manager>, api_key: Option<String>) -> Router {
         .route("/v1/sandboxes/{id}/resume", post(resume))
         .route("/v1/sandboxes/{id}/snapshot", post(snapshot))
         .route("/v1/sandboxes/{id}/ports/{port}", axum::routing::any(preview_root))
+        .route("/v1/sandboxes/{id}/ports/{port}/", axum::routing::any(preview_root))
         .route("/v1/sandboxes/{id}/ports/{port}/{*rest}", axum::routing::any(preview))
         .route("/v1/sandboxes/{id}/files", get(read_file).put(write_file))
         .layer(middleware::from_fn_with_state(state.clone(), auth))

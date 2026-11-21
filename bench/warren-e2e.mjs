@@ -165,8 +165,10 @@ console.log(`second pause ${pause2Ms.toFixed(0)} ms`);
 await api("PUT", `/v1/sandboxes/${a.id}/files?path=/workspace/site/index.html`, new TextEncoder().encode("preview-ok\n"));
 await api("PUT", `/v1/sandboxes/${a.id}/files?path=/workspace/wait_port.py`, new TextEncoder().encode(
   "import socket,sys,time\nfor _ in range(200):\n  try: socket.create_connection(('127.0.0.1',int(sys.argv[1])),1); print('up'); break\n  except OSError: time.sleep(0.05)\nelse: print('down')\n"));
-r = await exec(a.id, "cd /workspace/site && setsid nohup python3 -m http.server 3000 --bind 127.0.0.1 > /tmp/http.log 2>&1 < /dev/null & python3 /workspace/wait_port.py 3000; cat /tmp/http.log");
+r = await exec(a.id, "cd /workspace/site && (setsid python3 -u -m http.server 3000 --bind 127.0.0.1 > /tmp/http.log 2>&1 < /dev/null &); python3 /workspace/wait_port.py 3000; cat /tmp/http.log; dmesg | tail -5; free -m | head -2");
 console.log("preview server:", JSON.stringify(r.stdout));
+let pr0 = await fetch(`${URL_}/v1/sandboxes/${a.id}/ports/3000/`, { headers: KEY ? { authorization: `Bearer ${KEY}` } : {} });
+check("preview URL root (trailing slash) is routed", pr0.status === 200, { status: pr0.status });
 let pr = await fetch(`${URL_}/v1/sandboxes/${a.id}/ports/3000/index.html?x=1`, { headers: KEY ? { authorization: `Bearer ${KEY}` } : {} });
 let body = await pr.text();
 check("preview URL proxies HTTP into the sandbox", pr.status === 200 && body.trim() === "preview-ok", { status: pr.status, body });
