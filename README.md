@@ -33,6 +33,31 @@ with Warren().create() as sbx:
 API: `POST /v1/sandboxes`, `POST /v1/sandboxes/{id}/exec`, `GET|PUT /v1/sandboxes/{id}/files?path=`,
 `DELETE /v1/sandboxes/{id}`, `GET|POST /v1/templates`. Optional bearer auth via `WARREN_API_KEY`.
 
+## fairbench: same machine, same image, same limits
+
+[fairbench](bench/fair) runs Warren, Docker (runc), gVisor and Kata Containers on **one host**, with the same
+`node:22-bookworm` image and 2 vCPU / 4 GiB each, in interleaved, randomly ordered rounds, with a workload generated
+from a run-time seed. A system wins a metric only if its 95% CI clears every other system's.
+Latest run ([full table](results/fairbench/run2-2026-11-22.md), 0 failures for every system):
+
+| | Warren | Docker | gVisor | Kata |
+|---|---|---|---|---|
+| create → first command | **87 ms** | 174 | 192 | 3,346 |
+| run a command | **4.1 ms** | 37 | 28 | 34 |
+| held-out agent trace (40 ops) | **673 ms** | 1,273 | 1,310 | 1,540 |
+| 25 sandboxes at once, all ready | **1.6 s** | 2.0 | 2.7 | 25.5 |
+| command latency, noisy neighbours | **9.6 ms** | 87 | 78 | 98 |
+| CPU-bound Python | 109 ms | **74** | 80 | 141 |
+| 500 small fsync'd files | 594 ms | **341** | 454 | 694 |
+| Vite production build | 4.3 s | **2.6** | 4.3 | 4.9 |
+
+Warren wins 9 of 18 metrics outright, mostly lifecycle and agent-loop latency. It loses raw CPU and disk throughput to
+Docker, which shares the host kernel and pays no VM tax. Every number is from one GitHub Actions runner with nested
+virtualization, which inflates the VM tax for Warren and Kata. Against Kata, the other microVM, Warren is ahead on
+every metric except file transfers through the API: the first file operation in a freshly restored VM pays a
+first-touch cost (5.3 ms vs 1.1 ms for the second, measured in CI). Pre-faulting guest memory at restore is the
+planned fix.
+
 ## Results on aisandboxbench's harness
 
 Warren was measured with [aisandboxbench.com](https://aisandboxbench.com)'s own open-source harness
