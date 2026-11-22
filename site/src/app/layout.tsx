@@ -1,31 +1,28 @@
 import type { Metadata } from "next";
-import { Jost, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./jasmine.css";
+import "./site.css";
 
-const jost = Jost({ variable: "--font-jost", subsets: ["latin"], weight: ["400", "500", "700"] });
-// Monospace only inside real code and terminal fragments.
+const sans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Jasmine: open-source sandboxes for AI agents",
+  metadataBase: new URL("https://tryjasmine.dev"),
+  title: "Jasmine: sandboxes for AI agents, ready in 100 ms",
   description:
-    "Firecracker microVM sandboxes restored from memory snapshots: ready in 0.10 s, first on 12 of 25 metrics against 13 providers on aisandboxbench's harness. Self-hosted, Apache-2.0.",
+    "Open-source Firecracker microVM sandboxes restored from memory snapshots. First on 12 of 25 metrics against 13 hosted providers on aisandboxbench's harness. Self-hosted, Apache-2.0.",
   openGraph: {
-    title: "Jasmine: open-source sandboxes for AI agents",
-    description: "Ready in 0.10 s. First on 12 of 25 metrics against 13 providers. Self-hosted, Apache-2.0.",
+    title: "Jasmine: sandboxes for AI agents, ready in 100 ms",
+    description: "Open-source Firecracker microVMs. First on 12 of 25 public benchmarks against 13 hosted providers.",
+    url: "https://tryjasmine.dev",
     type: "website",
   },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${jost.variable} ${mono.variable}`}>
-      <head>
-        {/* Entrance animations only arm when scripts run; without JS everything is visible. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
-      </head>
-      <body>{children}</body>
+    <html lang="en" className={`dark ${sans.variable} ${mono.variable}`}>
+      <body className="min-h-screen font-sans">{children}</body>
     </html>
   );
 }

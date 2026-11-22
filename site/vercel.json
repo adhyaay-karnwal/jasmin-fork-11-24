@@ -3,5 +3,12 @@
   "framework": null,
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
-  "outputDirectory": "out"
+  "outputDirectory": "out",
+  "redirects": [
+    {
+      "source": "/install",
+      "destination": "https://raw.githubusercontent.com/arjunkshah12345-hash/jasmine-sandbox/master/install.sh",
+      "permanent": false
+    }
+  ]
 }

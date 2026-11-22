@@ -9,7 +9,7 @@ and pass the full correctness suite on every push (CI runs real Firecracker on K
 ## Quick start (Linux host with KVM)
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/jasmine-sandbox/master/install.sh | sudo sh
+curl -fsSL https://tryjasmine.dev/install | sudo sh
 sudo jasmined build default python:3.12-slim      # any OCI image becomes a snapshot template
 sudo systemctl enable --now jasmined              # API on http://127.0.0.1:7171
 ```

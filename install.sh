@@ -1,6 +1,6 @@
 #!/bin/sh
 # Install Jasmine on a Linux host with KVM:
-#   curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/jasmine-sandbox/master/install.sh | sudo sh
+#   curl -fsSL https://tryjasmine.dev/install | sudo sh
 # Then: jasmined build default python:3.12-slim && systemctl enable --now jasmined
 set -eu
 REPO=arjunkshah12345-hash/jasmine-sandbox

@@ -1,0 +1,8 @@
+:root {
+  --leaf: #a6e86b;
+  --bud: #f0b7cc;
+}
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+body { background: #070807; color: #e4e4e7; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--leaf); color: #0b0d0a; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

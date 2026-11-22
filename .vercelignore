@@ -1,0 +1,6 @@
+target/
+**/node_modules/
+site/out/
+site/.next/
+site/.taste-skill/
+results/raw-*/

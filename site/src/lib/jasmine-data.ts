@@ -4,8 +4,8 @@ import credits from "@/data/credits.json";
 
 export const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 export const img = (file: string) => `${BASE}/img/${file}`;
-export const REPO = "https://github.com/arjunkshah12345-hash/jasmine";
-export const INSTALL = "curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/jasmine/master/install.sh | sudo sh";
+export const REPO = "https://github.com/arjunkshah12345-hash/jasmine-sandbox";
+export const INSTALL = "curl -fsSL https://tryjasmine.dev/install | sudo sh";
 
 export type Row = {
   provider: string;
