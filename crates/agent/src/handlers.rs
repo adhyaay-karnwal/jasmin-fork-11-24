@@ -55,7 +55,10 @@ fn read_file(mut conn: UnixStream, path: &str) -> io::Result<()> {
         Ok(f) => f,
         Err(e) => return write_frame(&mut conn, kind::ERROR, format!("{path}: {e}").as_bytes()),
     };
-    let mut buf = vec![0u8; CHUNK];
+    // Size the buffer to the file (capped at CHUNK): zeroing a 1 MiB buffer for a
+    // 1 KiB read touches 256 fresh pages, which is expensive under nested virt.
+    let len = f.metadata().map(|m| m.len() as usize).unwrap_or(CHUNK);
+    let mut buf = vec![0u8; len.clamp(4096, CHUNK)];
     loop {
         let n = f.read(&mut buf)?;
         if n == 0 {

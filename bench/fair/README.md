@@ -38,6 +38,9 @@ version, and results from different versions are never compared.
 | `gvisor` | Docker + runsc | user-space kernel (gVisor) |
 | `kata` | Docker + Kata Containers (QEMU) | microVM, own kernel |
 
+gVisor runs with `--overlay2=none` (writes go to the shared disk, not RAM) and `--file-access=shared` (files
+written through the host-side file API are visible inside, which is required for any file API).
+
 Hosted providers can't share hardware with these, so they're out of scope for fairbench by design (see
 `bench/compare` and `integrations/sandbox-sdk` for those).
 

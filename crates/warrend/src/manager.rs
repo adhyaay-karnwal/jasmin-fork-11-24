@@ -200,7 +200,10 @@ impl Manager {
         let size_mib = ((used as f64 * 1.2) as u64 / (1 << 20) + 4096).max(10240);
         let rootfs = dir.join(ROOTFS);
         run(&format!(
-            "truncate -s {size_mib}M {r} && mkfs.ext4 -q -F -L warren -E root_owner=0:0 -d {t} {r}",
+            // No journal: sandbox disks are ephemeral (running sandboxes don't survive a
+            // daemon restart, and paused ones are synced before their snapshot), so the
+            // journal buys no crash safety but doubles metadata writes and slows fsync.
+            "truncate -s {size_mib}M {r} && mkfs.ext4 -q -F -L warren -O ^has_journal -E root_owner=0:0 -d {t} {r}",
             r = shell_quote(&rootfs),
             t = shell_quote(&tree)
         ))

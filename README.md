@@ -73,6 +73,7 @@ services blocked, no sandbox-to-sandbox traffic, and both SDKs.
 | Snapshot safety | Each restore sets the guest clock and injects fresh entropy (`RNDADDENTROPY`) | Sandboxes restored from one snapshot never share RNG state |
 | Per-VM paths | Firecracker runs with cwd in the sandbox dir; snapshot paths are relative | One snapshot restores into many sandboxes at once without path collisions |
 | Network | One network namespace per sandbox holding the same `tap0`/guest IP; NAT to a unique veth; namespaces pre-built and recycled | Snapshot-baked network config works for every restore; no `ip`/`iptables` calls on the create path |
+| Disk format | ext4 without a journal, mounted `noatime` | Sandbox disks are ephemeral: running sandboxes don't survive a daemon restart and paused ones are synced before their snapshot, so a journal adds write amplification and fsync latency without adding safety |
 | Page cache | Template build reads the image's binaries, libraries and runtimes into the guest page cache before snapshotting | First command doesn't pay cold disk reads; pages are shared across sandboxes via the host page cache |
 
 ## Roadmap
