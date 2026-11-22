@@ -11,7 +11,9 @@ use std::io::{self, Read, Write};
 
 pub const AGENT_PORT: u32 = 1024;
 pub const MAX_FRAME: usize = 4 << 20;
-pub const CHUNK: usize = 256 << 10;
+/// Bulk transfer chunk. Larger chunks mean fewer frames, syscalls and VM exits per
+/// byte; 1 MiB stays well under MAX_FRAME.
+pub const CHUNK: usize = 1 << 20;
 
 pub mod kind {
     pub const REQ: u8 = 1;
