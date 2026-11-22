@@ -3,7 +3,7 @@
 Open-source sandboxes for AI agents: hardware-isolated microVMs that create, fork and resume in milliseconds,
 run on any Linux box with KVM, and are measured in public against everyone else.
 
-Website: <https://arjunkshah12345-hash.github.io/jasmine/>. Apache-2.0. Status: early but working end to end. Sandboxes boot, run commands, move files, reach the internet,
+Website: <https://tryjasmine.dev>. Apache-2.0. Status: early but working end to end. Sandboxes boot, run commands, move files, reach the internet,
 and pass the full correctness suite on every push (CI runs real Firecracker on KVM runners).
 
 ## Quick start (Linux host with KVM)
@@ -65,12 +65,12 @@ Jasmine was measured with [aisandboxbench.com](https://aisandboxbench.com)'s own
 over the public internet. Against the 13 providers published there on 2026-11-21, Jasmine's median ranks
 **first on 12 of 25 metrics**:
 
-- **Start-up:** cold start (0.094 s vs 0.376 s best), run a command, reconnect.
+- **Start-up:** cold start (0.10 s vs 0.38 s best), run a command, reconnect.
 - **Agent work:** agent tool replay (4.3 s vs 10.9 s), git clone, dev server ready, preview URL first byte,
   edit loop, 10 MB file round trip.
 - **Pause and snapshots:** pause + resume (0.42 s vs 0.73 s), take snapshot, start from snapshot (0.10 s vs 0.55 s).
 
-It is weaker on 25-at-once bursts (7th–9th), npm install (11th), memory bandwidth and disk write (12th of 14).
+It is weaker on 25-at-once bursts (7th of 13), npm install (11th), memory bandwidth and disk write (12th of 14).
 There were 0 failures across about 2,700 observations, including 210 burst creates.
 
 **These are self-run results, not an aisandboxbench.com listing.** The client location (Iowa via a Cloudflare
