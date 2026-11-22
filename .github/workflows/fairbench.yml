@@ -74,7 +74,8 @@ jobs:
       - name: Diagnostics
         if: always()
         run: |
-          sudo grep -E "WARN|ERROR" /tmp/warrend.log | tail -20 || true
+          echo "Warren VMM start-up retries: $(sudo grep -c 'VMM died during start-up' /tmp/warrend.log || true)" | tee /tmp/fairbench.retries.txt
+          sudo grep -E "WARN|ERROR" /tmp/warrend.log | grep -v "VMM died" | tail -20 || true
           sudo dmesg | grep -iE "oom|killed process" | tail -10 || true
       - uses: actions/upload-artifact@v4
         if: always()

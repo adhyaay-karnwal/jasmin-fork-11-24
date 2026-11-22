@@ -202,8 +202,21 @@ function hostMem() {
   return { available: med("available"), used: med("used") };
 }
 
+// Wait until host memory stops moving (earlier phases' background cleanup must
+// not leak into this measurement): two consecutive readings within 16 MiB.
+async function settledHostMem() {
+  let prev = hostMem();
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const cur = hostMem();
+    if (Math.abs(cur.used - prev.used) < 16 && Math.abs(cur.available - prev.available) < 16) return cur;
+    prev = cur;
+  }
+  return prev;
+}
+
 async function density(sys) {
-  const before = hostMem();
+  const before = await settledHostMem();
   const hs = [];
   try {
     for (let i = 0; i < CFG.densityN; i++) {
@@ -211,8 +224,7 @@ async function density(sys) {
       hs.push(h);
       await must(sys, h, "true");
     }
-    await new Promise((r) => setTimeout(r, 5000));
-    const after = hostMem();
+    const after = await settledHostMem();
     rec(sys.name, "idle_mem_used_per_sandbox_mib", (after.used - before.used) / CFG.densityN);
     return (before.available - after.available) / CFG.densityN;
   } finally {

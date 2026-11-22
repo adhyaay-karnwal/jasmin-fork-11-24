@@ -41,6 +41,8 @@ pub struct CreateTimings {
     pub restore_ms: f64,
     pub agent_ready_ms: f64,
     pub total_ms: f64,
+    /// VMM start-up attempts this create needed (1 = no retry).
+    pub attempts: u32,
 }
 
 pub struct Sandbox {
@@ -291,13 +293,24 @@ impl Manager {
         let dir = self.cfg.data.join("sandboxes").join(&id);
         std::fs::create_dir_all(&dir)?;
 
-        let (vm, slot, timings) = match self.restore_into(&dir, &tdir.join(ROOTFS), &tdir.join("vm.snap"), &tdir.join("mem.snap")).await {
-            Ok(v) => v,
-            Err(e) => {
-                let _ = std::fs::remove_dir_all(&dir);
-                return Err(e);
+        // A VMM can die during start-up for host reasons outside our control (e.g.
+        // KVM_EXIT_FAIL_ENTRY under nested virtualization). Retry with a fresh VMM
+        // and slot rather than failing the user's create; every retry is logged.
+        let mut attempt = 1u32;
+        let (vm, slot, mut timings) = loop {
+            match self.restore_into(&dir, &tdir.join(ROOTFS), &tdir.join("vm.snap"), &tdir.join("mem.snap")).await {
+                Ok(v) => break v,
+                Err(e) if attempt < 3 && format!("{e:#}").contains("vmm exited: Some(") => {
+                    tracing::warn!(sandbox = %id, attempt, "VMM died during start-up, retrying: {e:#}");
+                    attempt += 1;
+                }
+                Err(e) => {
+                    let _ = std::fs::remove_dir_all(&dir);
+                    return Err(e);
+                }
             }
         };
+        timings.attempts = attempt;
         let sbx = Arc::new(Sandbox {
             id: id.clone(),
             template: template.into(),
@@ -374,6 +387,7 @@ impl Manager {
                     restore_ms: ms(t3 - t2),
                     agent_ready_ms: ms(t4 - t3),
                     total_ms: ms(t4 - t0),
+                    attempts: 1,
                 },
             ))
         }
