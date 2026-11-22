@@ -89,6 +89,17 @@ jobs:
           echo -n "GET 1KiB  "; t curl -s -o /dev/null -w '%{time_total}\n' "$U/v1/sandboxes/$id/files?path=/workspace/x"
           echo -n "exec true "; t curl -s -o /dev/null -w '%{time_total}\n' -H "$J" -d '{"cmd":["true"]}' "$U/v1/sandboxes/$id/exec"
           echo -n "GET sbx   "; t curl -s -o /dev/null -w '%{time_total}\n' "$U/v1/sandboxes/$id"
+          echo "first vs second 1 KiB write+read on fresh sandboxes (ms):"
+          for n in 1 2 3 4 5; do
+            s=$(curl -fs -XPOST $U/v1/sandboxes -H "$J" -d '{}' | jq -r .id)
+            curl -fs -o /dev/null -H "$J" -d '{"cmd":["true"]}' "$U/v1/sandboxes/$s/exec"
+            for k in first second; do
+              a=$(curl -s -o /dev/null -w '%{time_total}' -X PUT --data-binary @/tmp/1k "$U/v1/sandboxes/$s/files?path=/workspace/rt-$k.bin")
+              b=$(curl -s -o /dev/null -w '%{time_total}' "$U/v1/sandboxes/$s/files?path=/workspace/rt-$k.bin")
+              echo "  $k: put ${a}s get ${b}s"
+            done
+            curl -fs -XDELETE "$U/v1/sandboxes/$s"
+          done
       - name: Guest network/process probe
         if: always()
         run: |
