@@ -71,10 +71,16 @@ impl Vm {
             .with_context(|| format!("{method} {path}; console: {}", self.console_tail()))
     }
 
+    /// Last ~1500 chars of the VMM's console/log, minus known-benign noise
+    /// (vCPU resume notices, unhandled legacy port I/O), so real errors survive.
     pub fn console_tail(&self) -> String {
         let s = std::fs::read_to_string(self.dir.join("console.log")).unwrap_or_default();
-        let tail: String = s.chars().rev().take(1500).collect::<String>().chars().rev().collect();
-        tail
+        let kept: Vec<&str> = s
+            .lines()
+            .filter(|l| !l.contains("immediate_exit") && !l.contains("IO read @") && !l.contains("IO write @") && !l.trim().is_empty())
+            .collect();
+        let joined = kept.join("\n");
+        joined.chars().rev().take(1500).collect::<String>().chars().rev().collect()
     }
 
     pub async fn kill(mut self) {

@@ -359,7 +359,7 @@ impl Manager {
                         vm.kill().await;
                         return Err(e.context(format!(
                             "agent not ready after restore; vmm exited: {exited:?}; console: {}",
-                            console.chars().rev().take(600).collect::<String>().chars().rev().collect::<String>()
+                            console
                         )));
                     }
                 }

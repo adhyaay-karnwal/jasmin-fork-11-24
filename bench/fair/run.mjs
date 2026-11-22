@@ -30,7 +30,7 @@ const CFG = {
   heavyRounds: Number(arg("heavy-rounds", 5)),
   bursts: arg("bursts", "1,5,10,25").split(",").map(Number),
   burstCohorts: Number(arg("burst-cohorts", 3)),
-  densityN: Number(arg("density", 10)),
+  densityN: Number(arg("density", 20)),
   // Chosen at run time unless pinned, so nobody can tune for the exact trace.
   seed: Number(arg("seed", Math.floor(Math.random() * 2 ** 31))),
 };
@@ -186,14 +186,24 @@ async function burst(sys, k) {
   return wall;
 }
 
-function memAvailableMiB() {
-  execSync("sync; echo 3 > /proc/sys/vm/drop_caches");
-  const m = readFileSync("/proc/meminfo", "utf8").match(/MemAvailable:\s+(\d+)/);
-  return Number(m[1]) / 1024;
+// Host memory, after dropping clean caches; median of 3 readings to damp noise.
+// available: what the kernel could still hand out (clean file pages, e.g. a
+//   shared snapshot, count as reclaimable). used: MemTotal - MemFree (counts
+//   every resident page, shared ones once). Both are reported.
+function hostMem() {
+  const reads = [];
+  for (let i = 0; i < 3; i++) {
+    execSync("sync; echo 3 > /proc/sys/vm/drop_caches; sleep 0.5");
+    const t = readFileSync("/proc/meminfo", "utf8");
+    const g = (k) => Number(t.match(new RegExp(`${k}:\\s+(\\d+)`))[1]) / 1024;
+    reads.push({ available: g("MemAvailable"), used: g("MemTotal") - g("MemFree") });
+  }
+  const med = (k) => reads.map((r) => r[k]).sort((a, b) => a - b)[1];
+  return { available: med("available"), used: med("used") };
 }
 
 async function density(sys) {
-  const before = memAvailableMiB();
+  const before = hostMem();
   const hs = [];
   try {
     for (let i = 0; i < CFG.densityN; i++) {
@@ -202,7 +212,9 @@ async function density(sys) {
       await must(sys, h, "true");
     }
     await new Promise((r) => setTimeout(r, 5000));
-    return (before - memAvailableMiB()) / CFG.densityN;
+    const after = hostMem();
+    rec(sys.name, "idle_mem_used_per_sandbox_mib", (after.used - before.used) / CFG.densityN);
+    return (before.available - after.available) / CFG.densityN;
   } finally {
     await Promise.allSettled(hs.map((h) => sys.destroy(h)));
   }
@@ -277,7 +289,7 @@ for (let c = 0; c < CFG.burstCohorts; c++)
   for (const k of CFG.bursts)
     for (const sys of shuffle(systems, rng(CFG.seed ^ (c * 104729 + k)))) await timed(sys, `burst_${k}_all_ready_ms`, () => burst(sys, k));
 console.log("bursts done");
-for (const sys of shuffle(systems, rng(CFG.seed + 1))) await timed(sys, "idle_mem_per_sandbox_mib", () => density(sys));
+for (const sys of shuffle(systems, rng(CFG.seed + 1))) await timed(sys, "idle_mem_available_drop_per_sandbox_mib", () => density(sys));
 for (const sys of shuffle(systems, rng(CFG.seed + 2)))
   try {
     for (const x of await noisy(sys)) rec(sys.name, "exec_under_neighbor_load_ms", x);

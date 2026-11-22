@@ -9,6 +9,7 @@ on:
       heavy_rounds: { description: "rounds that include the heavy tasks", default: "5" }
       systems: { description: "systems", default: "warren,docker,gvisor,kata" }
       warren_ref: { description: "git ref of Warren to build (A/B runs)", default: "" }
+      extra: { description: "extra run.mjs flags", default: "" }
 
 jobs:
   fairbench:
@@ -40,7 +41,7 @@ jobs:
           done
           SHIM=$(sudo find /opt/kata -name containerd-shim-kata-v2 -type f | head -1); echo "kata shim: $SHIM"
           [ -n "$SHIM" ] && sudo ln -sf "$SHIM" /usr/local/bin/containerd-shim-kata-v2
-          echo '{"runtimes":{"runsc":{"path":"/usr/bin/runsc"},"kata":{"runtimeType":"io.containerd.kata.v2"}}}' | sudo tee /etc/docker/daemon.json
+          echo '{"runtimes":{"runsc":{"path":"/usr/bin/runsc","runtimeArgs":["--overlay2=none"]},"kata":{"runtimeType":"io.containerd.kata.v2"}}}' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker
           docker info --format '{{json .Runtimes}}'
           sudo chmod 666 /dev/kvm
@@ -58,7 +59,7 @@ jobs:
           sudo -E env "PATH=$PATH" node bench/fair/run.mjs \
             --systems "${{ inputs.systems || 'warren,docker,gvisor,kata' }}" \
             --rounds "${{ inputs.rounds || '15' }}" --heavy-rounds "${{ inputs.heavy_rounds || '5' }}" \
-            --out /tmp/fairbench.json
+            --out /tmp/fairbench.json ${{ inputs.extra }}
       - name: Diagnostics
         if: always()
         run: |

@@ -56,7 +56,7 @@ Hosted providers can't share hardware with these, so they're out of scope for fa
 | `task_node_build_ms` | upload a Vite + React app, `npm ci`, `vite build` |
 | `destroy_ms` | destroy call |
 | `burst_K_all_ready_ms` | K sandboxes created at once, until all have finished a command (K = 1, 5, 10, 25) |
-| `idle_mem_per_sandbox_mib` | host `MemAvailable` drop per idle sandbox (10 sandboxes, caches dropped before and after) |
+| `idle_mem_available_drop_per_sandbox_mib`, `idle_mem_used_per_sandbox_mib` | host memory per idle sandbox (20 sandboxes, caches dropped, median of 3 readings): `MemAvailable` drop, and `MemTotal - MemFree` growth |
 | `exec_under_neighbor_load_ms` | `true` latency in one sandbox while 3 neighbors saturate their CPUs |
 
 Heavy tasks run in the first `--heavy-rounds` rounds; everything else runs every round.
