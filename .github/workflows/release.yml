@@ -22,15 +22,15 @@ jobs:
           sudo apt-get -qq update && sudo apt-get -qq install -y musl-tools
           T=${{ matrix.arch }}-unknown-linux-musl
           rustup target add $T
-          cargo build -q --release --target $T -p warren-agent -p warrend
-          D=warren-${GITHUB_REF_NAME}-${{ matrix.arch }}-linux
+          cargo build -q --release --target $T -p azami-agent -p azamid
+          D=azami-${GITHUB_REF_NAME}-${{ matrix.arch }}-linux
           mkdir -p $D
-          cp target/$T/release/warrend target/$T/release/warren-agent $D/
-          cp dev/setup-host.sh dev/warrend.service LICENSE README.md $D/
+          cp target/$T/release/azamid target/$T/release/azami-agent $D/
+          cp dev/setup-host.sh dev/azamid.service LICENSE README.md $D/
           tar -czf $D.tar.gz $D && sha256sum $D.tar.gz > $D.tar.gz.sha256
-          file $D/warrend $D/warren-agent
+          file $D/azamid $D/azami-agent
       - uses: actions/upload-artifact@v4
-        with: { name: "${{ matrix.arch }}", path: "warren-*.tar.gz*" }
+        with: { name: "${{ matrix.arch }}", path: "azami-*.tar.gz*" }
 
   publish:
     needs: build
@@ -40,4 +40,4 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { merge-multiple: true }
       - env: { GH_TOKEN: "${{ github.token }}" }
-        run: gh release create "$GITHUB_REF_NAME" warren-*.tar.gz* --repo "$GITHUB_REPOSITORY" --generate-notes --title "Warren $GITHUB_REF_NAME"
+        run: gh release create "$GITHUB_REF_NAME" azami-*.tar.gz* --repo "$GITHUB_REPOSITORY" --generate-notes --title "Azami $GITHUB_REF_NAME"

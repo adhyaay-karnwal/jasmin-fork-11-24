@@ -17,7 +17,7 @@ const systems = Object.entries(fairbench.systems as Record<string, { isolation: 
   .filter(([, s]) => s.available)
   .map(([name, s]) => ({ name, ...s }));
 
-const COLORS: Record<string, KitColor> = { warren: "orange", docker: "grey", gvisor: "blue", kata: "purple" };
+const COLORS: Record<string, KitColor> = { azami: "orange", docker: "grey", gvisor: "blue", kata: "purple" };
 
 const CHARTS: { id: string; title: string; note: string }[] = [
   { id: "ready_ms", title: "Create → first command", note: "ms, lower is better" },
@@ -88,7 +88,7 @@ export function FairbenchSection() {
                 x="system"
                 series={[{ label: c.note, value: "value", color: "orange" }]}
                 height={180}
-                highlight={data.findIndex((d) => d.system === "warren")}
+                highlight={data.findIndex((d) => d.system === "azami")}
                 format={(v: number) => fmt(v)}
               />
               <p className="mt-3 font-mono text-[11px] text-muted-foreground">
@@ -156,7 +156,7 @@ export function FairbenchSection() {
       <p className="mt-4 text-xs text-muted-foreground">
         Host: {fairbench.host.cpu}, {fairbench.host.cpus} CPUs, nested virtualization (a GitHub Actions runner). Seed {fairbench.seed},{" "}
         {fairbench.rounds} rounds. Every sample is in the repo:{" "}
-        <a className="underline underline-offset-4" href="https://github.com/arjunkshah12345-hash/warren/tree/master/bench/fair">bench/fair</a>.
+        <a className="underline underline-offset-4" href="https://github.com/arjunkshah12345-hash/azami/tree/master/bench/fair">bench/fair</a>.
       </p>
     </section>
   );

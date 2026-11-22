@@ -1,9 +1,9 @@
-"""Warren Python SDK. Standard library only.
+"""Azami Python SDK. Standard library only.
 
-    from warren import Warren
+    from azami import Azami
 
-    warren = Warren()  # $WARREN_URL / $WARREN_API_KEY, default http://127.0.0.1:7171
-    with warren.create() as sbx:
+    azami = Azami()  # $AZAMI_URL / $AZAMI_API_KEY, default http://127.0.0.1:7171
+    with azami.create() as sbx:
         r = sbx.exec("python3 -c 'print(6*7)'")
         print(r.stdout)  # "42\\n"
 """
@@ -18,11 +18,11 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Optional, Sequence, Union
 
-__all__ = ["Warren", "Sandbox", "ExecResult", "WarrenError"]
+__all__ = ["Azami", "Sandbox", "ExecResult", "AzamiError"]
 __version__ = "0.1.0"
 
 
-class WarrenError(Exception):
+class AzamiError(Exception):
     def __init__(self, message: str, status: int):
         super().__init__(message)
         self.status = status
@@ -43,10 +43,10 @@ class ExecResult:
         return self.exit_code == 0
 
 
-class Warren:
+class Azami:
     def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None, timeout: float = 300.0):
-        self.url = (url or os.environ.get("WARREN_URL") or "http://127.0.0.1:7171").rstrip("/")
-        self.api_key = api_key or os.environ.get("WARREN_API_KEY")
+        self.url = (url or os.environ.get("AZAMI_URL") or "http://127.0.0.1:7171").rstrip("/")
+        self.api_key = api_key or os.environ.get("AZAMI_API_KEY")
         self.timeout = timeout
 
     def _request(self, method: str, path: str, body: Any = None, raw: bool = False) -> Any:
@@ -72,7 +72,7 @@ class Warren:
                 msg = json.loads(msg).get("error", msg)
             except ValueError:
                 pass
-            raise WarrenError(f"{method} {path}: {msg}", e.code) from None
+            raise AzamiError(f"{method} {path}: {msg}", e.code) from None
 
     def create(self, template: str = "default") -> "Sandbox":
         r = self._request("POST", "/v1/sandboxes", {"template": template})
@@ -97,7 +97,7 @@ class Warren:
 
 @dataclass
 class Sandbox:
-    client: Warren
+    client: Azami
     id: str
     template: str
     timings: Optional[dict] = field(default=None, repr=False)
@@ -133,7 +133,7 @@ class Sandbox:
     def delete(self) -> None:
         try:
             self.client._request("DELETE", self._base)
-        except WarrenError as e:
+        except AzamiError as e:
             if e.status != 404:
                 raise
 

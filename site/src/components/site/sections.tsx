@@ -5,15 +5,15 @@ import { ServerRack } from "@/components/asciicn/server-rack";
 import { StatusDot } from "@/components/asciicn/status-dot";
 import asb from "@/data/aisandboxbench.json";
 
-const REPO = "https://github.com/arjunkshah12345-hash/warren";
+const REPO = "https://github.com/arjunkshah12345-hash/azami";
 
 const SCRIPT: TerminalStep[] = [
-  { kind: "command", text: "curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/warren/master/install.sh | sudo sh" },
+  { kind: "command", text: "curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/azami/master/install.sh | sudo sh" },
   { kind: "task", text: "firecracker, guest kernel, xfs reflink store", duration: 1.2, result: "ok", done: "host ready" },
-  { kind: "command", text: "warrend build default python:3.12-slim" },
+  { kind: "command", text: "azamid build default python:3.12-slim" },
   { kind: "progress", label: "pull → ext4 → boot → snapshot", duration: 1.6 },
   { kind: "output", text: "template default ready (snapshot taken after boot)", tone: "ok" },
-  { kind: "command", text: "systemctl enable --now warrend" },
+  { kind: "command", text: "systemctl enable --now azamid" },
   { kind: "command", text: "node agent.mjs" },
   { kind: "output", text: "sandbox sbx_9f3a… ready", tone: "info" },
   { kind: "output", text: "> python3 -c 'print(6*7)'" },
@@ -21,9 +21,9 @@ const SCRIPT: TerminalStep[] = [
   { kind: "wait", duration: 2 },
 ];
 
-const SDK = `import { Warren } from "@warren/sdk";
+const SDK = `import { Azami } from "azami-sdk";
 
-await using sbx = await new Warren().create();
+await using sbx = await new Azami().create();
 const r = await sbx.exec("python3 -c 'print(6*7)'");
 console.log(r.stdout); // 42
 
@@ -46,7 +46,7 @@ export function InstallSection() {
           <a className="underline underline-offset-4" href="https://github.com/opencoredev/sandbox-sdk">sandbox-sdk</a>
         </p>
       </div>
-      <TerminalWindow title="~/warren — zsh" script={SCRIPT} rows={16} size="md" className="self-start" />
+      <TerminalWindow title="~/azami — zsh" script={SCRIPT} rows={16} size="md" className="self-start" />
     </section>
   );
 }
@@ -58,7 +58,7 @@ const FEATURES: [string, string][] = [
   ["Pause to disk", "Suspend an idle sandbox to free its memory and CPU; exec and file calls resume it automatically with memory intact."],
   ["Preview URLs", "Any port inside a sandbox is reachable at /v1/sandboxes/:id/ports/:port, proxied over vsock. Dev servers just work."],
   ["Locked-down egress", "Internet access through NAT per sandbox, with the cloud metadata endpoint, the host and other sandboxes blocked."],
-  ["No shared randomness", "Restoring one snapshot many times must not clone RNG state: Warren injects fresh entropy and the guest reseeds via VMGenID."],
+  ["No shared randomness", "Restoring one snapshot many times must not clone RNG state: Azami injects fresh entropy and the guest reseeds via VMGenID."],
   ["Verified on every push", "34 end-to-end checks against real microVMs in CI, including byte-exact memory after snapshot, fork and pause cycles."],
 ];
 
@@ -80,7 +80,7 @@ export function Features() {
   );
 }
 
-type Row = { id: string; label: string; unit: string; warren: number; rank: number; of: number; best: { provider: string; median: number } };
+type Row = { id: string; label: string; unit: string; azami: number; rank: number; of: number; best: { provider: string; median: number } };
 
 export function AisandboxbenchSection() {
   const rows = (asb.rows as Row[]).slice().sort((a, b) => a.rank - b.rank);
@@ -92,7 +92,7 @@ export function AisandboxbenchSection() {
         First on {asb.wins} of {asb.measured} metrics on aisandboxbench&apos;s own harness.
       </h2>
       <p className="mt-4 max-w-2xl text-muted-foreground">
-        We ran Warren through <a className="underline underline-offset-4" href="https://aisandboxbench.com">aisandboxbench.com</a>&apos;s
+        We ran Azami through <a className="underline underline-offset-4" href="https://aisandboxbench.com">aisandboxbench.com</a>&apos;s
         open-source harness with its published flags, over the public internet, and ranked it against the 13 providers on its
         same-machine track. Self-run, not a listing: the client location and hardware differ from theirs, and the weak rows are
         included.
@@ -102,7 +102,7 @@ export function AisandboxbenchSection() {
           <thead className="text-muted-foreground">
             <tr className="border-b border-border">
               <th className="p-3 font-normal">metric</th>
-              <th className="p-3 font-normal">warren</th>
+              <th className="p-3 font-normal">azami</th>
               <th className="p-3 font-normal">rank</th>
               <th className="p-3 font-normal">best published</th>
             </tr>
@@ -111,7 +111,7 @@ export function AisandboxbenchSection() {
             {rows.map((r) => (
               <tr key={r.id} className="border-b border-border/60 last:border-0">
                 <td className="p-3 text-muted-foreground">{r.label}</td>
-                <td className={`p-3 ${r.rank === 1 ? "text-orange-400" : ""}`}>{f(r.warren, r.unit)}</td>
+                <td className={`p-3 ${r.rank === 1 ? "text-orange-400" : ""}`}>{f(r.azami, r.unit)}</td>
                 <td className="p-3">{r.rank} of {r.of}</td>
                 <td className="p-3 text-muted-foreground">{r.best.provider} {f(r.best.median, r.unit)}</td>
               </tr>
@@ -125,7 +125,7 @@ export function AisandboxbenchSection() {
 
 export function HowItWorks() {
   const steps = [
-    ["build", "An OCI image becomes an ext4 disk. Warren boots it once, warms the page cache with the image's binaries and runtimes, and snapshots memory + CPU state."],
+    ["build", "An OCI image becomes an ext4 disk. Azami boots it once, warms the page cache with the image's binaries and runtimes, and snapshots memory + CPU state."],
     ["create", "A reflink clone of the disk (O(1)), a Firecracker process in a pre-built network namespace, and a lazy restore of the snapshot's memory. Fresh clock and entropy, then the agent answers."],
     ["run", "A 1 MB static agent is PID 1 inside the VM. Exec, files and port forwarding go over vsock in a binary protocol; no SSH, no shell server."],
     ["fork / pause", "Dirty pages since the last restore are written and merged onto a reflinked base, so snapshots and pauses cost what changed, not what's allocated."],
@@ -157,7 +157,7 @@ export function Footer() {
     <footer className="mt-12 border-t border-border">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-12 text-sm text-muted-foreground md:flex-row md:justify-between">
         <div>
-          <p className="font-mono text-foreground">warren</p>
+          <p className="font-mono text-foreground">azami</p>
           <p className="mt-2">Open-source sandboxes for AI agents. Apache-2.0.</p>
         </div>
         <div className="max-w-md">
@@ -169,7 +169,7 @@ export function Footer() {
             <a className="underline underline-offset-4" href="https://aisandboxbench.com">aisandboxbench</a>&apos;s harness by{" "}
             <a className="underline underline-offset-4" href="https://x.com/leodev">@leodev</a>.
           </p>
-          <p className="mt-3"><a className="text-foreground underline underline-offset-4" href={REPO}>github.com/arjunkshah12345-hash/warren</a></p>
+          <p className="mt-3"><a className="text-foreground underline underline-offset-4" href={REPO}>github.com/arjunkshah12345-hash/azami</a></p>
         </div>
       </div>
     </footer>

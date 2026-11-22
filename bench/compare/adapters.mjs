@@ -3,19 +3,19 @@
 // Interface: { name, available(), endpoint, create() -> handle, exec(h, cmd) -> {exitCode, stdout},
 //              write(h, path, bytes), read(h, path) -> bytes, destroy(h) }
 
-import { Warren } from "../../sdk/typescript/dist/index.js";
+import { Azami } from "../../sdk/typescript/dist/index.js";
 
 export const adapters = {
-  warren: {
-    name: "warren",
+  azami: {
+    name: "azami",
     available: () => true,
-    endpoint: () => process.env.WARREN_URL ?? "http://127.0.0.1:7171",
+    endpoint: () => process.env.AZAMI_URL ?? "http://127.0.0.1:7171",
     isolation: "Firecracker microVM",
     async init() {
-      this.client = new Warren();
+      this.client = new Azami();
     },
     create() {
-      return this.client.create({ template: process.env.WARREN_TEMPLATE ?? "default" });
+      return this.client.create({ template: process.env.AZAMI_TEMPLATE ?? "default" });
     },
     async exec(s, cmd) {
       const r = await s.exec(cmd, { timeoutMs: 600_000 });

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// End-to-end correctness checks + micro-benchmarks against a running warrend.
+// End-to-end correctness checks + micro-benchmarks against a running azamid.
 // Timings are measured here, on the client, over the public HTTP API.
 //
-//   WARREN_URL=http://127.0.0.1:7171 node bench/warren-e2e.mjs [--samples 100] [--burst 20] [--out results.json]
+//   AZAMI_URL=http://127.0.0.1:7171 node bench/azami-e2e.mjs [--samples 100] [--burst 20] [--out results.json]
 
 import { writeFileSync } from "node:fs";
 
-const URL_ = process.env.WARREN_URL ?? "http://127.0.0.1:7171";
-const KEY = process.env.WARREN_API_KEY;
-const TEMPLATE = process.env.WARREN_TEMPLATE ?? "default";
+const URL_ = process.env.AZAMI_URL ?? "http://127.0.0.1:7171";
+const KEY = process.env.AZAMI_API_KEY;
+const TEMPLATE = process.env.AZAMI_TEMPLATE ?? "default";
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);
   return i > 0 ? process.argv[i + 1] : d;

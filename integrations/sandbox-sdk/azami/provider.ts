@@ -1,6 +1,6 @@
-// Warren adapter for @opencoredev/sandbox-sdk: a thin REST client for warrend.
-// Lives in the Warren repo; integrations/sandbox-sdk/apply.py copies it into a
-// sandbox-sdk checkout as packages/sdk/src/providers/warren.
+// Azami adapter for @opencoredev/sandbox-sdk: a thin REST client for azamid.
+// Lives in the Azami repo; integrations/sandbox-sdk/apply.py copies it into a
+// sandbox-sdk checkout as packages/sdk/src/providers/azami.
 
 import {
   SandboxError,
@@ -16,12 +16,12 @@ import {
   type SandboxInfo,
 } from "../../provider.js";
 
-export type WarrenCapability = "pause" | "snapshot" | "snapshot-delete" | "size";
+export type AzamiCapability = "pause" | "snapshot" | "snapshot-delete" | "size";
 
-export interface WarrenOptions {
-  /** warrend base URL. Defaults to $WARREN_URL, then http://127.0.0.1:7171. */
+export interface AzamiOptions {
+  /** azamid base URL. Defaults to $AZAMI_URL, then http://127.0.0.1:7171. */
   url?: string;
-  /** Bearer token. Defaults to $WARREN_API_KEY. */
+  /** Bearer token. Defaults to $AZAMI_API_KEY. */
   apiKey?: string;
   /** Template for new sandboxes (a size request picks `<template>-<cpu>x<mem>`). */
   template?: string;
@@ -29,12 +29,12 @@ export interface WarrenOptions {
   [option: string]: unknown;
 }
 
-export interface WarrenNative {
+export interface AzamiNative {
   id: string;
   url: string;
 }
 
-export type WarrenProvider = Provider<WarrenNative, WarrenCapability>;
+export type AzamiProvider = Provider<AzamiNative, AzamiCapability>;
 
 interface WireSandbox {
   id: string;
@@ -48,15 +48,15 @@ const env = (k: string): string | undefined => (globalThis as { process?: { env:
 
 const presets = { small: { cpu: 1, memoryMb: 1024 }, medium: { cpu: 2, memoryMb: 4096 }, large: { cpu: 4, memoryMb: 8192 } } as const;
 
-export function createWarrenProvider(options: WarrenOptions = {}): WarrenProvider {
-  const base = (options.url ?? env("WARREN_URL") ?? "http://127.0.0.1:7171").replace(/\/$/, "");
-  const apiKey = options.apiKey ?? env("WARREN_API_KEY");
-  const template = options.template ?? env("WARREN_TEMPLATE") ?? "default";
+export function createAzamiProvider(options: AzamiOptions = {}): AzamiProvider {
+  const base = (options.url ?? env("AZAMI_URL") ?? "http://127.0.0.1:7171").replace(/\/$/, "");
+  const apiKey = options.apiKey ?? env("AZAMI_API_KEY");
+  const template = options.template ?? env("AZAMI_TEMPLATE") ?? "default";
   const doFetch = options.fetch ?? fetch;
   const auth: Record<string, string> = apiKey ? { authorization: `Bearer ${apiKey}` } : {};
 
   const fail = (message: string, code: ErrorCode, extra: { sandboxId?: string; retryable?: boolean; cause?: unknown } = {}) =>
-    new SandboxError(message, { code, provider: "warren", ...extra });
+    new SandboxError(message, { code, provider: "azami", ...extra });
 
   async function call(method: string, path: string, body?: unknown, opts: { raw?: boolean; signal?: AbortSignal; sandboxId?: string } = {}) {
     const headers: Record<string, string> = { ...auth };
@@ -72,7 +72,7 @@ export function createWarrenProvider(options: WarrenOptions = {}): WarrenProvide
     } catch (cause) {
       if (opts.signal?.aborted) throw fail("Request aborted", "aborted", { cause, sandboxId: opts.sandboxId });
       const why = cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause);
-      throw fail(`warrend unreachable at ${base} (${method} ${path}): ${why}`, "unavailable", { cause, retryable: true, sandboxId: opts.sandboxId });
+      throw fail(`azamid unreachable at ${base} (${method} ${path}): ${why}`, "unavailable", { cause, retryable: true, sandboxId: opts.sandboxId });
     }
     if (!res.ok) {
       let msg = await res.text();
@@ -114,11 +114,11 @@ op,p=sys.argv[1],sys.argv[2]
 try:
   if op=='stat': print(json.dumps(info(p)))
   else: print(json.dumps([info(os.path.join(p,n)) for n in sorted(os.listdir(p))]))
-except FileNotFoundError: print('WARREN_NOT_FOUND')`;
+except FileNotFoundError: print('AZAMI_NOT_FOUND')`;
 
   async function meta(id: string, op: "stat" | "list", path: string): Promise<unknown> {
     const r = await run(id, `python3 -c ${q(META)} ${op} ${q(path)}`);
-    if (r.stdout.trim() === "WARREN_NOT_FOUND") throw fail(`no such file: ${path}`, "file_not_found", { sandboxId: id });
+    if (r.stdout.trim() === "AZAMI_NOT_FOUND") throw fail(`no such file: ${path}`, "file_not_found", { sandboxId: id });
     if (r.exit_code !== 0) throw fail(`${op} ${path}: ${r.stderr.trim()}`, "provider", { sandboxId: id });
     return JSON.parse(r.stdout);
   }
@@ -143,8 +143,8 @@ except FileNotFoundError: print('WARREN_NOT_FOUND')`;
     list: async (id, path) => (await meta(id, "list", path)) as FileInfo[],
     stat: async (id, path) => (await meta(id, "stat", path)) as FileInfo,
     async remove(id, path, opts) {
-      const r = await run(id, `test -e ${q(path)} || test -L ${q(path)} || { echo WARREN_NOT_FOUND; exit 0; }; rm ${opts.recursive ? "-rf" : "-f"} ${q(path)} 2>&1 || rmdir ${q(path)}`);
-      if (r.stdout.trim() === "WARREN_NOT_FOUND") throw fail(`no such file: ${path}`, "file_not_found", { sandboxId: id });
+      const r = await run(id, `test -e ${q(path)} || test -L ${q(path)} || { echo AZAMI_NOT_FOUND; exit 0; }; rm ${opts.recursive ? "-rf" : "-f"} ${q(path)} 2>&1 || rmdir ${q(path)}`);
+      if (r.stdout.trim() === "AZAMI_NOT_FOUND") throw fail(`no such file: ${path}`, "file_not_found", { sandboxId: id });
       if (r.exit_code !== 0) throw fail(`remove ${path}: ${r.stdout}${r.stderr}`, "provider", { sandboxId: id });
     },
     async mkdir(id, path) {
@@ -153,10 +153,10 @@ except FileNotFoundError: print('WARREN_NOT_FOUND')`;
     },
   };
 
-  const provider: WarrenProvider = {
-    name: "warren",
+  const provider: AzamiProvider = {
+    name: "azami",
     keyMode: "exact",
-    capabilities: new Set<WarrenCapability>(["pause", "snapshot", "snapshot-delete", "size"]),
+    capabilities: new Set<AzamiCapability>(["pause", "snapshot", "snapshot-delete", "size"]),
 
     async create(input: CreateInput) {
       const size = typeof input.size === "string" ? presets[input.size] : input.size;

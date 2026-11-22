@@ -1,13 +1,13 @@
-//! warren-agent: PID 1 inside every Warren microVM.
+//! azami-agent: PID 1 inside every Azami microVM.
 //!
 //! As init it mounts the pseudo filesystems, brings up loopback, then forks a
 //! server child and reaps orphans forever. The server listens on vsock and
 //! handles one request per connection on its own thread.
 //!
-//! For testing outside a VM: `WARREN_AGENT_UNIX=/tmp/agent.sock warren-agent`.
+//! For testing outside a VM: `AZAMI_AGENT_UNIX=/tmp/agent.sock azami-agent`.
 
 #[cfg(not(target_os = "linux"))]
-compile_error!("warren-agent only runs inside a Linux guest");
+compile_error!("azami-agent only runs inside a Linux guest");
 
 mod handlers;
 mod sys;
@@ -27,29 +27,29 @@ fn main() {
             match unsafe { libc::fork() } {
                 0 => break, // child: become the server
                 -1 => {
-                    eprintln!("warren-agent: fork failed");
+                    eprintln!("azami-agent: fork failed");
                     std::thread::sleep(std::time::Duration::from_millis(100));
                 }
                 server => sys::reap_until(server),
             }
             // Server died: respawn it (we stay PID 1; the kernel panics if init exits).
-            eprintln!("warren-agent: server exited, restarting");
+            eprintln!("azami-agent: server exited, restarting");
         }
     }
     serve();
 }
 
 fn serve() -> ! {
-    if let Ok(path) = std::env::var("WARREN_AGENT_UNIX") {
+    if let Ok(path) = std::env::var("AZAMI_AGENT_UNIX") {
         let _ = std::fs::remove_file(&path);
         let l = UnixListener::bind(&path).expect("bind unix");
-        eprintln!("warren-agent: listening on unix:{path}");
+        eprintln!("azami-agent: listening on unix:{path}");
         for conn in l.incoming().flatten() {
             spawn_conn(conn);
         }
         unreachable!()
     }
-    let fd = sys::vsock_listen(warren_proto::AGENT_PORT).expect("vsock listen");
+    let fd = sys::vsock_listen(azami_proto::AGENT_PORT).expect("vsock listen");
     loop {
         let c = unsafe { libc::accept4(fd, std::ptr::null_mut(), std::ptr::null_mut(), libc::SOCK_CLOEXEC) };
         if c < 0 {
@@ -65,7 +65,7 @@ fn spawn_conn(conn: UnixStream) {
         .stack_size(256 << 10)
         .spawn(move || {
             if let Err(e) = handlers::handle(conn) {
-                eprintln!("warren-agent: connection error: {e}");
+                eprintln!("azami-agent: connection error: {e}");
             }
         })
         .ok();

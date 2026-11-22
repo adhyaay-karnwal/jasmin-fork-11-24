@@ -1,6 +1,6 @@
-import { Warren } from "./typescript/dist/index.js";
-const warren = new Warren();
-const sbx = await warren.create();
+import { Azami } from "./typescript/dist/index.js";
+const azami = new Azami();
+const sbx = await azami.create();
 const r = await sbx.exec("python3 -c 'print(6*7)'");
 await sbx.files.write("/tmp/hello.txt", "hi from ts", { mode: 0o600 });
 const txt = await sbx.files.readText("/tmp/hello.txt");

@@ -1,7 +1,7 @@
 {
-  "name": "@warren/sdk",
+  "name": "azami-sdk",
   "version": "0.1.0",
-  "description": "TypeScript client for Warren sandboxes",
+  "description": "TypeScript client for Azami sandboxes",
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",

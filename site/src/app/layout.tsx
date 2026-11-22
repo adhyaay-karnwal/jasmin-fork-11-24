@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Warren: open-source sandboxes for AI agents",
+  title: "Azami: open-source sandboxes for AI agents",
   description:
     "Every sandbox is its own Firecracker microVM, restored from a snapshot instead of booted. Self-host on any Linux box with KVM. Apache-2.0, measured in public.",
   openGraph: {
-    title: "Warren: open-source sandboxes for AI agents",
+    title: "Azami: open-source sandboxes for AI agents",
     description: "Firecracker microVMs restored from snapshots. Self-hosted, Apache-2.0, measured in public.",
     type: "website",
   },

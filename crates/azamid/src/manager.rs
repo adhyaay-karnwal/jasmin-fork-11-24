@@ -180,17 +180,17 @@ impl Manager {
         run(&format!("crane export --platform linux/{} {image_q} - | tar -x -C {}", go_arch(), shell_quote(&tree)))
             .await
             .context("export image")?;
-        std::fs::create_dir_all(tree.join(".warren"))?;
-        std::fs::copy(&self.cfg.agent_bin, tree.join(".warren/agent")).context("install agent")?;
+        std::fs::create_dir_all(tree.join(".azami"))?;
+        std::fs::copy(&self.cfg.agent_bin, tree.join(".azami/agent")).context("install agent")?;
         std::fs::create_dir_all(tree.join("root"))?;
         std::fs::create_dir_all(tree.join("workspace"))?;
         std::fs::create_dir_all(tree.join("etc"))?;
         let _ = std::fs::remove_file(tree.join("etc/resolv.conf"));
         std::fs::write(tree.join("etc/resolv.conf"), "nameserver 1.1.1.1\nnameserver 8.8.8.8\n")?;
-        std::fs::write(tree.join("etc/hostname"), "warren\n")?;
+        std::fs::write(tree.join("etc/hostname"), "azami\n")?;
         // Images rarely ship /etc/hosts (Docker injects one at run time). Without it,
         // localhost lookups go to DNS, and tools like `python -m http.server` stall.
-        std::fs::write(tree.join("etc/hosts"), "127.0.0.1\tlocalhost warren\n::1\tlocalhost ip6-localhost ip6-loopback\n")?;
+        std::fs::write(tree.join("etc/hosts"), "127.0.0.1\tlocalhost azami\n::1\tlocalhost ip6-localhost ip6-loopback\n")?;
 
         let used: u64 = {
             let out = tokio::process::Command::new("du").args(["-sb"]).arg(&tree).output().await?;
@@ -203,7 +203,7 @@ impl Manager {
             // No journal: sandbox disks are ephemeral (running sandboxes don't survive a
             // daemon restart, and paused ones are synced before their snapshot), so the
             // journal buys no crash safety but doubles metadata writes and slows fsync.
-            "truncate -s {size_mib}M {r} && mkfs.ext4 -q -F -L warren -O ^has_journal -E root_owner=0:0 -d {t} {r}",
+            "truncate -s {size_mib}M {r} && mkfs.ext4 -q -F -L azami -O ^has_journal -E root_owner=0:0 -d {t} {r}",
             r = shell_quote(&rootfs),
             t = shell_quote(&tree)
         ))
@@ -228,7 +228,7 @@ impl Manager {
             if prewarm_mib > 0 {
                 let out = agent
                     .exec(
-                        warren_proto::ExecRequest {
+                        azami_proto::ExecRequest {
                             argv: vec!["/bin/sh".into(), "-c".into(), PREWARM.into(), "prewarm".into(), prewarm_mib.to_string()],
                             timeout_ms: Some(60_000),
                             ..Default::default()
@@ -277,7 +277,7 @@ impl Manager {
             std::fs::read(self.template_dir(template).join("meta.json")).ok().and_then(|b| serde_json::from_slice(&b).ok());
         match meta {
             Some(m) if m.vcpus == cpu && m.mem_mib == mem => Ok(template.into()),
-            _ => bail!("no template {sized:?} (build one with: warrend build {sized} <image> --vcpus {cpu} --mem-mib {mem})"),
+            _ => bail!("no template {sized:?} (build one with: azamid build {sized} <image> --vcpus {cpu} --mem-mib {mem})"),
         }
     }
 

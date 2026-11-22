@@ -1,10 +1,10 @@
 name: sandbox-bench
-# Runs Warren through aisandboxbench.com's own open-source harness
+# Runs Azami through aisandboxbench.com's own open-source harness
 # (opencoredev/sandbox-sdk, pinned), over the public internet via a Cloudflare
-# quick tunnel, so Warren gets no localhost advantage over hosted providers.
+# quick tunnel, so Azami gets no localhost advantage over hosted providers.
 on:
   push:
-    paths: ["integrations/sandbox-sdk/warren/**", "integrations/sandbox-sdk/apply.py", ".github/workflows/sandbox-bench.yml"]
+    paths: ["integrations/sandbox-sdk/azami/**", "integrations/sandbox-sdk/apply.py", ".github/workflows/sandbox-bench.yml"]
   workflow_dispatch:
     inputs:
       runs: { description: "iterations per scenario (published runs use 100)", default: "100" }
@@ -24,24 +24,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Host info
         run: nproc; free -h; grep -m1 'model name' /proc/cpuinfo; ls -l /dev/kvm; df -h / /mnt; lsblk -d -o NAME,SIZE,ROTA,MODEL
-      - name: Build Warren
+      - name: Build Azami
         run: |
           rustup target add x86_64-unknown-linux-musl
-          cargo build -q --release -p warren-agent --target x86_64-unknown-linux-musl
-          cargo build -q --release -p warrend
+          cargo build -q --release -p azami-agent --target x86_64-unknown-linux-musl
+          cargo build -q --release -p azamid
       - name: Set up host
         run: |
-          sudo WARREN_XFS_SIZE=60G WARREN_XFS_IMG=$( [ -d /mnt ] && echo /mnt/warren-xfs.img || echo /var/warren-xfs.img ) dev/setup-host.sh
-          sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
-          sudo install -m 0755 target/release/warrend /usr/local/bin/warrend
+          sudo AZAMI_XFS_SIZE=60G AZAMI_XFS_IMG=$( [ -d /mnt ] && echo /mnt/azami-xfs.img || echo /var/azami-xfs.img ) dev/setup-host.sh
+          sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/azami-agent /usr/local/lib/azami/azami-agent
+          sudo install -m 0755 target/release/azamid /usr/local/bin/azamid
       - name: Build templates (node:22-bookworm has node, npm, git, curl, python3.11)
         run: |
-          time sudo warrend build bench node:22-bookworm --vcpus 2 --mem-mib 4096
-          time sudo warrend build bench-4x8192 node:22-bookworm --vcpus 4 --mem-mib 8192
-      - name: Start warrend behind a public tunnel
+          time sudo azamid build bench node:22-bookworm --vcpus 2 --mem-mib 4096
+          time sudo azamid build bench-4x8192 node:22-bookworm --vcpus 4 --mem-mib 8192
+      - name: Start azamid behind a public tunnel
         run: |
-          KEY=$(openssl rand -hex 24); echo "::add-mask::$KEY"; echo "WARREN_API_KEY=$KEY" >> $GITHUB_ENV
-          sudo WARREN_API_KEY=$KEY WARREN_NET_POOL=48 bash -c 'nohup warrend serve > /tmp/warrend.log 2>&1 &'
+          KEY=$(openssl rand -hex 24); echo "::add-mask::$KEY"; echo "AZAMI_API_KEY=$KEY" >> $GITHUB_ENV
+          sudo AZAMI_API_KEY=$KEY AZAMI_NET_POOL=48 bash -c 'nohup azamid serve > /tmp/azamid.log 2>&1 &'
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.2; done
           curl -fsSL -o /tmp/cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 && chmod +x /tmp/cloudflared
           # Quick tunnels sometimes take a while to become reachable; insist on it, retrying with a new tunnel.
@@ -53,11 +53,11 @@ jobs:
             [ $ok -ge 5 ] && break; echo "tunnel attempt $attempt not reachable"; U=""
           done
           [ -n "$U" ] || { echo "no reachable tunnel"; exit 1; }
-          echo "WARREN_URL=$U" >> $GITHUB_ENV
+          echo "AZAMI_URL=$U" >> $GITHUB_ENV
           echo "tunnel: $U"
           for i in $(seq 10); do curl -s -o /dev/null -w '%{time_total}\n' "$U/healthz"; done | sort -n | awk '{a[NR]=$1} END {print "tunnel RTT p50 (s):", a[int(NR/2)+1]}'
       - uses: oven-sh/setup-bun@v2
-      - name: Fetch harness and apply the Warren adapter
+      - name: Fetch harness and apply the Azami adapter
         run: |
           git clone -q "$HARNESS_REPO" /tmp/harness && git -C /tmp/harness checkout -q "$HARNESS_REF"
           python3 integrations/sandbox-sdk/apply.py /tmp/harness
@@ -65,32 +65,32 @@ jobs:
           bun run --cwd packages/sdk build 2>&1 | tail -3
           bun run --cwd packages/sdk typecheck
           bun run --cwd bench typecheck
-      - name: Run the harness (Warren)
+      - name: Run the harness (Azami)
         run: |
           set -o pipefail
           cd /tmp/harness/bench
           # Same call path the harness uses, as a smoke test with the real error visible.
-          bun -e 'const {warren}=await import("@opencoredev/sandbox-sdk/warren"); const p=warren({template:"bench"}); const s=await p.create({labels:{smoke:"1"}}); console.log("smoke create", s.id); await p.destroy(s.id);'
+          bun -e 'const {azami}=await import("@opencoredev/sandbox-sdk/azami"); const p=azami({template:"bench"}); const s=await p.create({labels:{smoke:"1"}}); console.log("smoke create", s.id); await p.destroy(s.id);'
           # Mirrors the harness's own collection plan (bench/src/collection-plan.sh):
           # main, snapshot and burst suites as separate invocations with its flags.
           RUNS="${{ inputs.runs || '100' }}"; WRUNS=$(( RUNS < 30 ? RUNS : 30 ))
-          COMMON=(--providers warren --track "${{ inputs.track || 'same-spec' }}" --size warren=4:8192 --template warren=bench
-                  --account-limits warren=200 --omit-network-download true --seed 45 --max-dollars 25)
+          COMMON=(--providers azami --track "${{ inputs.track || 'same-spec' }}" --size azami=4:8192 --template azami=bench
+                  --account-limits azami=200 --omit-network-download true --seed 45 --max-dollars 25)
           MAIN=command,files-1kb,files-10mb,reconnect,pause-resume,perf,git-clone,npm-install,dev-server,preview-first-byte,edit-loop,tool-replay,pip-install
           rc=0
           SUITES="${{ inputs.suites || 'main,snapshot,burst' }}"
           [[ ,$SUITES, == *,main,* ]] && { bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs "$RUNS" --workload-runs "$WRUNS" \
-            --scenarios "$MAIN" --bursts '' --timeout-ms 180000 --max-sandboxes 1000 --run warren-main --out /tmp/results/main 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
+            --scenarios "$MAIN" --bursts '' --timeout-ms 180000 --max-sandboxes 1000 --run azami-main --out /tmp/results/main 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
           [[ ,$SUITES, == *,snapshot,* ]] && { bun src/cli.ts "${COMMON[@]}" --concurrency 4 --provider-concurrency 1 --runs $(( RUNS < 30 ? RUNS : 30 )) \
-            --scenarios snapshot --bursts '' --timeout-ms 600000 --max-sandboxes 1000 --run warren-snapshot --out /tmp/results/snapshot 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
+            --scenarios snapshot --bursts '' --timeout-ms 600000 --max-sandboxes 1000 --run azami-snapshot --out /tmp/results/snapshot 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
           [[ ,$SUITES, == *,burst,* ]] && { bun src/cli.ts "${COMMON[@]}" --runs 1 --scenarios burst --bursts 10,25 --burst-cohorts 3 --concurrency 25 \
-            --timeout-ms 180000 --max-sandboxes 1000 --run warren-burst --out /tmp/results/burst 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
+            --timeout-ms 180000 --max-sandboxes 1000 --run azami-burst --out /tmp/results/burst 2>&1 | grep -vE "sample [0-9.]+ms$" | tail -15 || rc=1; }
           exit $rc
       - name: Report
         if: always()
         run: |
           for f in /tmp/results/*/results.md; do echo "== $f"; head -80 "$f"; done 2>/dev/null || true
-          echo "== warrend errors"; sudo grep -E "WARN|ERROR" /tmp/warrend.log | tail -20
+          echo "== azamid errors"; sudo grep -E "WARN|ERROR" /tmp/azamid.log | tail -20
           echo "== host kernel (oom / kvm)"; sudo dmesg | grep -iE "oom|killed process|kvm" | tail -20
           echo "== memory"; free -h
       - uses: actions/upload-artifact@v4

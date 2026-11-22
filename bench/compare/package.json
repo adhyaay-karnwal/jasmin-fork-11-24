@@ -1,5 +1,5 @@
 {
-  "name": "warren-compare",
+  "name": "azami-compare",
   "private": true,
   "type": "module",
   "description": "Provider-neutral sandbox benchmark. Each provider runs through its official SDK.",

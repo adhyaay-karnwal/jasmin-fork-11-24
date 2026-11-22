@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Prepare a Linux KVM host for warrend: Firecracker, guest kernel, crane, and an
+# Prepare a Linux KVM host for azamid: Firecracker, guest kernel, crane, and an
 # XFS (reflink) data directory. Idempotent. Run as root.
 set -euo pipefail
 ARCH="$(uname -m)"
-DATA="${WARREN_DATA:-/var/lib/warren}"
+DATA="${AZAMI_DATA:-/var/lib/azami}"
 FC_VERSION="${FC_VERSION:-}"
 
 [ -e /dev/kvm ] || { echo "no /dev/kvm: this host cannot run microVMs" >&2; exit 1; }
@@ -39,8 +39,8 @@ fi
 # XFS with reflink so every sandbox disk is an O(1) copy-on-write clone.
 mkdir -p "$DATA"
 if [ "$(stat -f -c %T "$DATA")" != "xfs" ]; then
-  IMG="${WARREN_XFS_IMG:-/var/warren-xfs.img}"
-  [ -f "$IMG" ] || { truncate -s "${WARREN_XFS_SIZE:-20G}" "$IMG"; mkfs.xfs -q -m reflink=1 "$IMG"; }
+  IMG="${AZAMI_XFS_IMG:-/var/azami-xfs.img}"
+  [ -f "$IMG" ] || { truncate -s "${AZAMI_XFS_SIZE:-20G}" "$IMG"; mkfs.xfs -q -m reflink=1 "$IMG"; }
   mount -o loop "$IMG" "$DATA"
 fi
 

@@ -1,4 +1,4 @@
-# Warren
+# Azami
 
 Open-source sandboxes for AI agents: hardware-isolated microVMs that create, fork and resume in milliseconds,
 run on any Linux box with KVM, and are measured in public against everyone else.
@@ -9,9 +9,9 @@ and pass the full correctness suite on every push (CI runs real Firecracker on K
 ## Quick start (Linux host with KVM)
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/warren/master/install.sh | sudo sh
-sudo warrend build default python:3.12-slim      # any OCI image becomes a snapshot template
-sudo systemctl enable --now warrend              # API on http://127.0.0.1:7171
+curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/azami/master/install.sh | sudo sh
+sudo azamid build default python:3.12-slim      # any OCI image becomes a snapshot template
+sudo systemctl enable --now azamid              # API on http://127.0.0.1:7171
 ```
 
 The installer downloads a static release for x86_64 or aarch64, verifies its checksum, and prepares the host:
@@ -19,28 +19,28 @@ Firecracker, the guest kernel, an XFS reflink store and the host tools. To build
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```ts
-import { Warren } from "@warren/sdk";                      // sdk/typescript, zero deps
-await using sbx = await new Warren().create();
+import { Azami } from "azami-sdk";                  // sdk/typescript, zero deps
+await using sbx = await new Azami().create();
 console.log((await sbx.exec("python3 -c 'print(6*7)'")).stdout);
 ```
 
 ```python
-from warren import Warren                                  # sdk/python, stdlib only
-with Warren().create() as sbx:
+from azami import Azami                                  # sdk/python, stdlib only
+with Azami().create() as sbx:
     print(sbx.exec("pip install -q requests && echo ok").stdout)
 ```
 
 API: `POST /v1/sandboxes`, `POST /v1/sandboxes/{id}/exec`, `GET|PUT /v1/sandboxes/{id}/files?path=`,
-`DELETE /v1/sandboxes/{id}`, `GET|POST /v1/templates`. Optional bearer auth via `WARREN_API_KEY`.
+`DELETE /v1/sandboxes/{id}`, `GET|POST /v1/templates`. Optional bearer auth via `AZAMI_API_KEY`.
 
 ## fairbench: same machine, same image, same limits
 
-[fairbench](bench/fair) runs Warren, Docker (runc), gVisor and Kata Containers on **one host**, with the same
+[fairbench](bench/fair) runs Azami, Docker (runc), gVisor and Kata Containers on **one host**, with the same
 `node:22-bookworm` image and 2 vCPU / 4 GiB each, in interleaved, randomly ordered rounds, with a workload generated
 from a run-time seed. A system wins a metric only if its 95% CI clears every other system's.
 Latest run ([full table](results/fairbench/run2-2026-11-22.md), 0 failures for every system):
 
-| | Warren | Docker | gVisor | Kata |
+| | Azami | Docker | gVisor | Kata |
 |---|---|---|---|---|
 | create → first command | **87 ms** | 174 | 192 | 3,346 |
 | run a command | **4.1 ms** | 37 | 28 | 34 |
@@ -51,18 +51,18 @@ Latest run ([full table](results/fairbench/run2-2026-11-22.md), 0 failures for e
 | 500 small fsync'd files | 594 ms | **341** | 454 | 694 |
 | Vite production build | 4.3 s | **2.6** | 4.3 | 4.9 |
 
-Warren wins 9 of 18 metrics outright, mostly lifecycle and agent-loop latency. It loses raw CPU and disk throughput to
+Azami wins 9 of 18 metrics outright, mostly lifecycle and agent-loop latency. It loses raw CPU and disk throughput to
 Docker, which shares the host kernel and pays no VM tax. Every number is from one GitHub Actions runner with nested
-virtualization, which inflates the VM tax for Warren and Kata. Against Kata, the other microVM, Warren is ahead on
+virtualization, which inflates the VM tax for Azami and Kata. Against Kata, the other microVM, Azami is ahead on
 every metric except file transfers through the API: the first file operation in a freshly restored VM pays a
 first-touch cost (5.3 ms vs 1.1 ms for the second, measured in CI). Pre-faulting guest memory at restore is the
 planned fix.
 
 ## Results on aisandboxbench's harness
 
-Warren was measured with [aisandboxbench.com](https://aisandboxbench.com)'s own open-source harness
+Azami was measured with [aisandboxbench.com](https://aisandboxbench.com)'s own open-source harness
 (`opencoredev/sandbox-sdk`) on its same-machine track (4 vCPU / 8 GB), with the flags from its collection plan,
-over the public internet. Against the 13 providers published there on 2026-11-21, Warren's median ranks
+over the public internet. Against the 13 providers published there on 2026-11-21, Azami's median ranks
 **first on 12 of 25 metrics**:
 
 - **Start-up:** cold start (0.094 s vs 0.376 s best), run a command, reconnect.
@@ -94,7 +94,7 @@ services blocked, no sandbox-to-sandbox traffic, and both SDKs.
 | Create | Restore from a memory snapshot of a booted template, never cold-boot | Create time stays flat regardless of what the image does at boot |
 | Memory | Snapshot memory mapped `MAP_PRIVATE` (lazy, page-cache shared); userfaultfd later | Resume cost is independent of RAM size; N sandboxes share clean pages |
 | Disk | Per-sandbox rootfs is an XFS reflink of the template | Copy-on-write, so create and fork are O(1) in image size |
-| Guest | `warren-agent` is PID 1: no systemd, no shell, static binary | Nothing to boot; one vsock round trip to first command |
+| Guest | `azami-agent` is PID 1: no systemd, no shell, static binary | Nothing to boot; one vsock round trip to first command |
 | Host↔guest | Binary framed protocol over virtio-vsock, one request per connection | Raw bytes for output and files, no JSON/base64 on the hot path |
 | Snapshot safety | Each restore sets the guest clock and injects fresh entropy (`RNDADDENTROPY`) | Sandboxes restored from one snapshot never share RNG state |
 | Per-VM paths | Firecracker runs with cwd in the sandbox dir; snapshot paths are relative | One snapshot restores into many sandboxes at once without path collisions |
@@ -112,24 +112,24 @@ services blocked, no sandbox-to-sandbox traffic, and both SDKs.
 
 ## Benchmark rules (`bench/`)
 
-"Best" means best on a harness anyone can rerun against any provider, Warren included. These rules exist to keep it honest:
+"Best" means best on a harness anyone can rerun against any provider, Azami included. These rules exist to keep it honest:
 
 - **Measured from the client** over the public API, from a VM in the same region as the provider. Wall-clock times, never server-reported numbers.
 - **Same workload for every provider**, scripted once and run through thin adapters. No provider-specific tuning beyond what its public docs recommend to every user.
 - **Default images.** Each provider uses its standard Python image, and we report image size.
-- **Warm and cold reported separately.** Warren's warm pool counts as warm. The headline number is the cold, first-ever create after the template was built.
+- **Warm and cold reported separately.** Azami's warm pool counts as warm. The headline number is the cold, first-ever create after the template was built.
 - **Distributions, not best runs.** At least 200 samples per metric, with p50, p95, p99, max and error rate. Raw data is published.
 - **Real work alongside micro-benchmarks:** `pip install` and `numpy` work, `git clone` plus a test suite, a 1 GB file write and read, and 100- and 1000-sandbox concurrency bursts.
 - **Cost:** $ per sandbox-hour at list price, plus density (sandboxes per host) for self-hosted.
 - **Isolation is listed next to speed.** Containers and microVMs are labeled, not ranked together silently.
 
-`bench/compare/run.mjs` implements this: Warren, E2B and Daytona adapters using each provider's official SDK,
+`bench/compare/run.mjs` implements this: Azami, E2B and Daytona adapters using each provider's official SDK,
 identical workloads (first command, warm exec, 1 MiB file round trip, Python hello, numpy, `pip install
 requests`, 256 MiB fsync'd disk write), and the measured API round trip printed next to every provider.
 Providers without credentials are skipped, never estimated. In CI, add `E2B_API_KEY` / `DAYTONA_API_KEY`
 as repository secrets.
 
-Until Warren runs on a remote host in the same region as the client, its numbers have no network round trip
+Until Azami runs on a remote host in the same region as the client, its numbers have no network round trip
 while the hosted providers' do. The harness prints that RTT so readers can account for it. A headline
 comparison will only be published from a setup where every provider is remote.
 
@@ -138,7 +138,7 @@ comparison will only be published from a setup where every provider is remote.
 ```
 crates/proto    host↔guest wire protocol (framing + message types)
 crates/agent    guest PID 1: mounts, reaping, exec/files/ping/sync over vsock
-crates/warrend  host daemon + CLI: Firecracker lifecycle, templates, network slots, HTTP API
+crates/azamid  host daemon + CLI: Firecracker lifecycle, templates, network slots, HTTP API
 sdk/typescript  TypeScript SDK (zero dependencies)
 sdk/python      Python SDK (stdlib only)
 bench/          e2e correctness suite + micro-benchmarks, concurrency probe, cross-provider harness

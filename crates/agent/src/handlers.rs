@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use warren_proto::{kind, read_frame, write_frame, write_json, ExecRequest, ExitStatus, PingReply, Request, CHUNK};
+use azami_proto::{kind, read_frame, write_frame, write_json, ExecRequest, ExitStatus, PingReply, Request, CHUNK};
 
 /// Shared write half. `closed` is set once the terminal frame is sent so that
 /// stragglers (e.g. a backgrounded grandchild still holding stdout) never write

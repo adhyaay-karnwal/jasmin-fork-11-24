@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Concurrency probe: N simultaneous create -> first exec, per template.
 //   node bench/burst.mjs <template> [n1 n2 ...]
-const U = process.env.WARREN_URL ?? "http://127.0.0.1:7171";
+const U = process.env.AZAMI_URL ?? "http://127.0.0.1:7171";
 const j = { "content-type": "application/json" };
 const post = (p, b) => fetch(U + p, { method: "POST", headers: j, body: JSON.stringify(b) }).then((r) => r.json());
 const [template, ...ns] = process.argv.slice(2);

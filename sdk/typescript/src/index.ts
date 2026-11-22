@@ -1,19 +1,19 @@
 /**
- * Warren TypeScript SDK. Zero dependencies; works in Node 18+, Bun, Deno and edge runtimes.
+ * Azami TypeScript SDK. Zero dependencies; works in Node 18+, Bun, Deno and edge runtimes.
  *
  * ```ts
- * import { Warren } from "@warren/sdk";
- * const warren = new Warren({ url: "http://127.0.0.1:7171" });
- * await using sbx = await warren.create();      // deleted when it goes out of scope
+ * import { Azami } from "azami-sdk";
+ * const azami = new Azami({ url: "http://127.0.0.1:7171" });
+ * await using sbx = await azami.create();      // deleted when it goes out of scope
  * const r = await sbx.exec("python3 -c 'print(6*7)'");
  * console.log(r.stdout);                          // "42\n"
  * ```
  */
 
-export interface WarrenOptions {
-  /** Defaults to $WARREN_URL or http://127.0.0.1:7171. */
+export interface AzamiOptions {
+  /** Defaults to $AZAMI_URL or http://127.0.0.1:7171. */
   url?: string;
-  /** Defaults to $WARREN_API_KEY. */
+  /** Defaults to $AZAMI_API_KEY. */
   apiKey?: string;
   fetch?: typeof fetch;
 }
@@ -55,26 +55,26 @@ export interface TemplateInfo {
   built_unix: number;
 }
 
-export class WarrenError extends Error {
+export class AzamiError extends Error {
   constructor(
     message: string,
     readonly status: number,
   ) {
     super(message);
-    this.name = "WarrenError";
+    this.name = "AzamiError";
   }
 }
 
 const env = (k: string): string | undefined => (globalThis as any).process?.env?.[k];
 
-export class Warren {
+export class Azami {
   readonly url: string;
   private readonly apiKey?: string;
   private readonly fetchImpl: typeof fetch;
 
-  constructor(opts: WarrenOptions = {}) {
-    this.url = (opts.url ?? env("WARREN_URL") ?? "http://127.0.0.1:7171").replace(/\/$/, "");
-    this.apiKey = opts.apiKey ?? env("WARREN_API_KEY");
+  constructor(opts: AzamiOptions = {}) {
+    this.url = (opts.url ?? env("AZAMI_URL") ?? "http://127.0.0.1:7171").replace(/\/$/, "");
+    this.apiKey = opts.apiKey ?? env("AZAMI_API_KEY");
     this.fetchImpl = opts.fetch ?? fetch;
   }
 
@@ -94,7 +94,7 @@ export class Warren {
       try {
         msg = JSON.parse(msg).error ?? msg;
       } catch {}
-      throw new WarrenError(`${method} ${path}: ${msg}`, res.status);
+      throw new AzamiError(`${method} ${path}: ${msg}`, res.status);
     }
     if (res.status === 204) return undefined;
     return raw ? new Uint8Array(await res.arrayBuffer()) : res.json();
@@ -134,7 +134,7 @@ export class Warren {
 
 export class Sandbox {
   constructor(
-    private readonly client: Warren,
+    private readonly client: Azami,
     readonly id: string,
     readonly template: string,
     /** Server-side breakdown of how long creation took (present on create). */
@@ -180,11 +180,11 @@ export class Sandbox {
     try {
       await this.client.request("DELETE", this.base);
     } catch (e) {
-      if (!(e instanceof WarrenError && e.status === 404)) throw e;
+      if (!(e instanceof AzamiError && e.status === 404)) throw e;
     }
   }
 
-  /** `await using sbx = await warren.create()` deletes the sandbox on scope exit. */
+  /** `await using sbx = await azami.create()` deletes the sandbox on scope exit. */
   async [(Symbol as any).asyncDispose ?? Symbol.for("Symbol.asyncDispose")](): Promise<void> {
     await this.delete();
   }

@@ -1,4 +1,4 @@
-# warren website
+# azami website
 
 Next.js + Tailwind v4 + shadcn, with [gradients.sh](https://gradients.sh), [dithercn](https://dithercn.dev),
 [asciicn](https://asciicn.dev) and [dither-kit](https://tripwire.sh/dither-kit) installed as source via the shadcn CLI.
