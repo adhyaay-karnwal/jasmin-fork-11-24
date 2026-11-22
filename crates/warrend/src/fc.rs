@@ -95,7 +95,7 @@ impl Vm {
             crate::net::KERNEL_IP_ARG
         );
         self.api("PUT", "/boot-source", json!({"kernel_image_path": kernel, "boot_args": args})).await?;
-        self.api("PUT", "/drives/rootfs", json!({"drive_id": "rootfs", "path_on_host": ROOTFS, "is_root_device": true, "is_read_only": false, "io_engine": "Async"})).await?;
+        self.api("PUT", "/drives/rootfs", json!({"drive_id": "rootfs", "path_on_host": ROOTFS, "is_root_device": true, "is_read_only": false})).await?;
         self.api("PUT", "/machine-config", json!({"vcpu_count": vcpus, "mem_size_mib": mem_mib})).await?;
         self.api("PUT", "/vsock", json!({"guest_cid": 3, "uds_path": VSOCK_SOCK})).await?;
         self.api(
@@ -130,6 +130,8 @@ impl Vm {
         self.api(
             "PUT",
             "/snapshot/load",
+            // (Block devices use the stable Sync engine: the Async/io_uring engine is a
+            // Firecracker dev preview and made VMMs exit under 25-way bursts.)
             // Dirty-page tracking makes later snapshots/pauses write only what changed.
             json!({"snapshot_path": vmstate, "mem_backend": {"backend_type": "File", "backend_path": mem}, "track_dirty_pages": true, "resume_vm": true}),
         )
