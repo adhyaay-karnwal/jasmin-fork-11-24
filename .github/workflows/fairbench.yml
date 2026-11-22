@@ -25,6 +25,17 @@ jobs:
           rustup target add x86_64-unknown-linux-musl
           cargo build -q --release -p warren-agent --target x86_64-unknown-linux-musl
           cargo build -q --release -p warrend
+      - name: One shared disk for every system (native XFS on the runner's scratch SSD)
+        run: |
+          set -x
+          DEV=$(findmnt -n -o SOURCE /mnt)
+          sudo swapoff -a || true
+          sudo umount /mnt
+          sudo mkfs.xfs -q -f -m reflink=1 "$DEV"
+          sudo mount -o noatime "$DEV" /mnt
+          sudo mkdir -p /mnt/docker /mnt/warren /var/lib/warren
+          sudo mount --bind /mnt/warren /var/lib/warren
+          df -hT /mnt /var/lib/warren
       - name: Install gVisor and Kata as Docker runtimes
         env:
           GH_TOKEN: ${{ github.token }}
@@ -41,14 +52,14 @@ jobs:
           done
           SHIM=$(sudo find /opt/kata -name containerd-shim-kata-v2 -type f | head -1); echo "kata shim: $SHIM"
           [ -n "$SHIM" ] && sudo ln -sf "$SHIM" /usr/local/bin/containerd-shim-kata-v2
-          echo '{"runtimes":{"runsc":{"path":"/usr/bin/runsc","runtimeArgs":["--overlay2=none"]},"kata":{"runtimeType":"io.containerd.kata.v2"}}}' | sudo tee /etc/docker/daemon.json
+          echo '{"data-root":"/mnt/docker","runtimes":{"runsc":{"path":"/usr/bin/runsc","runtimeArgs":["--overlay2=none"]},"kata":{"runtimeType":"io.containerd.kata.v2"}}}' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker
           docker info --format '{{json .Runtimes}}'
           sudo chmod 666 /dev/kvm
           time docker pull -q node:22-bookworm
       - name: Start Warren
         run: |
-          sudo WARREN_XFS_SIZE=60G WARREN_XFS_IMG=$( [ -d /mnt ] && echo /mnt/warren-xfs.img || echo /var/warren-xfs.img ) dev/setup-host.sh
+          sudo dev/setup-host.sh   # /var/lib/warren is already native XFS (bind of /mnt/warren)
           sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
           sudo install -m 0755 target/release/warrend /usr/local/bin/warrend
           time sudo warrend build fair node:22-bookworm --vcpus 2 --mem-mib 4096

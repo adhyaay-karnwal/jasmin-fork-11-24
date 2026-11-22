@@ -50,7 +50,7 @@ Hosted providers can't share hardware with these, so they're out of scope for fa
 | `files_1k_ms`, `files_16m_ms` | write then read back and verify, through the system's file API |
 | `compute_ms` | pure-Python sieve of primes below 3,000,000 |
 | `small_fsync_ms` | 500 × 4 KiB files, each fsync'd (git/npm-style metadata I/O) |
-| `big_write_ms` | 512 MiB sequential write with fsync |
+| `big_write_ms` | 512 MiB sequential write with fsync (all systems store data on the same disk and filesystem: native XFS on the runner's scratch SSD) |
 | `agent_trace_ms` | the held-out 40-op trace |
 | `task_python_ms` | `git clone` simplejson v3.19.3 + its stdlib test suite |
 | `task_node_build_ms` | upload a Vite + React app, `npm ci`, `vite build` |
