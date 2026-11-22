@@ -28,11 +28,16 @@ jobs:
       - name: One shared disk for every system (native XFS on the runner's scratch SSD)
         run: |
           set -x
-          DEV=$(findmnt -n -o SOURCE /mnt)
           sudo swapoff -a || true
-          sudo umount /mnt
-          sudo mkfs.xfs -q -f -m reflink=1 "$DEV"
-          sudo mount -o noatime "$DEV" /mnt
+          DEV=$(findmnt -n -o SOURCE --target /mnt --mountpoint /mnt || true)
+          if [ -n "$DEV" ]; then
+            # A real scratch partition: reformat it as native XFS.
+            sudo umount /mnt && sudo mkfs.xfs -q -f -m reflink=1 "$DEV" && sudo mount -o noatime "$DEV" /mnt
+          else
+            # No scratch partition on this runner: one loop-backed XFS volume, shared by every system.
+            sudo truncate -s 60G /var/fairbench-xfs.img && sudo mkfs.xfs -q -f -m reflink=1 /var/fairbench-xfs.img
+            sudo mkdir -p /mnt && sudo mount -o loop,noatime /var/fairbench-xfs.img /mnt
+          fi
           sudo mkdir -p /mnt/docker /mnt/warren /var/lib/warren
           sudo mount --bind /mnt/warren /var/lib/warren
           df -hT /mnt /var/lib/warren

@@ -1,0 +1,43 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, arch: x86_64 }
+          - { runner: ubuntu-24.04-arm, arch: aarch64 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build static binaries
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y musl-tools
+          T=${{ matrix.arch }}-unknown-linux-musl
+          rustup target add $T
+          cargo build -q --release --target $T -p warren-agent -p warrend
+          D=warren-${GITHUB_REF_NAME}-${{ matrix.arch }}-linux
+          mkdir -p $D
+          cp target/$T/release/warrend target/$T/release/warren-agent $D/
+          cp dev/setup-host.sh dev/warrend.service LICENSE README.md $D/
+          tar -czf $D.tar.gz $D && sha256sum $D.tar.gz > $D.tar.gz.sha256
+          file $D/warrend $D/warren-agent
+      - uses: actions/upload-artifact@v4
+        with: { name: "${{ matrix.arch }}", path: "warren-*.tar.gz*" }
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { merge-multiple: true }
+      - env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh release create "$GITHUB_REF_NAME" warren-*.tar.gz* --repo "$GITHUB_REPOSITORY" --generate-notes --title "Warren $GITHUB_REF_NAME"

@@ -7,6 +7,19 @@ DATA="${WARREN_DATA:-/var/lib/warren}"
 FC_VERSION="${FC_VERSION:-}"
 
 [ -e /dev/kvm ] || { echo "no /dev/kvm: this host cannot run microVMs" >&2; exit 1; }
+
+# Host tools: xfsprogs (reflink data dir), e2fsprogs (guest rootfs), iproute2 + iptables (networking).
+missing=""
+for t in mkfs.xfs mkfs.ext4 ip iptables curl tar; do command -v $t >/dev/null || missing="$missing $t"; done
+if [ -n "$missing" ]; then
+  if command -v apt-get >/dev/null; then
+    DEBIAN_FRONTEND=noninteractive apt-get -qq update && DEBIAN_FRONTEND=noninteractive apt-get -qq install -y xfsprogs e2fsprogs iproute2 iptables curl tar >/dev/null
+  elif command -v dnf >/dev/null; then
+    dnf -q -y install xfsprogs e2fsprogs iproute iptables curl tar
+  else
+    echo "missing host tools:$missing (install them and rerun)" >&2; exit 1
+  fi
+fi
 chmod 666 /dev/kvm || true
 
 if ! command -v firecracker >/dev/null; then
