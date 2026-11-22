@@ -54,7 +54,7 @@ const fail = (sys, m, e) => {
 
 async function must(sys, h, cmd, opts) {
   const r = await sys.exec(h, cmd, opts);
-  if (r.exitCode !== 0) throw new Error(`exit ${r.exitCode}: ${cmd.slice(0, 80)} :: ${(r.stderr || r.stdout).slice(-300)}`);
+  if (r.exitCode !== 0) throw new Error(`exit ${r.exitCode}: ${cmd.slice(0, 80)} :: stdout ${r.stdout.slice(-200)} :: stderr ${r.stderr.slice(-300)}`);
   return r;
 }
 
@@ -62,7 +62,8 @@ async function timed(sys, metric, fn) {
   try {
     const t = now();
     const v = await fn();
-    rec(sys.name, metric, v ?? now() - t);
+    // Workloads return a measured number only when they time something themselves.
+    rec(sys.name, metric, typeof v === "number" ? v : now() - t);
   } catch (e) {
     fail(sys.name, metric, e);
   }
@@ -81,7 +82,7 @@ for i in range(500):
     fd=os.open(f'/workspace/fs/{i}',os.O_WRONLY|os.O_CREAT|os.O_TRUNC); os.write(fd,b'x'*4096); os.fsync(fd); os.close(fd)
 print('ok')"`,
   bigWrite: `dd if=/dev/zero of=/workspace/big bs=1M count=512 conv=fsync status=none && rm /workspace/big && echo ok`,
-  python: `rm -rf /workspace/sj && git clone -q --depth 1 -b v3.19.3 https://github.com/simplejson/simplejson /workspace/sj && cd /workspace/sj && python3 -m simplejson.tests`,
+  python: `rm -rf /workspace/sj && git -c advice.detachedHead=false clone -q --depth 1 -b v3.19.3 https://github.com/simplejson/simplejson /workspace/sj && cd /workspace/sj && for i in 1 2 3 4 5 6 7 8 9 10; do python3 -m unittest discover -s simplejson/tests -t . -q 2>&1 | tail -1 | grep -q OK || exit 1; done && echo ok`,
   nodeBuild: `cd /workspace/app && npm ci --no-audit --no-fund --loglevel=error && npx vite build --logLevel error && test -f dist/index.html && echo ok`,
 };
 const fixtureDir = join(here, "fixtures/vite-react");

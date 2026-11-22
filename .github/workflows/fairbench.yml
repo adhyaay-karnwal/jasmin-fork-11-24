@@ -25,21 +25,25 @@ jobs:
           cargo build -q --release -p warren-agent --target x86_64-unknown-linux-musl
           cargo build -q --release -p warrend
       - name: Install gVisor and Kata as Docker runtimes
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -x
-          ARCH=$(uname -m)
-          URL=https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH}
-          ( cd /tmp && curl -fsSLO $URL/runsc && curl -fsSLO $URL/containerd-shim-runsc-v1 && chmod +x runsc containerd-shim-runsc-v1 && sudo mv runsc containerd-shim-runsc-v1 /usr/local/bin/ ) || echo "gvisor download failed"
-          KV=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/kata-containers/kata-containers/releases/latest | xargs basename)
-          ( curl -fsSL "https://github.com/kata-containers/kata-containers/releases/download/${KV}/kata-static-${KV}-amd64.tar.zst" -o /tmp/kata.tar.zst \
-            && sudo tar --zstd -xf /tmp/kata.tar.zst -C / \
-            && sudo ln -sf /opt/kata/bin/containerd-shim-kata-v2 /usr/local/bin/containerd-shim-kata-v2 \
-            && sudo ln -sf /opt/kata/bin/kata-runtime /usr/local/bin/kata-runtime ) || echo "kata download failed"
-          echo '{"runtimes":{"runsc":{"path":"/usr/local/bin/runsc"},"kata":{"runtimeType":"io.containerd.kata.v2"}}}' | sudo tee /etc/docker/daemon.json
+          # gVisor from its official apt repository.
+          ( curl -fsSL https://gvisor.dev/archive.key | sudo gpg --dearmor -o /usr/share/keyrings/gvisor-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases release main" | sudo tee /etc/apt/sources.list.d/gvisor.list \
+            && sudo apt-get -qq update && sudo apt-get -qq install -y runsc ) || echo "gvisor install failed"
+          # Kata: 4.x ships the Go runtime (containerd-shim-kata-v2) as kata-go-static; take both and locate the shim.
+          KV=$(gh api repos/kata-containers/kata-containers/releases/latest --jq .tag_name)
+          for a in kata-static kata-go-static; do
+            curl -fsSL "https://github.com/kata-containers/kata-containers/releases/download/${KV}/${a}-${KV}-amd64.tar.zst" -o /tmp/$a.tar.zst && sudo tar --zstd -xf /tmp/$a.tar.zst -C / || echo "kata asset $a failed"
+          done
+          SHIM=$(sudo find /opt/kata -name containerd-shim-kata-v2 -type f | head -1); echo "kata shim: $SHIM"
+          [ -n "$SHIM" ] && sudo ln -sf "$SHIM" /usr/local/bin/containerd-shim-kata-v2
+          echo '{"runtimes":{"runsc":{"path":"/usr/bin/runsc"},"kata":{"runtimeType":"io.containerd.kata.v2"}}}' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker
           docker info --format '{{json .Runtimes}}'
           sudo chmod 666 /dev/kvm
-          (sudo kata-runtime check --no-network-checks 2>&1 || true) | tail -5
           time docker pull -q node:22-bookworm
       - name: Start Warren
         run: |
