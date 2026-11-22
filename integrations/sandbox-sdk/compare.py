@@ -10,6 +10,13 @@ Prints a Markdown table; the caveats it prints are part of the result.
 import json
 import sys
 
+# Optional: --json OUT writes the comparison rows for the website.
+json_out = None
+if "--json" in sys.argv:
+    i = sys.argv.index("--json")
+    json_out = sys.argv[i + 1]
+    del sys.argv[i : i + 2]
+
 pub = json.load(open(sys.argv[1]))["tracks"]["same-spec"]
 ours = {}
 for path in sys.argv[2:]:
@@ -38,6 +45,7 @@ def convert(value, from_unit, to_unit):
 
 
 rows, wins, measured = [], 0, 0
+json_rows = []
 for m in pub["metrics"]:
     s = ours.get(alias.get(m["id"], m["id"]))
     published = [r for r in m["results"] if r.get("median") is not None and r.get("status") == "measured"]
@@ -56,6 +64,14 @@ for m in pub["metrics"]:
     best = min(field, key=lambda r: r["median"]) if lower else max(field, key=lambda r: r["median"])
     measured += 1
     wins += rank == 1
+    json_rows.append({
+        "id": m["id"], "label": m["label"], "group": m.get("group"), "unit": m["unit"], "better": m["better"],
+        "warren": v, "rank": rank, "of": len(field) + 1,
+        "best": {"provider": names.get(best["provider"], best["provider"]), "median": best["median"]},
+        "field": sorted([{"provider": names.get(r["provider"], r["provider"]), "median": r["median"]} for r in field],
+                        key=lambda r: r["median"], reverse=not lower),
+        "runs": s["stats"]["count"], "failed": s["failures"],
+    })
     fmt = (lambda x: f"{x:.3g}") if m["unit"] in ("s",) else (lambda x: f"{x:,.0f}")
     rows.append(
         f"| {m['label']} | **{fmt(v)} {m['unit']}** | {rank} of {len(field) + 1} | "
@@ -87,3 +103,7 @@ print("\n| provider | cold start | run a command | cold - 2 x command (network-a
 print("|---|---|---|---|")
 for n, c, m_, a in adj:
     print(f"| {n} | {c:.3f} s | {m_:.3f} s | {a:.3f} s |")
+
+if json_out:
+    json.dump({"source": "aisandboxbench.com/results.json (same-machine track) vs Warren on the same harness",
+               "wins": wins, "measured": measured, "rows": json_rows}, open(json_out, "w"), indent=1)
