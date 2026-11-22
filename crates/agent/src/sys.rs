@@ -18,6 +18,14 @@ fn mount(src: &str, target: &str, fstype: &str, flags: libc::c_ulong, data: Opti
 }
 
 pub fn init_system() {
+    // noatime on the root fs: reads shouldn't cause metadata writes. (It's a VFS
+    // flag, so it can't go in the kernel's rootflags=, which ext4 would reject.)
+    unsafe {
+        let root = c"/";
+        if libc::mount(std::ptr::null(), root.as_ptr(), std::ptr::null(), libc::MS_REMOUNT | libc::MS_NOATIME, std::ptr::null()) != 0 {
+            eprintln!("warren-agent: remount / noatime: {}", io::Error::last_os_error());
+        }
+    }
     let nodev = libc::MS_NOSUID | libc::MS_NODEV | libc::MS_NOEXEC;
     mount("proc", "/proc", "proc", nodev, None);
     mount("sysfs", "/sys", "sysfs", nodev, None);
