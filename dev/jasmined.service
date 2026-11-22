@@ -1,0 +1,17 @@
+[Unit]
+Description=Jasmine sandbox daemon
+Documentation=https://github.com/arjunkshah12345-hash/jasmine-sandbox
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Optional: JASMINE_API_KEY=..., JASMINE_LISTEN=0.0.0.0:7171 (only behind TLS + an API key)
+EnvironmentFile=-/etc/jasmine/env
+ExecStartPre=/usr/local/lib/jasmine/setup-host.sh
+ExecStart=/usr/local/bin/jasmined serve
+Restart=on-failure
+LimitNOFILE=1048576
+TasksMax=infinity
+
+[Install]
+WantedBy=multi-user.target

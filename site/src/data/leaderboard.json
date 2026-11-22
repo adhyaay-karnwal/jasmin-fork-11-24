@@ -1,0 +1,7081 @@
+{
+ "source": "https://aisandboxbench.com/results.json",
+ "fetched": "2026-11-22",
+ "track": "Same machine: 4 vCPU, 8 GB",
+ "description": "Every provider asked for Boat's machine, 4 vCPU and 8 GB, or its nearest size.",
+ "run": {
+  "start": "2026-10-22T18:05:53.912Z",
+  "end": "2026-11-20T18:10:19.106Z",
+  "observations": 27168
+ },
+ "providers": [
+  {
+   "id": "e2b",
+   "name": "E2B",
+   "ranIn": "The Dalles, US",
+   "cpu": "Intel Xeon Processor @ 2.60GHz",
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "freestyle",
+   "name": "Freestyle",
+   "ranIn": null,
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "tenki",
+   "name": "Luxor",
+   "ranIn": null,
+   "cpu": "AMD EPYC 7B13 64-Core Processor",
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "boxd",
+   "name": "boxd",
+   "ranIn": "New York City, US",
+   "cpu": "AMD EPYC",
+   "equalSpec": false,
+   "measured": "4 vCPU, 16 GB",
+   "ranked": false
+  },
+  {
+   "id": "superserve",
+   "name": "Superserve",
+   "ranIn": "Washington, US",
+   "cpu": "Intel Xeon Processor",
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "upstash",
+   "name": "Upstash Box",
+   "ranIn": "Ashburn, US",
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  },
+  {
+   "id": "daytona",
+   "name": "Daytona",
+   "ranIn": null,
+   "cpu": "AMD EPYC 9254 24-Core Processor",
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  },
+  {
+   "id": "upstash-ephemeral",
+   "name": "Upstash Ephemeral Box",
+   "ranIn": "Ashburn, US",
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  },
+  {
+   "id": "boat",
+   "name": "Boat",
+   "ranIn": "Lille, FR",
+   "cpu": "AMD Ryzen 9 9950X 16-Core Processor",
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "vercel",
+   "name": "Vercel Sandbox",
+   "ranIn": "Ashburn, US",
+   "cpu": "Intel Xeon Processor @ 2.90GHz",
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  },
+  {
+   "id": "modal",
+   "name": "Modal",
+   "ranIn": "Ashburn, US",
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  },
+  {
+   "id": "baseten",
+   "name": "Baseten",
+   "ranIn": "Boardman, US",
+   "cpu": "Intel Xeon Processor",
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "instabox",
+   "name": "Instabox",
+   "ranIn": "Boardman, US",
+   "cpu": "AMD EPYC",
+   "equalSpec": true,
+   "measured": "4 vCPU, 7.8 GB",
+   "ranked": true
+  },
+  {
+   "id": "beam",
+   "name": "Beam",
+   "ranIn": "Warrenton, US",
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  },
+  {
+   "id": "beam-shared",
+   "name": "Beam Shared",
+   "ranIn": "Dallas, US",
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": false
+  },
+  {
+   "id": "beam-spot",
+   "name": "Beam Spot",
+   "ranIn": "Dallas, US",
+   "cpu": null,
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": false
+  },
+  {
+   "id": "jasmine",
+   "name": "Jasmine",
+   "ranIn": "GitHub Actions runner, Iowa (self-hosted)",
+   "cpu": "AMD EPYC 7763 (nested virtualization)",
+   "equalSpec": true,
+   "measured": "4 vCPU, 8 GB",
+   "ranked": true
+  }
+ ],
+ "metrics": [
+  {
+   "id": "cold",
+   "group": "Start-up",
+   "label": "Cold start",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.09956330699997488,
+     "p95": 0.12865300500008744,
+     "ci95": [
+      0.09758593499998096,
+      0.10135050200007391
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.376,
+     "p95": 0.444,
+     "ci95": [
+      0.369,
+      0.382
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.413,
+     "p95": 0.485,
+     "ci95": [
+      0.407,
+      0.419
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.517,
+     "p95": 0.71,
+     "ci95": [
+      0.485,
+      0.534
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.52,
+     "p95": 0.636,
+     "ci95": [
+      0.518,
+      0.524
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.684,
+     "p95": 0.792,
+     "ci95": [
+      0.678,
+      0.688
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.693,
+     "p95": 1.961,
+     "ci95": [
+      0.68,
+      0.722
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.695,
+     "p95": 0.836,
+     "ci95": [
+      0.681,
+      0.713
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.793,
+     "p95": 2.219,
+     "ci95": [
+      0.715,
+      0.821
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.089,
+     "p95": 3.291,
+     "ci95": [
+      0.942,
+      1.165
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 1.125,
+     "p95": 1.648,
+     "ci95": [
+      1.037,
+      1.172
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 1.25,
+     "p95": 2.091,
+     "ci95": [
+      1.132,
+      1.334
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 1.85,
+     "p95": 3.865,
+     "ci95": [
+      1.806,
+      1.974
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 2.684,
+     "p95": 10.98,
+     "ci95": [
+      2.624,
+      2.717
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.443,
+     "p95": 0.501,
+     "ci95": [
+      0.437,
+      0.448
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.449,
+     "p95": 0.513,
+     "ci95": [
+      0.441,
+      0.456
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.548,
+     "p95": 0.737,
+     "ci95": [
+      0.513,
+      0.606
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "tool-replay",
+   "group": "Tool calls and agent steps",
+   "label": "Agent tool replay",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 4.2967402240000085,
+     "p95": 4.890929340999981,
+     "ci95": [
+      4.152708006000001,
+      4.580686115999997
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 10.941,
+     "p95": 11.645,
+     "ci95": [
+      10.727,
+      11.309
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 12.11,
+     "p95": 12.692,
+     "ci95": [
+      10.668,
+      12.242
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 12.274,
+     "p95": 30.118,
+     "ci95": [
+      12.011,
+      13.046
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 13.147,
+     "p95": 14.572,
+     "ci95": [
+      13.035,
+      13.27
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 15.228,
+     "p95": 16.976,
+     "ci95": [
+      15.033,
+      15.463
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 15.468,
+     "p95": 17.471,
+     "ci95": [
+      15.236,
+      16.241
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 20.953,
+     "p95": 30.956,
+     "ci95": [
+      19.43,
+      21.824
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 22.4,
+     "p95": 22.851,
+     "ci95": [
+      22.318,
+      22.546
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 22.51,
+     "p95": 24.872,
+     "ci95": [
+      22.11,
+      22.845
+     ],
+     "attempts": 30,
+     "failed": 1,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 24.072,
+     "p95": 41.703,
+     "ci95": [
+      21.983,
+      28.817
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 25.068,
+     "p95": 96.776,
+     "ci95": [
+      24.569,
+      25.591
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 26.886,
+     "p95": 32.184,
+     "ci95": [
+      26.489,
+      27.855
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 43.256,
+     "p95": 48.625,
+     "ci95": [
+      42.911,
+      44.293
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 11.872,
+     "p95": 12.237,
+     "ci95": [
+      11.789,
+      11.955
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 13.573,
+     "p95": 13.893,
+     "ci95": [
+      13.476,
+      13.637
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 13.646,
+     "p95": 13.905,
+     "ci95": [
+      13.611,
+      13.726
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "npm-install",
+   "group": "Tool calls and agent steps",
+   "label": "npm install",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.747,
+     "p95": 0.908,
+     "ci95": [
+      0.727,
+      0.772
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 0.848,
+     "p95": 1.864,
+     "ci95": [
+      0.84,
+      0.858
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.997,
+     "p95": 1.039,
+     "ci95": [
+      0.992,
+      1.001
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 1.077,
+     "p95": 1.153,
+     "ci95": [
+      1.07,
+      1.094
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 1.097,
+     "p95": 1.817,
+     "ci95": [
+      0.987,
+      1.441
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.099,
+     "p95": 1.842,
+     "ci95": [
+      1.022,
+      1.431
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 1.183,
+     "p95": 1.353,
+     "ci95": [
+      1.168,
+      1.212
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 1.214,
+     "p95": 1.313,
+     "ci95": [
+      1.121,
+      1.219
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 1.218,
+     "p95": 1.575,
+     "ci95": [
+      1.175,
+      1.251
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 1.228,
+     "p95": 1.422,
+     "ci95": [
+      1.134,
+      1.245
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 1.3799141650000237,
+     "p95": 1.9076507569999668,
+     "ci95": [
+      1.280992299000005,
+      1.6659811760000012
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 1.671,
+     "p95": 4.336,
+     "ci95": [
+      1.518,
+      2.104
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 1.712,
+     "p95": 3.482,
+     "ci95": [
+      1.625,
+      1.857
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.769,
+     "p95": 2.891,
+     "ci95": [
+      1.668,
+      1.862
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.64,
+     "p95": 0.728,
+     "ci95": [
+      0.612,
+      0.666
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.654,
+     "p95": 0.744,
+     "ci95": [
+      0.624,
+      0.665
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 1.128,
+     "p95": 1.471,
+     "ci95": [
+      1.044,
+      1.179
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 11
+  },
+  {
+   "id": "pip-install",
+   "group": "Tool calls and agent steps",
+   "label": "pip install",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 3.326,
+     "p95": 5.003,
+     "ci95": [
+      3.141,
+      4.481
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 3.761,
+     "p95": 4.72,
+     "ci95": [
+      3.616,
+      3.909
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 3.765,
+     "p95": 4.553,
+     "ci95": [
+      3.698,
+      4.115
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 3.948,
+     "p95": 8.961,
+     "ci95": [
+      3.856,
+      4.416
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 4.042,
+     "p95": 5.01,
+     "ci95": [
+      3.986,
+      4.127
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 4.058,
+     "p95": 4.974,
+     "ci95": [
+      3.673,
+      4.294
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 4.214,
+     "p95": 5.309,
+     "ci95": [
+      4.167,
+      4.354
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 4.222,
+     "p95": 5.538,
+     "ci95": [
+      4.048,
+      4.347
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 4.357117781999994,
+     "p95": 4.9867786039999915,
+     "ci95": [
+      4.199198971000005,
+      4.502260924999951
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 4.799,
+     "p95": 5.531,
+     "ci95": [
+      4.663,
+      4.883
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 4.852,
+     "p95": 5.487,
+     "ci95": [
+      4.638,
+      5.069
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 4.866,
+     "p95": 8.172,
+     "ci95": [
+      4.219,
+      5.046
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 5.638,
+     "p95": 6.381,
+     "ci95": [
+      5.218,
+      5.861
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 7.509,
+     "p95": 20.298,
+     "ci95": [
+      7.394,
+      8.385
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 2.367,
+     "p95": 3.322,
+     "ci95": [
+      2.349,
+      2.479
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 2.936,
+     "p95": 3.657,
+     "ci95": [
+      2.718,
+      3.174
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 4.114,
+     "p95": 4.405,
+     "ci95": [
+      4.069,
+      4.195
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 9
+  },
+  {
+   "id": "git-clone",
+   "group": "Tool calls and agent steps",
+   "label": "git clone",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.41947376000002257,
+     "p95": 0.6305021300000372,
+     "ci95": [
+      0.4084749369999627,
+      0.4699965629999933
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.431,
+     "p95": 0.58,
+     "ci95": [
+      0.41,
+      0.438
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.433,
+     "p95": 1.042,
+     "ci95": [
+      0.417,
+      0.451
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.55,
+     "p95": 0.623,
+     "ci95": [
+      0.528,
+      0.575
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.594,
+     "p95": 1.101,
+     "ci95": [
+      0.554,
+      0.619
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.615,
+     "p95": 0.672,
+     "ci95": [
+      0.596,
+      0.631
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 0.69,
+     "p95": 1.704,
+     "ci95": [
+      0.665,
+      0.723
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.86,
+     "p95": 1.093,
+     "ci95": [
+      0.838,
+      0.913
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 1.018,
+     "p95": 2.705,
+     "ci95": [
+      0.849,
+      1.055
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.176,
+     "p95": 2.146,
+     "ci95": [
+      1.1,
+      1.287
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.179,
+     "p95": 2.116,
+     "ci95": [
+      1.14,
+      1.28
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 1.305,
+     "p95": 1.785,
+     "ci95": [
+      1.248,
+      1.352
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 1.521,
+     "p95": 2.572,
+     "ci95": [
+      1.396,
+      1.658
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 2.13,
+     "p95": 2.35,
+     "ci95": [
+      2.119,
+      2.149
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.487,
+     "p95": 0.668,
+     "ci95": [
+      0.471,
+      0.51
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 1.072,
+     "p95": 1.304,
+     "ci95": [
+      1.054,
+      1.113
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 1.08,
+     "p95": 1.305,
+     "ci95": [
+      1.072,
+      1.089
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "dev-server",
+   "group": "Tool calls and agent steps",
+   "label": "Dev server ready",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.5125434640000022,
+     "p95": 0.6126229999999924,
+     "ci95": [
+      0.4980002910000039,
+      0.5462199569999939
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.895,
+     "p95": 0.956,
+     "ci95": [
+      0.765,
+      0.922
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 1.127,
+     "p95": 1.3,
+     "ci95": [
+      1.088,
+      1.144
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 1.161,
+     "p95": 1.249,
+     "ci95": [
+      1.107,
+      1.194
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 1.321,
+     "p95": 1.66,
+     "ci95": [
+      1.318,
+      1.344
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 1.386,
+     "p95": 3.987,
+     "ci95": [
+      1.37,
+      1.437
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 1.559,
+     "p95": 1.904,
+     "ci95": [
+      1.524,
+      1.689
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.942,
+     "p95": 4.55,
+     "ci95": [
+      1.916,
+      1.994
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 2.186,
+     "p95": 3.414,
+     "ci95": [
+      2.102,
+      2.307
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 2.247,
+     "p95": 4.785,
+     "ci95": [
+      2.115,
+      2.466
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 2.556,
+     "p95": 6.611,
+     "ci95": [
+      2.499,
+      2.608
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 3.131,
+     "p95": 3.264,
+     "ci95": [
+      3.101,
+      3.172
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 3.74,
+     "p95": 5.558,
+     "ci95": [
+      3.679,
+      3.812
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 4.028,
+     "p95": 4.83,
+     "ci95": [
+      3.876,
+      4.098
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.666,
+     "p95": 0.908,
+     "ci95": [
+      0.661,
+      0.689
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 1.106,
+     "p95": 1.18,
+     "ci95": [
+      1.094,
+      1.118
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 1.127,
+     "p95": 1.184,
+     "ci95": [
+      1.104,
+      1.136
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "preview-first-byte",
+   "group": "Tool calls and agent steps",
+   "label": "Preview URL first byte",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.14073138900002233,
+     "p95": 0.1584160949999932,
+     "ci95": [
+      0.13081392700001016,
+      0.1443340770000068
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.145,
+     "p95": 0.181,
+     "ci95": [
+      0.143,
+      0.147
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.161,
+     "p95": 0.185,
+     "ci95": [
+      0.153,
+      0.17
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.181,
+     "p95": 0.231,
+     "ci95": [
+      0.178,
+      0.191
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.222,
+     "p95": 0.333,
+     "ci95": [
+      0.21,
+      0.252
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.253,
+     "p95": 0.44,
+     "ci95": [
+      0.247,
+      0.268
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.273,
+     "p95": 0.487,
+     "ci95": [
+      0.265,
+      0.284
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.294,
+     "p95": 0.412,
+     "ci95": [
+      0.284,
+      0.306
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 0.306,
+     "p95": 0.733,
+     "ci95": [
+      0.292,
+      0.341
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 0.377,
+     "p95": 0.489,
+     "ci95": [
+      0.372,
+      0.388
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.418,
+     "p95": 0.606,
+     "ci95": [
+      0.391,
+      0.447
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.482,
+     "p95": 0.651,
+     "ci95": [
+      0.448,
+      0.511
+     ],
+     "attempts": 30,
+     "failed": 1,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 0.49,
+     "p95": 1.03,
+     "ci95": [
+      0.481,
+      0.501
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 0.865,
+     "p95": 1.119,
+     "ci95": [
+      0.822,
+      0.966
+     ],
+     "attempts": 29,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.212,
+     "p95": 0.228,
+     "ci95": [
+      0.207,
+      0.217
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.213,
+     "p95": 0.26,
+     "ci95": [
+      0.207,
+      0.219
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.235,
+     "p95": 0.307,
+     "ci95": [
+      0.229,
+      0.241
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "edit-loop",
+   "group": "Tool calls and agent steps",
+   "label": "Edit, rebuild, reload",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.18173945799999638,
+     "p95": 0.23031692300003487,
+     "ci95": [
+      0.17273910700000125,
+      0.1864731540000066
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.205,
+     "p95": 0.235,
+     "ci95": [
+      0.204,
+      0.207
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.223,
+     "p95": 0.259,
+     "ci95": [
+      0.211,
+      0.235
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.271,
+     "p95": 0.506,
+     "ci95": [
+      0.253,
+      0.293
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.302,
+     "p95": 1.558,
+     "ci95": [
+      0.291,
+      0.322
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.313,
+     "p95": 0.757,
+     "ci95": [
+      0.298,
+      0.336
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.333,
+     "p95": 0.561,
+     "ci95": [
+      0.323,
+      0.344
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.352,
+     "p95": 0.379,
+     "ci95": [
+      0.348,
+      0.359
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 0.427,
+     "p95": 0.932,
+     "ci95": [
+      0.42,
+      0.432
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.473,
+     "p95": 0.716,
+     "ci95": [
+      0.466,
+      0.483
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.493,
+     "p95": 0.895,
+     "ci95": [
+      0.454,
+      0.507
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 0.515,
+     "p95": 0.612,
+     "ci95": [
+      0.503,
+      0.536
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 0.556,
+     "p95": 2.481,
+     "ci95": [
+      0.531,
+      0.587
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 1.112,
+     "p95": 1.404,
+     "ci95": [
+      1.102,
+      1.144
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.333,
+     "p95": 0.338,
+     "ci95": [
+      0.331,
+      0.335
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.367,
+     "p95": 0.373,
+     "ci95": [
+      0.364,
+      0.369
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.374,
+     "p95": 0.382,
+     "ci95": [
+      0.373,
+      0.376
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "command",
+   "group": "Everyday calls",
+   "label": "Run a command",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.02810539699997753,
+     "p95": 0.038270030999963636,
+     "ci95": [
+      0.026752411999972536,
+      0.029621105000027455
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.065,
+     "p95": 0.088,
+     "ci95": [
+      0.065,
+      0.066
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.077,
+     "p95": 0.089,
+     "ci95": [
+      0.074,
+      0.08
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.134,
+     "p95": 0.193,
+     "ci95": [
+      0.133,
+      0.136
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.134,
+     "p95": 0.303,
+     "ci95": [
+      0.13,
+      0.138
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.16,
+     "p95": 0.257,
+     "ci95": [
+      0.158,
+      0.164
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.178,
+     "p95": 0.241,
+     "ci95": [
+      0.147,
+      0.185
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 0.183,
+     "p95": 0.207,
+     "ci95": [
+      0.177,
+      0.187
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.188,
+     "p95": 0.222,
+     "ci95": [
+      0.187,
+      0.191
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 0.196,
+     "p95": 0.731,
+     "ci95": [
+      0.188,
+      0.202
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.308,
+     "p95": 0.383,
+     "ci95": [
+      0.305,
+      0.311
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 0.325,
+     "p95": 0.408,
+     "ci95": [
+      0.321,
+      0.33
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 0.335,
+     "p95": 0.393,
+     "ci95": [
+      0.333,
+      0.338
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.336,
+     "p95": 0.443,
+     "ci95": [
+      0.327,
+      0.347
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.064,
+     "p95": 0.095,
+     "ci95": [
+      0.064,
+      0.066
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.093,
+     "p95": 0.103,
+     "ci95": [
+      0.093,
+      0.094
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.095,
+     "p95": 0.099,
+     "ci95": [
+      0.094,
+      0.095
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "files-1kb",
+   "group": "Everyday calls",
+   "label": "Write + read 1 KB",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.097,
+     "p95": 0.11,
+     "ci95": [
+      0.096,
+      0.099
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.109,
+     "p95": 0.117,
+     "ci95": [
+      0.108,
+      0.109
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.12832523200000287,
+     "p95": 0.15937925100000574,
+     "ci95": [
+      0.1249609009999549,
+      0.1336109700000379
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.16,
+     "p95": 0.214,
+     "ci95": [
+      0.158,
+      0.163
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.176,
+     "p95": 0.522,
+     "ci95": [
+      0.169,
+      0.181
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.189,
+     "p95": 0.21,
+     "ci95": [
+      0.178,
+      0.193
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.21,
+     "p95": 2.386,
+     "ci95": [
+      0.208,
+      0.219
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.234,
+     "p95": 0.383,
+     "ci95": [
+      0.23,
+      0.236
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.254,
+     "p95": 0.43,
+     "ci95": [
+      0.246,
+      0.265
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 0.265,
+     "p95": 0.337,
+     "ci95": [
+      0.218,
+      0.292
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.291,
+     "p95": 0.317,
+     "ci95": [
+      0.289,
+      0.294
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 0.357,
+     "p95": 0.707,
+     "ci95": [
+      0.354,
+      0.363
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 0.42,
+     "p95": 1.767,
+     "ci95": [
+      0.414,
+      0.435
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 0.799,
+     "p95": 0.966,
+     "ci95": [
+      0.789,
+      0.815
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.152,
+     "p95": 0.162,
+     "ci95": [
+      0.152,
+      0.153
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.155,
+     "p95": 0.162,
+     "ci95": [
+      0.154,
+      0.156
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.165,
+     "p95": 0.174,
+     "ci95": [
+      0.164,
+      0.165
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 3
+  },
+  {
+   "id": "files-10mb",
+   "group": "Everyday calls",
+   "label": "Write + read 10 MB",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.4436175119999971,
+     "p95": 0.5366218169999775,
+     "ci95": [
+      0.4317176040000049,
+      0.4504753310000524
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.664,
+     "p95": 0.855,
+     "ci95": [
+      0.642,
+      0.684
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.696,
+     "p95": 0.919,
+     "ci95": [
+      0.669,
+      0.745
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.921,
+     "p95": 2.997,
+     "ci95": [
+      0.885,
+      0.951
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 1.048,
+     "p95": 2.723,
+     "ci95": [
+      1.003,
+      1.096
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 1.115,
+     "p95": 2.339,
+     "ci95": [
+      1.09,
+      1.186
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.325,
+     "p95": 2.268,
+     "ci95": [
+      1.297,
+      1.363
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 2.036,
+     "p95": 3.62,
+     "ci95": [
+      1.938,
+      2.63
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 2.537,
+     "p95": 3.556,
+     "ci95": [
+      2.511,
+      2.576
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 2.873,
+     "p95": 6.929,
+     "ci95": [
+      2.461,
+      3.265
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 3.229,
+     "p95": 10.778,
+     "ci95": [
+      3.057,
+      3.655
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 4.779,
+     "p95": 19.071,
+     "ci95": [
+      4.221,
+      5.212
+     ],
+     "attempts": 95,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 7.544,
+     "p95": 26.769,
+     "ci95": [
+      7.14,
+      7.848
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 7.733,
+     "p95": 12.885,
+     "ci95": [
+      6.654,
+      8.49
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 1.185,
+     "p95": 2.166,
+     "ci95": [
+      1.175,
+      1.205
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 20.359,
+     "p95": 47.602,
+     "ci95": [
+      19.78,
+      21.199
+     ],
+     "attempts": 100,
+     "failed": 1,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 27.985,
+     "p95": 32.684,
+     "ci95": [
+      27.075,
+      28.502
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "reconnect",
+   "group": "Everyday calls",
+   "label": "Reconnect",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.1527052380000241,
+     "p95": 0.18807406700006687,
+     "ci95": [
+      0.1505669790000029,
+      0.1553473810000578
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.189,
+     "p95": 0.208,
+     "ci95": [
+      0.183,
+      0.194
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.211,
+     "p95": 0.255,
+     "ci95": [
+      0.21,
+      0.216
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.298,
+     "p95": 0.706,
+     "ci95": [
+      0.285,
+      0.32
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.331,
+     "p95": 0.385,
+     "ci95": [
+      0.326,
+      0.337
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.44,
+     "p95": 0.534,
+     "ci95": [
+      0.427,
+      0.449
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.46,
+     "p95": 1.828,
+     "ci95": [
+      0.454,
+      0.464
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 0.484,
+     "p95": 1.551,
+     "ci95": [
+      0.473,
+      0.496
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.495,
+     "p95": 0.79,
+     "ci95": [
+      0.478,
+      0.508
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.523,
+     "p95": 0.6,
+     "ci95": [
+      0.52,
+      0.527
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 0.599,
+     "p95": 0.814,
+     "ci95": [
+      0.588,
+      0.628
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 0.642,
+     "p95": 0.726,
+     "ci95": [
+      0.632,
+      0.653
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 0.691,
+     "p95": 1,
+     "ci95": [
+      0.683,
+      0.695
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.786,
+     "p95": 1.133,
+     "ci95": [
+      0.76,
+      0.814
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.253,
+     "p95": 0.301,
+     "ci95": [
+      0.252,
+      0.256
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.291,
+     "p95": 0.301,
+     "ci95": [
+      0.29,
+      0.293
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.297,
+     "p95": 0.309,
+     "ci95": [
+      0.297,
+      0.299
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 1
+  },
+  {
+   "id": "destroy",
+   "group": "Everyday calls",
+   "label": "Destroy",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 0.036,
+     "p95": 0.04,
+     "ci95": [
+      0.036,
+      0.037
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.044,
+     "p95": 0.078,
+     "ci95": [
+      0.042,
+      0.046
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.057358232000027785,
+     "p95": 0.09150195900001563,
+     "ci95": [
+      0.053901045000064186,
+      0.05983133899999666
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 0.114,
+     "p95": 0.15,
+     "ci95": [
+      0.114,
+      0.115
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 0.123,
+     "p95": 0.157,
+     "ci95": [
+      0.114,
+      0.126
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.126,
+     "p95": 0.2,
+     "ci95": [
+      0.119,
+      0.133
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 0.182,
+     "p95": 0.218,
+     "ci95": [
+      0.181,
+      0.185
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.185,
+     "p95": 0.418,
+     "ci95": [
+      0.178,
+      0.196
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.193,
+     "p95": 0.385,
+     "ci95": [
+      0.18,
+      0.215
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.265,
+     "p95": 0.407,
+     "ci95": [
+      0.257,
+      0.276
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.265,
+     "p95": 0.731,
+     "ci95": [
+      0.263,
+      0.268
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 0.846,
+     "p95": 2.534,
+     "ci95": [
+      0.802,
+      0.9
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 1.033,
+     "p95": 12.074,
+     "ci95": [
+      0.706,
+      1.666
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 2.197,
+     "p95": 2.41,
+     "ci95": [
+      1.876,
+      2.2
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 0.038,
+     "p95": 0.053,
+     "ci95": [
+      0.038,
+      0.039
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 0.046,
+     "p95": 0.049,
+     "ci95": [
+      0.046,
+      0.046
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.051,
+     "p95": 0.056,
+     "ci95": [
+      0.05,
+      0.051
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 3
+  },
+  {
+   "id": "pause-resume",
+   "group": "Pause and snapshots",
+   "label": "Pause + resume",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.4204043920000549,
+     "p95": 1.4739442909999998,
+     "ci95": [
+      0.40600139600003604,
+      0.4352956240000203
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.725,
+     "p95": 2.609,
+     "ci95": [
+      0.682,
+      0.808
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.928,
+     "p95": 1.349,
+     "ci95": [
+      0.91,
+      0.953
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 1.636,
+     "p95": 11.733,
+     "ci95": [
+      1.271,
+      2.053
+     ],
+     "attempts": 99,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.809,
+     "p95": 3.493,
+     "ci95": [
+      1.634,
+      1.962
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 2.847,
+     "p95": 4.932,
+     "ci95": [
+      2.712,
+      3.138
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 63.779,
+     "p95": 84.195,
+     "ci95": [
+      60.58,
+      67.704
+     ],
+     "attempts": 77,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.162,
+     "p95": 0.2,
+     "ci95": [
+      0.161,
+      0.165
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Daytona's container sandboxes have no pause: stop and start restarts the sandbox and ends every running process.",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Upstash Ephemeral Box has no pause and resume",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Boat has no pause: stop and start restarts the machine and ends every running process.",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 100,
+     "failed": 0,
+     "note": "Vercel Sandbox's pause keeps files but not processes: pause stops the session, and resume starts a new one from the saved file system, ending every running process.",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Modal sandboxes can't stop and run again, so Modal has no pause and resume",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 100,
+     "failed": 0,
+     "note": "no pause call. A sandbox goes on standby by itself about 15 s after its last request, keeping its memory, files and running processes, and the next request resumes it. Only its resume is timed, so it isn't ranked as a pause + resume total: the first command after standby took 0.21 s (median of 100, after 30 s with no requests).",
+     "status": "standby",
+     "ranked": false
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Beam sandboxes have no pause and resume (Beam's persistent VMs do; they are a different product and weren't tested)",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    }
+   ],
+   "of": 7,
+   "jasmineRank": 1
+  },
+  {
+   "id": "snapshot",
+   "group": "Pause and snapshots",
+   "label": "Take snapshot",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.19343633699999918,
+     "p95": 0.259276853000003,
+     "ci95": [
+      0.18975633899999958,
+      0.20026341200000025
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.385,
+     "p95": 0.408,
+     "ci95": [
+      0.379,
+      0.39
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.429,
+     "p95": 1.108,
+     "ci95": [
+      0.374,
+      0.54
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.944,
+     "p95": 1.209,
+     "ci95": [
+      0.879,
+      0.981
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 1.15,
+     "p95": 1.197,
+     "ci95": [
+      1.144,
+      1.155
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.833,
+     "p95": 2.192,
+     "ci95": [
+      1.092,
+      2.02
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 2.122,
+     "p95": 2.132,
+     "ci95": [
+      2.12,
+      2.123
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 2.139,
+     "p95": 8.373,
+     "ci95": [
+      2.132,
+      4.197
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 6.873,
+     "p95": 8.802,
+     "ci95": [
+      6.739,
+      6.888
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 7.353,
+     "p95": 49.311,
+     "ci95": [
+      6.824,
+      11.523
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 84.009,
+     "p95": 246.134,
+     "ci95": [
+      45.375,
+      182.34
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.652,
+     "p95": 0.667,
+     "ci95": [
+      0.649,
+      0.653
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Baseten's sandbox API has no snapshots yet",
+     "status": "not-available",
+     "ranked": false
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Beam sandboxes take memory snapshots, but Beam has no way to delete one, and our runs delete everything they make",
+     "status": "not-run",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    }
+   ],
+   "of": 11,
+   "jasmineRank": 1
+  },
+  {
+   "id": "create-from-snapshot",
+   "group": "Pause and snapshots",
+   "label": "Start from snapshot",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.10443797600000107,
+     "p95": 0.14105719800000224,
+     "ci95": [
+      0.10079352199999267,
+      0.10791471399998409
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.546,
+     "p95": 0.635,
+     "ci95": [
+      0.542,
+      0.558
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 0.752,
+     "p95": 1.143,
+     "ci95": [
+      0.708,
+      0.82
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.98,
+     "p95": 1.426,
+     "ci95": [
+      0.94,
+      1.033
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.122,
+     "p95": 3.185,
+     "ci95": [
+      0.821,
+      1.561
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 1.124,
+     "p95": 1.562,
+     "ci95": [
+      1.066,
+      1.176
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 1.126,
+     "p95": 1.215,
+     "ci95": [
+      1.108,
+      1.134
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.882,
+     "p95": 2.902,
+     "ci95": [
+      1.687,
+      1.958
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 2.376,
+     "p95": 4.631,
+     "ci95": [
+      2.284,
+      3.002
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 4.893,
+     "p95": 13.097,
+     "ci95": [
+      4.812,
+      6.881
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 5.953,
+     "p95": 28.168,
+     "ci95": [
+      5.362,
+      23.916
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 0.539,
+     "p95": 0.789,
+     "ci95": [
+      0.515,
+      0.563
+     ],
+     "attempts": 30,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Baseten's sandbox API has no snapshots yet",
+     "status": "not-available",
+     "ranked": false
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "Beam sandboxes take memory snapshots, but Beam has no way to delete one, and our runs delete everything they make",
+     "status": "not-run",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    }
+   ],
+   "of": 11,
+   "jasmineRank": 1
+  },
+  {
+   "id": "burst-10",
+   "group": "Bursts",
+   "label": "10 at once, all ready",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.42,
+     "p95": 0.582,
+     "ci95": [
+      0.405,
+      0.582
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 0.555800752000001,
+     "p95": 0.5912338450000001,
+     "ci95": [
+      0.5320937089999971,
+      0.5912338450000001
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.786,
+     "p95": 1.143,
+     "ci95": [
+      0.755,
+      1.143
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.84,
+     "p95": 1.568,
+     "ci95": [
+      0.581,
+      1.568
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 0.854,
+     "p95": 1.09,
+     "ci95": [
+      0.753,
+      1.09
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 0.927,
+     "p95": 1.875,
+     "ci95": [
+      0.596,
+      1.875
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 1.15,
+     "p95": 7.978,
+     "ci95": [
+      0.997,
+      7.978
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.159,
+     "p95": 1.208,
+     "ci95": [
+      0.86,
+      1.208
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.194,
+     "p95": 1.203,
+     "ci95": [
+      1.065,
+      1.203
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 1.774,
+     "p95": 1.858,
+     "ci95": [
+      1.641,
+      1.858
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 2.946,
+     "p95": 9.93,
+     "ci95": [
+      2.259,
+      9.93
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 2.966,
+     "p95": 4.828,
+     "ci95": [
+      2.74,
+      4.828
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 3.14,
+     "p95": 3.204,
+     "ci95": [
+      3.114,
+      3.204
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 1.415,
+     "p95": 1.674,
+     "ci95": [
+      1.289,
+      1.674
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "our Beam account's quota is 30 vCPU, and 10 sandboxes at 4 vCPU need 40",
+     "status": "not-run",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    }
+   ],
+   "of": 13,
+   "jasmineRank": 2
+  },
+  {
+   "id": "burst-25",
+   "group": "Bursts",
+   "label": "25 at once, all ready",
+   "unit": "s",
+   "better": "lower",
+   "rows": [
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 0.622,
+     "p95": 0.623,
+     "ci95": [
+      0.587,
+      0.623
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 0.79,
+     "p95": 1.019,
+     "ci95": [
+      0.752,
+      1.019
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 0.972,
+     "p95": 1.133,
+     "ci95": [
+      0.844,
+      1.133
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 1.109,
+     "p95": 1.282,
+     "ci95": [
+      0.942,
+      1.282
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 1.124,
+     "p95": 1.128,
+     "ci95": [
+      0.995,
+      1.128
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 1.193,
+     "p95": 1.283,
+     "ci95": [
+      1.18,
+      1.283
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 1.2472258580000015,
+     "p95": 1.292090174,
+     "ci95": [
+      1.187815893999992,
+      1.292090174
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 1.918,
+     "p95": 2.339,
+     "ci95": [
+      1.82,
+      2.339
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 2.037,
+     "p95": 4.783,
+     "ci95": [
+      1.441,
+      4.783
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 2.868,
+     "p95": 91.559,
+     "ci95": [
+      2.45,
+      91.559
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 4.419,
+     "p95": 4.881,
+     "ci95": [
+      4.323,
+      4.881
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 5.255,
+     "p95": 5.623,
+     "ci95": [
+      2.334,
+      5.623
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 5.405,
+     "p95": 5.732,
+     "ci95": [
+      2.83,
+      5.732
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 4.701,
+     "p95": 4.754,
+     "ci95": [
+      3.528,
+      4.754
+     ],
+     "attempts": 3,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "our Beam account's quota is 30 vCPU, and 25 sandboxes at 4 vCPU need 100",
+     "status": "not-run",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": null,
+     "p95": null,
+     "ci95": null,
+     "attempts": 0,
+     "failed": 0,
+     "note": "unsupported",
+     "status": "unsupported",
+     "ranked": false
+    }
+   ],
+   "of": 13,
+   "jasmineRank": 7
+  },
+  {
+   "id": "cpu-single",
+   "group": "Machine speed",
+   "label": "CPU, one core",
+   "unit": "ops/s",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 20129332.167,
+     "p95": 21990914.454,
+     "ci95": [
+      19731320.191,
+      20412739.468
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 19389801.399,
+     "p95": 20883728.38,
+     "ci95": [
+      17233015.355,
+      19780810.813
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 19167724.7410453,
+     "p95": 19404986.076243065,
+     "ci95": [
+      19135752.491748024,
+      19214299.250759583
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 19036604.287,
+     "p95": 19372317.539,
+     "ci95": [
+      18959475.543,
+      19113736.557
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 19008462.701,
+     "p95": 21528929.456,
+     "ci95": [
+      18132239.036,
+      19416272.673
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 18594166.82,
+     "p95": 18969949.57,
+     "ci95": [
+      18556426.205,
+      18625074.293
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 13713334.928,
+     "p95": 13771325.536,
+     "ci95": [
+      13705574.473,
+      13721962.163
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 13710323.35,
+     "p95": 13765155.972,
+     "ci95": [
+      13699910.961,
+      13720266.633
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 13380440.154,
+     "p95": 24263341.301,
+     "ci95": [
+      13170416.857,
+      13540362.772
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 12616929.125,
+     "p95": 12895642.17,
+     "ci95": [
+      12551097.4,
+      12662430.012
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 10829841.125,
+     "p95": 11860523.423,
+     "ci95": [
+      10236386.1,
+      11277418.068
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 10251510.56,
+     "p95": 15304689.118,
+     "ci95": [
+      9812453.69,
+      10586720.16
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 9734199.883,
+     "p95": 10391729.55,
+     "ci95": [
+      9614330.552,
+      9935928.466
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 9203127.491,
+     "p95": 10071902.478,
+     "ci95": [
+      9055442.433,
+      9349823.468
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 29670811.837,
+     "p95": 30129794.938,
+     "ci95": [
+      29465606.168,
+      29724069.383
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 29448684.695,
+     "p95": 30085525.628,
+     "ci95": [
+      29256871.942,
+      29582077.426
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 12242868.391,
+     "p95": 12794927.722,
+     "ci95": [
+      12082697.461,
+      12425542.422
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 3
+  },
+  {
+   "id": "cpu-all",
+   "group": "Machine speed",
+   "label": "CPU, all cores",
+   "unit": "ops/s",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 53922715.807,
+     "p95": 70093491.926,
+     "ci95": [
+      51613692.416,
+      55234885.591
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 50971602.039,
+     "p95": 52000982.735,
+     "ci95": [
+      50833655.166,
+      51259146.005
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 50221612.911,
+     "p95": 70516909.929,
+     "ci95": [
+      48211429.488,
+      51975659.799
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 48194747.852,
+     "p95": 50507719.291,
+     "ci95": [
+      47764670.318,
+      49132415.556
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 43603045.202,
+     "p95": 59778516.71,
+     "ci95": [
+      42396617.174,
+      44874063.745
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 41901317.537,
+     "p95": 44962300.235,
+     "ci95": [
+      41110383.651,
+      42501004.777
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 36620672.536,
+     "p95": 50318522.537,
+     "ci95": [
+      34519769.17,
+      39471763.598
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 36574449.83,
+     "p95": 62919741.528,
+     "ci95": [
+      34331666.437,
+      37539446.92
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 33827807.075,
+     "p95": 36319159.92,
+     "ci95": [
+      33013031.275,
+      34258925.861
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 30649847.021632884,
+     "p95": 36625305.52600916,
+     "ci95": [
+      30111601.046098053,
+      31235639.658695314
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 27694134.573,
+     "p95": 30566164.929,
+     "ci95": [
+      26972322.965,
+      28383751.349
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 26718791.109,
+     "p95": 39609322.949,
+     "ci95": [
+      25564781.303,
+      31256978.853
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 26538239.281,
+     "p95": 37838605.859,
+     "ci95": [
+      24839733.419,
+      27024762.425
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 25891074.345,
+     "p95": 28534089.651,
+     "ci95": [
+      25326459.643,
+      26302225.417
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 71228282.586,
+     "p95": 76911161.609,
+     "ci95": [
+      70001650.289,
+      72640269.495
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 71084748.463,
+     "p95": 76841584.945,
+     "ci95": [
+      69773011.126,
+      71708223.255
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 31935247.071,
+     "p95": 39586674.346,
+     "ci95": [
+      30368026.853,
+      33323411.01
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 10
+  },
+  {
+   "id": "memory",
+   "group": "Machine speed",
+   "label": "Memory bandwidth",
+   "unit": "MB/s",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 45885.83,
+     "p95": 51681.928,
+     "ci95": [
+      39082.931,
+      47872.641
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 41968.771,
+     "p95": 44108.977,
+     "ci95": [
+      41768.127,
+      43445.468
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 33813.023,
+     "p95": 40388.076,
+     "ci95": [
+      32966.088,
+      35282.269
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 31988.28,
+     "p95": 51140.506,
+     "ci95": [
+      29168.733,
+      35651.044
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 31575.622,
+     "p95": 47650.692,
+     "ci95": [
+      29208.144,
+      34030.639
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 29883.933,
+     "p95": 33205.612,
+     "ci95": [
+      29341.051,
+      30888.712
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 22843.822,
+     "p95": 47078.631,
+     "ci95": [
+      22518.778,
+      23811.105
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 19357.723,
+     "p95": 20203.918,
+     "ci95": [
+      19221.778,
+      19546.349
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 16526.611,
+     "p95": 17224.461,
+     "ci95": [
+      16254.29,
+      16830.239
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 14740.736,
+     "p95": 20495.572,
+     "ci95": [
+      13534.836,
+      16331.047
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 14467.08,
+     "p95": 14649.745,
+     "ci95": [
+      14375.897,
+      14488.946
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 14155.272292100026,
+     "p95": 14235.697373776069,
+     "ci95": [
+      14141.576014029377,
+      14165.713580085274
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 12301.749,
+     "p95": 14016.831,
+     "ci95": [
+      11724.035,
+      12682.019
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 7830.429,
+     "p95": 14492.102,
+     "ci95": [
+      6810.15,
+      9222.054
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 36466.812,
+     "p95": 40386.527,
+     "ci95": [
+      35455.608,
+      37770.651
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 35313.93,
+     "p95": 40289.584,
+     "ci95": [
+      34273.552,
+      36551.62
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 26961.152,
+     "p95": 28125.642,
+     "ci95": [
+      26778.42,
+      27134.298
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 12
+  },
+  {
+   "id": "disk-write",
+   "group": "Machine speed",
+   "label": "Disk write",
+   "unit": "MB/s",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 8275.036,
+     "p95": 10500.986,
+     "ci95": [
+      7887.409,
+      9043.114
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 2394.637,
+     "p95": 2689.89,
+     "ci95": [
+      2192.802,
+      2432.254
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 2383.636,
+     "p95": 2874.851,
+     "ci95": [
+      2373.118,
+      2438.858
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 2029.368,
+     "p95": 2300.021,
+     "ci95": [
+      2003.141,
+      2059.803
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 1551.886,
+     "p95": 2208.41,
+     "ci95": [
+      1215.897,
+      1839.678
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 1380.861,
+     "p95": 2935.928,
+     "ci95": [
+      1249.307,
+      1862.095
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 1110.265,
+     "p95": 1173.578,
+     "ci95": [
+      1102.147,
+      1121.81
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 938.152,
+     "p95": 1615.038,
+     "ci95": [
+      804.034,
+      1066.171
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 866.805,
+     "p95": 1040.304,
+     "ci95": [
+      749.784,
+      902.371
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 443.502,
+     "p95": 598.897,
+     "ci95": [
+      407.25,
+      461.209
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 423.175,
+     "p95": 909.63,
+     "ci95": [
+      373.329,
+      498.983
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 241.31817460361998,
+     "p95": 525.2759332300159,
+     "ci95": [
+      238.78817097173666,
+      242.8418502353795
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 198.151,
+     "p95": 249.083,
+     "ci95": [
+      187.26,
+      214.794
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 157.063,
+     "p95": 855.377,
+     "ci95": [
+      154.427,
+      161.553
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 4518.574,
+     "p95": 5266.821,
+     "ci95": [
+      4447.139,
+      4588.527
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 4505.875,
+     "p95": 5166.127,
+     "ci95": [
+      4458.392,
+      4568.297
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 656.615,
+     "p95": 689.267,
+     "ci95": [
+      652.733,
+      662.538
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 12
+  },
+  {
+   "id": "disk-read",
+   "group": "Machine speed",
+   "label": "Disk read",
+   "unit": "MB/s",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 23092.711,
+     "p95": 23890.318,
+     "ci95": [
+      22869.677,
+      23195.196
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 21262.672,
+     "p95": 26831.933,
+     "ci95": [
+      19963.536,
+      22524.976
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 20318.198,
+     "p95": 22819.306,
+     "ci95": [
+      19875.325,
+      20679.429
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 19270.955,
+     "p95": 27688.008,
+     "ci95": [
+      17715.953,
+      21526.894
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 17306.776,
+     "p95": 18932.84,
+     "ci95": [
+      16697.735,
+      17737.535
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 12077.76,
+     "p95": 20536.663,
+     "ci95": [
+      10478.657,
+      14319.661
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 6970.516,
+     "p95": 8821.793,
+     "ci95": [
+      6389.497,
+      7385.795
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 6900.989,
+     "p95": 7960.814,
+     "ci95": [
+      6713.619,
+      7075.62
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 6203.025,
+     "p95": 7452.042,
+     "ci95": [
+      5924.815,
+      6381.831
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 6082.867993456635,
+     "p95": 8839.000368659872,
+     "ci95": [
+      6017.5923627742195,
+      6150.449450487325
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 4788.841,
+     "p95": 8048.98,
+     "ci95": [
+      4613.883,
+      5397.632
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 3728.579,
+     "p95": 4961.174,
+     "ci95": [
+      3625.508,
+      3867.689
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 2804.165,
+     "p95": 2922.602,
+     "ci95": [
+      2776.818,
+      2832.414
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 1565.608,
+     "p95": 12866.35,
+     "ci95": [
+      1552.808,
+      2780.142
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 12269.058,
+     "p95": 16092.662,
+     "ci95": [
+      12154.045,
+      12623.216
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 11885.616,
+     "p95": 15014.784,
+     "ci95": [
+      11431.917,
+      12219.416
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 11625.287,
+     "p95": 14426.042,
+     "ci95": [
+      11317.048,
+      11825.107
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 10
+  },
+  {
+   "id": "iops-write",
+   "group": "Machine speed",
+   "label": "4K random write",
+   "unit": "IOPS",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 480360.571,
+     "p95": 535560.372,
+     "ci95": [
+      475246.348,
+      492937.135
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 121212.523,
+     "p95": 187062.714,
+     "ci95": [
+      109873.933,
+      124688.947
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 103059.457,
+     "p95": 141872.349,
+     "ci95": [
+      95923.801,
+      108182.758
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 45130.98,
+     "p95": 46944.463,
+     "ci95": [
+      44945.389,
+      45422.758
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 26746.597,
+     "p95": 37817.985,
+     "ci95": [
+      25210.374,
+      29415.181
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 20931.147,
+     "p95": 30020.422,
+     "ci95": [
+      19576.743,
+      22081.079
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 16975.311,
+     "p95": 33346.711,
+     "ci95": [
+      16525.147,
+      17527.769
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 16125.618,
+     "p95": 23119.182,
+     "ci95": [
+      15491.406,
+      17331.996
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 12551.507759674545,
+     "p95": 14457.721640400203,
+     "ci95": [
+      12221.15769785684,
+      12907.431781575957
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 6888.833,
+     "p95": 8888.347,
+     "ci95": [
+      6609.418,
+      7066.659
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 6114.298,
+     "p95": 8069.523,
+     "ci95": [
+      5591.298,
+      6318.835
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 5666.051,
+     "p95": 9375.102,
+     "ci95": [
+      4368.665,
+      6636.327
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 370.626,
+     "p95": 443.687,
+     "ci95": [
+      357.468,
+      376.473
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 340.386,
+     "p95": 547.421,
+     "ci95": [
+      304.65,
+      397.592
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 291384.578,
+     "p95": 326199.42,
+     "ci95": [
+      277914.986,
+      299316.833
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 276035.781,
+     "p95": 323627.868,
+     "ci95": [
+      242208.182,
+      296070.816
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 11805.657,
+     "p95": 13832.479,
+     "ci95": [
+      11541.664,
+      11995.463
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 9
+  },
+  {
+   "id": "iops-read",
+   "group": "Machine speed",
+   "label": "4K random read",
+   "unit": "IOPS",
+   "better": "higher",
+   "rows": [
+    {
+     "provider": "boat",
+     "name": "Boat",
+     "median": 796398.784,
+     "p95": 1027493.478,
+     "ci95": [
+      731978.601,
+      853689.037
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 1
+    },
+    {
+     "provider": "instabox",
+     "name": "Instabox",
+     "median": 784171.979,
+     "p95": 996904.145,
+     "ci95": [
+      760546.643,
+      806804.895
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 2
+    },
+    {
+     "provider": "superserve",
+     "name": "Superserve",
+     "median": 604306.629,
+     "p95": 719169.808,
+     "ci95": [
+      577458.371,
+      640208.068
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 3
+    },
+    {
+     "provider": "jasmine",
+     "name": "Jasmine",
+     "median": 600200.6921066022,
+     "p95": 655941.0063066895,
+     "ci95": [
+      594510.9914862635,
+      607935.9387500803
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 4
+    },
+    {
+     "provider": "vercel",
+     "name": "Vercel Sandbox",
+     "median": 595672.994,
+     "p95": 694037.782,
+     "ci95": [
+      562411.162,
+      613586.63
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 5
+    },
+    {
+     "provider": "upstash-ephemeral",
+     "name": "Upstash Ephemeral Box",
+     "median": 546103.474,
+     "p95": 581571.251,
+     "ci95": [
+      539993.806,
+      560548.617
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 6
+    },
+    {
+     "provider": "upstash",
+     "name": "Upstash Box",
+     "median": 501911.593,
+     "p95": 527207.164,
+     "ci95": [
+      498149.517,
+      505327.427
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 7
+    },
+    {
+     "provider": "e2b",
+     "name": "E2B",
+     "median": 452995.521,
+     "p95": 601548.989,
+     "ci95": [
+      436332.895,
+      476182.504
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 8
+    },
+    {
+     "provider": "daytona",
+     "name": "Daytona",
+     "median": 343015.972,
+     "p95": 403555.667,
+     "ci95": [
+      337260.263,
+      364131.318
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 9
+    },
+    {
+     "provider": "modal",
+     "name": "Modal",
+     "median": 316189.912,
+     "p95": 415677.538,
+     "ci95": [
+      308197.574,
+      321570.874
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 10
+    },
+    {
+     "provider": "baseten",
+     "name": "Baseten",
+     "median": 272355.202,
+     "p95": 665552.213,
+     "ci95": [
+      269447.874,
+      273252.333
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 11
+    },
+    {
+     "provider": "freestyle",
+     "name": "Freestyle",
+     "median": 258827.694,
+     "p95": 338060.923,
+     "ci95": [
+      245408.886,
+      271711.45
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 12
+    },
+    {
+     "provider": "tenki",
+     "name": "Luxor",
+     "median": 220965.863,
+     "p95": 617031.02,
+     "ci95": [
+      217487.526,
+      226656.987
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 13
+    },
+    {
+     "provider": "beam",
+     "name": "Beam",
+     "median": 128885.767,
+     "p95": 159946.718,
+     "ci95": [
+      118558.093,
+      142608.056
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": true,
+     "rank": 14
+    },
+    {
+     "provider": "boxd",
+     "name": "boxd",
+     "median": 460208.172,
+     "p95": 488798.682,
+     "ci95": [
+      455030.217,
+      468804.366
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-shared",
+     "name": "Beam Shared",
+     "median": 306615.836,
+     "p95": 332200.047,
+     "ci95": [
+      276241.603,
+      314852.554
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    },
+    {
+     "provider": "beam-spot",
+     "name": "Beam Spot",
+     "median": 305384.671,
+     "p95": 333338.976,
+     "ci95": [
+      292054.076,
+      314926.146
+     ],
+     "attempts": 100,
+     "failed": 0,
+     "note": null,
+     "status": "measured",
+     "ranked": false
+    }
+   ],
+   "of": 14,
+   "jasmineRank": 4
+  }
+ ],
+ "wins": 12,
+ "podium": 16,
+ "measured": 25
+}

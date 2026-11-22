@@ -3,19 +3,19 @@
 // Interface: { name, available(), endpoint, create() -> handle, exec(h, cmd) -> {exitCode, stdout},
 //              write(h, path, bytes), read(h, path) -> bytes, destroy(h) }
 
-import { Azami } from "../../sdk/typescript/dist/index.js";
+import { Jasmine } from "../../sdk/typescript/dist/index.js";
 
 export const adapters = {
-  azami: {
-    name: "azami",
+  jasmine: {
+    name: "jasmine",
     available: () => true,
-    endpoint: () => process.env.AZAMI_URL ?? "http://127.0.0.1:7171",
+    endpoint: () => process.env.JASMINE_URL ?? "http://127.0.0.1:7171",
     isolation: "Firecracker microVM",
     async init() {
-      this.client = new Azami();
+      this.client = new Jasmine();
     },
     create() {
-      return this.client.create({ template: process.env.AZAMI_TEMPLATE ?? "default" });
+      return this.client.create({ template: process.env.JASMINE_TEMPLATE ?? "default" });
     },
     async exec(s, cmd) {
       const r = await s.exec(cmd, { timeoutMs: 600_000 });

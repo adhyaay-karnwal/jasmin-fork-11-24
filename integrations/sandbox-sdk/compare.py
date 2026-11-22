@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Rank Azami's harness results against aisandboxbench.com's published results.
+"""Rank Jasmine's harness results against aisandboxbench.com's published results.
 
-    python3 compare.py published.json azami-main.json [azami-snapshot.json azami-burst.json ...]
+    python3 compare.py published.json jasmine-main.json [jasmine-snapshot.json jasmine-burst.json ...]
 
 Both sides come from the same harness (opencoredev/sandbox-sdk), so metric ids
-and definitions match. Azami's medians are converted to the published units.
+and definitions match. Jasmine's medians are converted to the published units.
 Prints a Markdown table; the caveats it prints are part of the result.
 """
 import json
@@ -22,7 +22,7 @@ ours = {}
 for path in sys.argv[2:]:
     r = json.load(open(path))
     for s in r["summaries"]:
-        if s["provider"] in ("azami", "warren") and s["stats"]["count"]:
+        if s["provider"] in ("jasmine", "warren") and s["stats"]["count"]:
             ours[s["scenario"]] = s
 
 # Published metric id -> harness scenario id (where they differ).
@@ -66,7 +66,7 @@ for m in pub["metrics"]:
     wins += rank == 1
     json_rows.append({
         "id": m["id"], "label": m["label"], "group": m.get("group"), "unit": m["unit"], "better": m["better"],
-        "azami": v, "rank": rank, "of": len(field) + 1,
+        "jasmine": v, "rank": rank, "of": len(field) + 1,
         "best": {"provider": names.get(best["provider"], best["provider"]), "median": best["median"]},
         "field": sorted([{"provider": names.get(r["provider"], r["provider"]), "median": r["median"]} for r in field],
                         key=lambda r: r["median"], reverse=not lower),
@@ -79,16 +79,16 @@ for m in pub["metrics"]:
         f"{s['stats']['count']} runs, {s['failures']} failed |"
     )
 
-print("| metric (same machine, 4 vCPU / 8 GB) | Azami median | Azami rank | published best | Azami sample |")
+print("| metric (same machine, 4 vCPU / 8 GB) | Jasmine median | Jasmine rank | published best | Jasmine sample |")
 print("|---|---|---|---|---|")
 print("\n".join(rows))
-print(f"\nAzami ranks first on {wins} of {measured} metrics it was measured on.")
+print(f"\nJasmine ranks first on {wins} of {measured} metrics it was measured on.")
 
 # Network-adjusted cold start. Cold start = create call + first command, so it
 # contains at least two client<->provider round trips; "Run a command" is about
 # one. Subtracting 2x each provider's own command median removes most of the
 # network distance on both sides (Florida->provider for published rows, this
-# client->Azami for ours). It is an estimate, shown next to the raw numbers.
+# client->Jasmine for ours). It is an estimate, shown next to the raw numbers.
 by_id = {m["id"]: {r["provider"]: r["median"] for r in m["results"] if r.get("median") is not None} for m in pub["metrics"]}
 cold, cmd = by_id.get("cold", {}), by_id.get("command", {})
 adj = sorted(
@@ -97,7 +97,7 @@ adj = sorted(
 )
 if "cold" in ours and "command" in ours:
     wc, wm = ours["cold"]["stats"]["p50"] / 1000, ours["command"]["stats"]["p50"] / 1000
-    adj.append(("**Azami**", wc, wm, wc - 2 * wm))
+    adj.append(("**Jasmine**", wc, wm, wc - 2 * wm))
     adj.sort(key=lambda x: x[3])
 print("\n| provider | cold start | run a command | cold - 2 x command (network-adjusted) |")
 print("|---|---|---|---|")
@@ -105,5 +105,5 @@ for n, c, m_, a in adj:
     print(f"| {n} | {c:.3f} s | {m_:.3f} s | {a:.3f} s |")
 
 if json_out:
-    json.dump({"source": "aisandboxbench.com/results.json (same-machine track) vs Azami on the same harness",
+    json.dump({"source": "aisandboxbench.com/results.json (same-machine track) vs Jasmine on the same harness",
                "wins": wins, "measured": measured, "rows": json_rows}, open(json_out, "w"), indent=1)

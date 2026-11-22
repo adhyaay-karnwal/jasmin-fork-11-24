@@ -91,7 +91,7 @@ impl Vm {
     /// Cold boot (template builds only; sandboxes are always restored).
     pub async fn boot(&self, kernel: &Path, vcpus: u32, mem_mib: u32) -> Result<()> {
         let args = format!(
-            "console=ttyS0 reboot=k panic=1 pci=off quiet loglevel=1 root=/dev/vda rw rootfstype=ext4 init=/.azami/agent {}",
+            "console=ttyS0 reboot=k panic=1 pci=off quiet loglevel=1 root=/dev/vda rw rootfstype=ext4 init=/.jasmine/agent {}",
             crate::net::KERNEL_IP_ARG
         );
         self.api("PUT", "/boot-source", json!({"kernel_image_path": kernel, "boot_args": args})).await?;

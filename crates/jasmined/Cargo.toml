@@ -1,12 +1,12 @@
 [package]
-name = "azamid"
+name = "jasmined"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Azami host daemon: Firecracker microVM sandboxes over HTTP"
+description = "Jasmine host daemon: Firecracker microVM sandboxes over HTTP"
 
 [dependencies]
-azami-proto = { path = "../proto" }
+jasmine-proto = { path = "../proto" }
 serde.workspace = true
 serde_json.workspace = true
 anyhow.workspace = true

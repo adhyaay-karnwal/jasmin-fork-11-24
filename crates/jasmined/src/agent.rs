@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::UnixStream;
-use azami_proto::{kind, ExecRequest, ExitStatus, PingReply, Request, AGENT_PORT, CHUNK, MAX_FRAME};
+use jasmine_proto::{kind, ExecRequest, ExitStatus, PingReply, Request, AGENT_PORT, CHUNK, MAX_FRAME};
 
 #[derive(Clone)]
 pub struct AgentClient {

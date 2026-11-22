@@ -1,13 +1,13 @@
-# Azami on aisandboxbench's harness: 2026-11-21
+# Jasmine on aisandboxbench's harness: 2026-11-21
 
-> Recorded before the project was renamed from Warren to Azami. Raw data files still use the old name `warren`.
+> Recorded before the project was renamed from Warren to Jasmine. Raw data files still use the old name `warren`.
 
-Harness: opencoredev/sandbox-sdk @ b23a99b, unmodified timing code, Azami adapter from `integrations/sandbox-sdk`.
+Harness: opencoredev/sandbox-sdk @ b23a99b, unmodified timing code, Jasmine adapter from `integrations/sandbox-sdk`.
 Flags mirror its `collection-plan.sh`: same-machine track (4 vCPU / 8 GB), main suite 100 runs (30 for workloads), snapshot suite 30, bursts 10/25 x 3 cohorts.
-Client: GitHub Actions runner (Azure, Des Moines, Iowa) -> Cloudflare quick tunnel -> azamid on the same runner (AMD EPYC, 4 vCPU, 16 GB, nested virtualization).
+Client: GitHub Actions runner (Azure, Des Moines, Iowa) -> Cloudflare quick tunnel -> jasmined on the same runner (AMD EPYC, 4 vCPU, 16 GB, nested virtualization).
 Published comparison: aisandboxbench.com/results.json, same-machine track, fetched 2026-11-21 (client: a server in Florida).
 
-| metric (same machine, 4 vCPU / 8 GB) | Azami median | Azami rank | published best | Azami sample |
+| metric (same machine, 4 vCPU / 8 GB) | Jasmine median | Jasmine rank | published best | Jasmine sample |
 |---|---|---|---|---|
 | Cold start | **0.0944 s** | 1 of 14 | Modal 0.376 | 30 runs, 0 failed |
 | Agent tool replay | **4.3 s** | 1 of 14 | Beam 10.9 | 30 runs, 0 failed |
@@ -35,12 +35,12 @@ Published comparison: aisandboxbench.com/results.json, same-machine track, fetch
 | 4K random write | **12,552 IOPS** | 9 of 14 | Baseten 480,361 | 100 runs, 0 failed |
 | 4K random read | **600,201 IOPS** | 4 of 14 | Boat 796,399 | 100 runs, 0 failed |
 
-Azami ranks first on 12 of 25 metrics it was measured on.
+Jasmine ranks first on 12 of 25 metrics it was measured on.
 
 | provider | cold start | run a command | cold - 2 x command (network-adjusted) |
 |---|---|---|---|
 | Vercel Sandbox | 0.517 s | 0.336 s | -0.155 s |
-| **Azami** | 0.094 s | 0.028 s | 0.038 s |
+| **Jasmine** | 0.094 s | 0.028 s | 0.038 s |
 | Upstash Ephemeral Box | 0.684 s | 0.308 s | 0.068 s |
 | Superserve | 0.520 s | 0.188 s | 0.144 s |
 | Modal | 0.376 s | 0.077 s | 0.222 s |
@@ -60,11 +60,11 @@ Burst suite run twice (0 failures in 210 creates); the table uses the first run.
 ## Caveats
 
 - **Client location differs.** The published numbers are timed from a server in Florida to each provider's
-  region. Azami's are timed from the GitHub runner through a Cloudflare tunnel; the tunnel adds roughly
+  region. Jasmine's are timed from the GitHub runner through a Cloudflare tunnel; the tunnel adds roughly
   25 ms per call, but that is not the same network path. `compare.py` prints a network-adjusted cold start
   (cold minus twice the provider's own command latency) as a sanity check, not as a ranking.
-- **Hardware differs.** Azami ran nested inside an Azure VM (the GitHub runner, 4 vCPU), which taxes
+- **Hardware differs.** Jasmine ran nested inside an Azure VM (the GitHub runner, 4 vCPU), which taxes
   memory and disk benchmarks and VM exits. Hosted providers run on their production fleets.
 - **Not a submission.** These are self-run results, not an aisandboxbench.com listing. Only the site's
   maintainers can publish a provider on the site.
-- **Cost is not compared.** Azami is self-hosted; its $0 price entry only satisfies the harness.
+- **Cost is not compared.** Jasmine is self-hosted; its $0 price entry only satisfies the harness.

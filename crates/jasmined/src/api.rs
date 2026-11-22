@@ -11,7 +11,7 @@ use serde_json::json;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Instant;
-use azami_proto::ExecRequest;
+use jasmine_proto::ExecRequest;
 
 #[derive(Clone)]
 struct AppState {

@@ -3,11 +3,11 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "azami"
+name = "jasmine-sdk"
 version = "0.1.0"
-description = "Python client for Azami sandboxes"
+description = "Python client for Jasmine sandboxes"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.8"
 
 [tool.setuptools]
-packages = ["azami"]
+packages = ["jasmine_sdk"]

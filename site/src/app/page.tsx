@@ -1,17 +1,24 @@
-import { Hero } from "@/components/site/hero";
-import { FairbenchSection } from "@/components/site/fairbench-section";
-import { AisandboxbenchSection, Features, Footer, HowItWorks, InstallSection } from "@/components/site/sections";
+import { Hero } from "@/components/v2/hero";
+import { Leaderboard } from "@/components/v2/leaderboard";
+import { HeadToHead, Ledger, Fairbench, Showcase, Lifecycle, Switches, Losses, Faq, Cta, Footer } from "@/components/v2/sections";
+import { Reveal } from "@/components/v2/reveal";
 
 export default function Home() {
   return (
-    <main className="flex flex-col">
+    <main id="top">
       <Hero />
-      <FairbenchSection />
-      <Features />
-      <InstallSection />
-      <HowItWorks />
-      <AisandboxbenchSection />
+      <HeadToHead />
+      <Leaderboard />
+      <Ledger />
+      <Fairbench />
+      <Showcase />
+      <Lifecycle />
+      <Switches />
+      <Losses />
+      <Faq />
+      <Cta />
       <Footer />
+      <Reveal />
     </main>
   );
 }

@@ -9,20 +9,20 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(name = "azamid", version, about = "Azami sandbox daemon")]
+#[command(name = "jasmined", version, about = "Jasmine sandbox daemon")]
 struct Cli {
     /// State directory. Put it on XFS (reflink=1) so sandbox disks are copy-on-write clones.
-    #[arg(long, env = "AZAMI_DATA", default_value = "/var/lib/azami", global = true)]
+    #[arg(long, env = "JASMINE_DATA", default_value = "/var/lib/jasmine", global = true)]
     data: PathBuf,
-    #[arg(long, env = "AZAMI_FIRECRACKER", default_value = "/usr/local/bin/firecracker", global = true)]
+    #[arg(long, env = "JASMINE_FIRECRACKER", default_value = "/usr/local/bin/firecracker", global = true)]
     firecracker: PathBuf,
-    #[arg(long, env = "AZAMI_KERNEL", default_value = "/var/lib/azami/vmlinux", global = true)]
+    #[arg(long, env = "JASMINE_KERNEL", default_value = "/var/lib/jasmine/vmlinux", global = true)]
     kernel: PathBuf,
     /// Static guest agent binary copied into every template.
-    #[arg(long, env = "AZAMI_AGENT", default_value = "/usr/local/lib/azami/azami-agent", global = true)]
+    #[arg(long, env = "JASMINE_AGENT", default_value = "/usr/local/lib/jasmine/jasmine-agent", global = true)]
     agent: PathBuf,
     /// Network namespaces kept ready for new sandboxes.
-    #[arg(long, env = "AZAMI_NET_POOL", default_value_t = 32, global = true)]
+    #[arg(long, env = "JASMINE_NET_POOL", default_value_t = 32, global = true)]
     net_pool: usize,
     #[command(subcommand)]
     cmd: Cmd,
@@ -32,10 +32,10 @@ struct Cli {
 enum Cmd {
     /// Run the HTTP API.
     Serve {
-        #[arg(long, env = "AZAMI_LISTEN", default_value = "127.0.0.1:7171")]
+        #[arg(long, env = "JASMINE_LISTEN", default_value = "127.0.0.1:7171")]
         listen: String,
         /// Require `Authorization: Bearer <key>` on /v1.
-        #[arg(long, env = "AZAMI_API_KEY")]
+        #[arg(long, env = "JASMINE_API_KEY")]
         api_key: Option<String>,
     },
     /// Build a template (OCI image → snapshot) without running the server.
@@ -67,7 +67,7 @@ async fn main() -> Result<()> {
         Cmd::Serve { listen, api_key } => {
             let app = api::router(mgr.clone(), api_key);
             let listener = tokio::net::TcpListener::bind(&listen).await?;
-            tracing::info!("azamid listening on {listen}");
+            tracing::info!("jasmined listening on {listen}");
             axum::serve(listener, app)
                 .with_graceful_shutdown(async {
                     let _ = tokio::signal::ctrl_c().await;

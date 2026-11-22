@@ -21,25 +21,25 @@ jobs:
       - name: Build
         run: |
           rustup target add x86_64-unknown-linux-musl
-          cargo test -q -p azami-proto
-          cargo build -q --release -p azami-agent --target x86_64-unknown-linux-musl
-          cargo build -q --release -p azamid
-          ls -la target/x86_64-unknown-linux-musl/release/azami-agent target/release/azamid
+          cargo test -q -p jasmine-proto
+          cargo build -q --release -p jasmine-agent --target x86_64-unknown-linux-musl
+          cargo build -q --release -p jasmined
+          ls -la target/x86_64-unknown-linux-musl/release/jasmine-agent target/release/jasmined
       - name: Set up host (Firecracker, kernel, XFS reflink data dir)
         run: |
-          sudo AZAMI_XFS_IMG=$( [ -d /mnt ] && echo /mnt/azami-xfs.img || echo /var/azami-xfs.img ) dev/setup-host.sh
-          sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/azami-agent /usr/local/lib/azami/azami-agent
-          sudo install -m 0755 target/release/azamid /usr/local/bin/azamid
+          sudo JASMINE_XFS_IMG=$( [ -d /mnt ] && echo /mnt/jasmine-xfs.img || echo /var/jasmine-xfs.img ) dev/setup-host.sh
+          sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/jasmine-agent /usr/local/lib/jasmine/jasmine-agent
+          sudo install -m 0755 target/release/jasmined /usr/local/bin/jasmined
       - name: Build template
         run: |
-          time sudo azamid build default "${{ inputs.image || 'python:3.12-slim' }}"
-          time sudo azamid build noprewarm "${{ inputs.image || 'python:3.12-slim' }}" --prewarm-mib 0
+          time sudo jasmined build default "${{ inputs.image || 'python:3.12-slim' }}"
+          time sudo jasmined build noprewarm "${{ inputs.image || 'python:3.12-slim' }}" --prewarm-mib 0
       - name: Start daemon
         run: |
-          sudo bash -c 'nohup azamid serve > /tmp/azamid.log 2>&1 &'
+          sudo bash -c 'nohup jasmined serve > /tmp/jasmined.log 2>&1 &'
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
       - name: E2E checks + benchmark
-        run: node bench/azami-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
+        run: node bench/jasmine-e2e.mjs --samples "${{ inputs.samples || '100' }}" --burst "${{ inputs.burst || '20' }}" --out results.json
       - name: SDK smoke tests
         run: |
           (cd sdk/typescript && npm install --silent --no-audit --no-fund && npm run --silent build)
@@ -53,13 +53,13 @@ jobs:
           (cd bench/compare && npm install --silent --no-audit --no-fund)
           node bench/compare/run.mjs --samples "${{ inputs.compare_samples || '10' }}" --out results-compare.json
       - name: A/B without page-cache prewarm
-        run: AZAMI_TEMPLATE=noprewarm node bench/azami-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
+        run: JASMINE_TEMPLATE=noprewarm node bench/jasmine-e2e.mjs --samples 30 --burst 5 --out results-noprewarm.json
       - name: Concurrency A/B (guest shape)
         run: |
           IMG="${{ inputs.image || 'python:3.12-slim' }}"
-          sudo azamid build c1m512 "$IMG" --vcpus 1 --mem-mib 512 >/dev/null
-          sudo azamid build c2m512 "$IMG" --vcpus 2 --mem-mib 512 >/dev/null
-          sudo azamid build c1m1024 "$IMG" --vcpus 1 --mem-mib 1024 >/dev/null
+          sudo jasmined build c1m512 "$IMG" --vcpus 1 --mem-mib 512 >/dev/null
+          sudo jasmined build c2m512 "$IMG" --vcpus 2 --mem-mib 512 >/dev/null
+          sudo jasmined build c1m1024 "$IMG" --vcpus 1 --mem-mib 1024 >/dev/null
           for t in default c1m512 c2m512 c1m1024; do node bench/burst.mjs $t 1 2 5 10; done
       - name: Host load during a burst
         run: |
@@ -112,9 +112,9 @@ jobs:
       - name: Diagnostics
         if: always()
         run: |
-          echo "== azamid log"; sudo tail -50 /tmp/azamid.log || true
-          echo "== template console"; sudo tail -c 4000 /var/lib/azami/templates/default/console.log || true
-          for f in $(sudo ls -d /var/lib/azami/sandboxes/*/ 2>/dev/null | head -3); do echo "== $f"; sudo tail -c 2000 "$f/console.log"; done
+          echo "== jasmined log"; sudo tail -50 /tmp/jasmined.log || true
+          echo "== template console"; sudo tail -c 4000 /var/lib/jasmine/templates/default/console.log || true
+          for f in $(sudo ls -d /var/lib/jasmine/sandboxes/*/ 2>/dev/null | head -3); do echo "== $f"; sudo tail -c 2000 "$f/console.log"; done
       - uses: actions/upload-artifact@v4
         if: always()
         with:

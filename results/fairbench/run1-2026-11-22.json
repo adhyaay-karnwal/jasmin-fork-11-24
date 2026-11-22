@@ -25,7 +25,7 @@
   },
   "startedAt": "2026-11-22T02:28:55.845Z",
   "systems": {
-    "azami": {
+    "jasmine": {
       "isolation": "microVM (Firecracker)",
       "available": true,
       "guestKernel": "6.1.155+",
@@ -58,7 +58,7 @@
     "ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 82.2087360000005,
           "ci95": [
@@ -103,9 +103,9 @@
           "max": 3609.266638000001
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -114,7 +114,7 @@
     "exec_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 3.8588679999811575,
           "ci95": [
@@ -159,9 +159,9 @@
           "max": 46.05518599995412
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -170,7 +170,7 @@
     "files_1k_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 14.676153999986127,
           "ci95": [
@@ -217,7 +217,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -226,7 +226,7 @@
     "files_16m_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 440.3348549999646,
           "ci95": [
@@ -273,7 +273,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -282,7 +282,7 @@
     "compute_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 107.05172099999618,
           "ci95": [
@@ -329,7 +329,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -338,7 +338,7 @@
     "small_fsync_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 706.6313310000114,
           "ci95": [
@@ -385,7 +385,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -394,7 +394,7 @@
     "big_write_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 2784.0982150000054,
           "ci95": [
@@ -441,7 +441,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -450,7 +450,7 @@
     "agent_trace_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 722.2685840000049,
           "ci95": [
@@ -495,9 +495,9 @@
           "max": 2133.5166509999544
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 11,
         "kata": 0
@@ -506,7 +506,7 @@
     "task_python_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 5,
           "median": 6149.939711999992,
           "ci95": [
@@ -553,7 +553,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -562,7 +562,7 @@
     "task_node_build_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 5,
           "median": 4295.697636999976,
           "ci95": [
@@ -609,7 +609,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -618,7 +618,7 @@
     "destroy_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 73.96750999998767,
           "ci95": [
@@ -663,9 +663,9 @@
           "max": 504.5780219999724
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -674,7 +674,7 @@
     "burst_1_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 132.5047200000845,
           "ci95": [
@@ -719,9 +719,9 @@
           "max": 3520.2760710000293
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -730,7 +730,7 @@
     "burst_5_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 378.41219900001306,
           "ci95": [
@@ -777,7 +777,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -786,7 +786,7 @@
     "burst_10_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 641.2441369999433,
           "ci95": [
@@ -833,7 +833,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -842,7 +842,7 @@
     "burst_25_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 1553.8899100000272,
           "ci95": [
@@ -887,9 +887,9 @@
           "max": 25259.916627999977
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -898,7 +898,7 @@
     "idle_mem_used_per_sandbox_mib": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 1,
           "median": 6.7087890625,
           "ci95": [
@@ -945,7 +945,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -954,7 +954,7 @@
     "idle_mem_available_drop_per_sandbox_mib": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 1,
           "median": 4.655078125,
           "ci95": [
@@ -999,9 +999,9 @@
           "max": 345.4015625
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -1010,7 +1010,7 @@
     "exec_under_neighbor_load_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 30,
           "median": 9.00557049998315,
           "ci95": [
@@ -1055,9 +1055,9 @@
           "max": 259.0219829999842
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -1508,7 +1508,7 @@
         75.31938999996055
       ]
     },
-    "azami": {
+    "jasmine": {
       "ready_ms": [
         80.28241300000082,
         75.67160700001114,

@@ -1,19 +1,19 @@
 /**
- * Azami TypeScript SDK. Zero dependencies; works in Node 18+, Bun, Deno and edge runtimes.
+ * Jasmine TypeScript SDK. Zero dependencies; works in Node 18+, Bun, Deno and edge runtimes.
  *
  * ```ts
- * import { Azami } from "azami-sdk";
- * const azami = new Azami({ url: "http://127.0.0.1:7171" });
- * await using sbx = await azami.create();      // deleted when it goes out of scope
+ * import { Jasmine } from "jasmine-sdk";
+ * const jasmine = new Jasmine({ url: "http://127.0.0.1:7171" });
+ * await using sbx = await jasmine.create();      // deleted when it goes out of scope
  * const r = await sbx.exec("python3 -c 'print(6*7)'");
  * console.log(r.stdout);                          // "42\n"
  * ```
  */
 
-export interface AzamiOptions {
-  /** Defaults to $AZAMI_URL or http://127.0.0.1:7171. */
+export interface JasmineOptions {
+  /** Defaults to $JASMINE_URL or http://127.0.0.1:7171. */
   url?: string;
-  /** Defaults to $AZAMI_API_KEY. */
+  /** Defaults to $JASMINE_API_KEY. */
   apiKey?: string;
   fetch?: typeof fetch;
 }
@@ -55,26 +55,26 @@ export interface TemplateInfo {
   built_unix: number;
 }
 
-export class AzamiError extends Error {
+export class JasmineError extends Error {
   constructor(
     message: string,
     readonly status: number,
   ) {
     super(message);
-    this.name = "AzamiError";
+    this.name = "JasmineError";
   }
 }
 
 const env = (k: string): string | undefined => (globalThis as any).process?.env?.[k];
 
-export class Azami {
+export class Jasmine {
   readonly url: string;
   private readonly apiKey?: string;
   private readonly fetchImpl: typeof fetch;
 
-  constructor(opts: AzamiOptions = {}) {
-    this.url = (opts.url ?? env("AZAMI_URL") ?? "http://127.0.0.1:7171").replace(/\/$/, "");
-    this.apiKey = opts.apiKey ?? env("AZAMI_API_KEY");
+  constructor(opts: JasmineOptions = {}) {
+    this.url = (opts.url ?? env("JASMINE_URL") ?? "http://127.0.0.1:7171").replace(/\/$/, "");
+    this.apiKey = opts.apiKey ?? env("JASMINE_API_KEY");
     this.fetchImpl = opts.fetch ?? fetch;
   }
 
@@ -94,7 +94,7 @@ export class Azami {
       try {
         msg = JSON.parse(msg).error ?? msg;
       } catch {}
-      throw new AzamiError(`${method} ${path}: ${msg}`, res.status);
+      throw new JasmineError(`${method} ${path}: ${msg}`, res.status);
     }
     if (res.status === 204) return undefined;
     return raw ? new Uint8Array(await res.arrayBuffer()) : res.json();
@@ -134,7 +134,7 @@ export class Azami {
 
 export class Sandbox {
   constructor(
-    private readonly client: Azami,
+    private readonly client: Jasmine,
     readonly id: string,
     readonly template: string,
     /** Server-side breakdown of how long creation took (present on create). */
@@ -176,15 +176,34 @@ export class Sandbox {
     },
   };
 
+  /** Suspend to disk, keeping memory and running processes. Any later call resumes it. */
+  async pause(): Promise<void> {
+    await this.client.request("POST", `${this.base}/pause`);
+  }
+
+  async resume(): Promise<void> {
+    await this.client.request("POST", `${this.base}/resume`);
+  }
+
+  /** Snapshot this sandbox (memory, files, processes) into a new template; `create({ template: t.name })` starts copies. */
+  async snapshot(): Promise<TemplateInfo> {
+    return this.client.request("POST", `${this.base}/snapshot`);
+  }
+
+  /** URL that proxies to `port` inside the sandbox. */
+  previewUrl(port: number, path = "/"): string {
+    return `${this.client.url}${this.base}/ports/${port}${path.startsWith("/") ? path : `/${path}`}`;
+  }
+
   async delete(): Promise<void> {
     try {
       await this.client.request("DELETE", this.base);
     } catch (e) {
-      if (!(e instanceof AzamiError && e.status === 404)) throw e;
+      if (!(e instanceof JasmineError && e.status === 404)) throw e;
     }
   }
 
-  /** `await using sbx = await azami.create()` deletes the sandbox on scope exit. */
+  /** `await using sbx = await jasmine.create()` deletes the sandbox on scope exit. */
   async [(Symbol as any).asyncDispose ?? Symbol.for("Symbol.asyncDispose")](): Promise<void> {
     await this.delete();
   }

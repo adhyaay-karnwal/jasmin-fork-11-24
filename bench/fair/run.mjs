@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // fairbench: same-host, interleaved, held-out sandbox benchmark. See README.md.
 //
-//   sudo -E node bench/fair/run.mjs --systems azami,docker,gvisor,kata --rounds 15 --out results.json
+//   sudo -E node bench/fair/run.mjs --systems jasmine,docker,gvisor,kata --rounds 15 --out results.json
 //
 // Every system runs on this host, gets the same image and CPU/memory limit, and
 // is driven by this one client over local sockets. Rounds interleave systems in
@@ -13,7 +13,7 @@ import os from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dockerSystem } from "./systems/docker.mjs";
-import { azamiSystem } from "./systems/azami.mjs";
+import { jasmineSystem } from "./systems/jasmine.mjs";
 import { rng, summarize, winner } from "./lib/stats.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -37,7 +37,7 @@ const CFG = {
 const OUT = arg("out", "fairbench-results.json");
 
 const ALL = {
-  azami: () => azamiSystem({ template: arg("azami-template", "fair") }),
+  jasmine: () => jasmineSystem({ template: arg("jasmine-template", "fair") }),
   docker: () => dockerSystem({ name: "docker", runtime: "runc", isolation: "container (runc)" }),
   gvisor: () => dockerSystem({ name: "gvisor", runtime: "runsc", isolation: "user-space kernel (gVisor)" }),
   kata: () => dockerSystem({ name: "kata", runtime: "kata", isolation: "microVM (Kata Containers)" }),
@@ -275,7 +275,7 @@ const report = {
 console.log(`fairbench seed=${CFG.seed} image=${CFG.image} limits=${CFG.cpu} vCPU/${CFG.memoryMb} MiB`);
 
 const systems = [];
-for (const name of arg("systems", "azami,docker,gvisor,kata").split(",")) {
+for (const name of arg("systems", "jasmine,docker,gvisor,kata").split(",")) {
   const sys = ALL[name]?.();
   if (!sys) throw new Error(`unknown system ${name}`);
   try {

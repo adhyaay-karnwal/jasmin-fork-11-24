@@ -18,7 +18,7 @@
  },
  "finishedAt": "2026-11-22T07:17:02.429Z",
  "systems": {
-  "azami": {
+  "jasmine": {
    "isolation": "microVM (Firecracker)",
    "available": true,
    "guestKernel": "6.1.155+",
@@ -50,15 +50,15 @@
  "metrics": {
   "ready_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 87.1303659999976,
      "ci95": [
@@ -98,15 +98,15 @@
   },
   "exec_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 4.101962999964599,
      "ci95": [
@@ -148,13 +148,13 @@
    "better": "lower",
    "winner": null,
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 14.512305000040215,
      "ci95": [
@@ -196,13 +196,13 @@
    "better": "lower",
    "winner": null,
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 433.26974299998255,
      "ci95": [
@@ -244,13 +244,13 @@
    "better": "lower",
    "winner": "docker",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 108.94875300000422,
      "ci95": [
@@ -292,13 +292,13 @@
    "better": "lower",
    "winner": "docker",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 594.1008570000413,
      "ci95": [
@@ -340,13 +340,13 @@
    "better": "lower",
    "winner": null,
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 2727.546782999998,
      "ci95": [
@@ -386,15 +386,15 @@
   },
   "agent_trace_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 673.1475930000306,
      "ci95": [
@@ -436,13 +436,13 @@
    "better": "lower",
    "winner": "docker",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 5,
      "median": 6059.667022999987,
      "ci95": [
@@ -484,13 +484,13 @@
    "better": "lower",
    "winner": "docker",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 5,
      "median": 4336.092759000021,
      "ci95": [
@@ -530,15 +530,15 @@
   },
   "destroy_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 15,
      "median": 75.32049199996982,
      "ci95": [
@@ -578,15 +578,15 @@
   },
   "burst_1_all_ready_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 3,
      "median": 114.1240739999339,
      "ci95": [
@@ -628,13 +628,13 @@
    "better": "lower",
    "winner": null,
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 3,
      "median": 398.34274600003846,
      "ci95": [
@@ -674,15 +674,15 @@
   },
   "burst_10_all_ready_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 3,
      "median": 704.9171710000373,
      "ci95": [
@@ -722,15 +722,15 @@
   },
   "burst_25_all_ready_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 3,
      "median": 1588.0024880000856,
      "ci95": [
@@ -772,13 +772,13 @@
    "better": "lower",
    "winner": "docker",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 1,
      "median": 5.4455078125,
      "ci95": [
@@ -818,15 +818,15 @@
   },
   "idle_mem_available_drop_per_sandbox_mib": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 1,
      "median": 3.4513671875,
      "ci95": [
@@ -866,15 +866,15 @@
   },
   "exec_under_neighbor_load_ms": {
    "better": "lower",
-   "winner": "azami",
+   "winner": "jasmine",
    "failures": {
-    "azami": 0,
+    "jasmine": 0,
     "docker": 0,
     "gvisor": 0,
     "kata": 0
    },
    "bySystem": {
-    "azami": {
+    "jasmine": {
      "n": 30,
      "median": 9.626921500021126,
      "ci95": [

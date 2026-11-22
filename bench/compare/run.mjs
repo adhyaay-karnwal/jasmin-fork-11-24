@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Provider-neutral sandbox benchmark.
 //
-//   node bench/compare/run.mjs [--providers azami,e2b,daytona] [--samples 50] [--out file.json]
+//   node bench/compare/run.mjs [--providers jasmine,e2b,daytona] [--samples 50] [--out file.json]
 //
 // Rules (see README "Benchmark rules"): identical workloads, official SDKs with
 // default settings, wall-clock timing on this client, every sample kept,

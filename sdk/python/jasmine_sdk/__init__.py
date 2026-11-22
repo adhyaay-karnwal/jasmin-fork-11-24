@@ -1,9 +1,9 @@
-"""Azami Python SDK. Standard library only.
+"""Jasmine Python SDK. Standard library only.
 
-    from azami import Azami
+    from jasmine_sdk import Jasmine
 
-    azami = Azami()  # $AZAMI_URL / $AZAMI_API_KEY, default http://127.0.0.1:7171
-    with azami.create() as sbx:
+    jasmine = Jasmine()  # $JASMINE_URL / $JASMINE_API_KEY, default http://127.0.0.1:7171
+    with jasmine.create() as sbx:
         r = sbx.exec("python3 -c 'print(6*7)'")
         print(r.stdout)  # "42\\n"
 """
@@ -18,11 +18,11 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Optional, Sequence, Union
 
-__all__ = ["Azami", "Sandbox", "ExecResult", "AzamiError"]
+__all__ = ["Jasmine", "Sandbox", "ExecResult", "JasmineError"]
 __version__ = "0.1.0"
 
 
-class AzamiError(Exception):
+class JasmineError(Exception):
     def __init__(self, message: str, status: int):
         super().__init__(message)
         self.status = status
@@ -43,10 +43,10 @@ class ExecResult:
         return self.exit_code == 0
 
 
-class Azami:
+class Jasmine:
     def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None, timeout: float = 300.0):
-        self.url = (url or os.environ.get("AZAMI_URL") or "http://127.0.0.1:7171").rstrip("/")
-        self.api_key = api_key or os.environ.get("AZAMI_API_KEY")
+        self.url = (url or os.environ.get("JASMINE_URL") or "http://127.0.0.1:7171").rstrip("/")
+        self.api_key = api_key or os.environ.get("JASMINE_API_KEY")
         self.timeout = timeout
 
     def _request(self, method: str, path: str, body: Any = None, raw: bool = False) -> Any:
@@ -72,7 +72,7 @@ class Azami:
                 msg = json.loads(msg).get("error", msg)
             except ValueError:
                 pass
-            raise AzamiError(f"{method} {path}: {msg}", e.code) from None
+            raise JasmineError(f"{method} {path}: {msg}", e.code) from None
 
     def create(self, template: str = "default") -> "Sandbox":
         r = self._request("POST", "/v1/sandboxes", {"template": template})
@@ -97,7 +97,7 @@ class Azami:
 
 @dataclass
 class Sandbox:
-    client: Azami
+    client: Jasmine
     id: str
     template: str
     timings: Optional[dict] = field(default=None, repr=False)
@@ -130,10 +130,25 @@ class Sandbox:
         q = f"path={urllib.parse.quote(path)}" + (f"&mode={mode:o}" if mode is not None else "")
         self.client._request("PUT", f"{self._base}/files?{q}", data.encode() if isinstance(data, str) else data)
 
+    def pause(self) -> None:
+        """Suspend to disk, keeping memory and running processes. Any later call resumes it."""
+        self.client._request("POST", f"{self._base}/pause")
+
+    def resume(self) -> None:
+        self.client._request("POST", f"{self._base}/resume")
+
+    def snapshot(self) -> dict:
+        """Snapshot this sandbox into a new template; Jasmine().create(template=t["name"]) starts copies."""
+        return self.client._request("POST", f"{self._base}/snapshot")
+
+    def preview_url(self, port: int, path: str = "/") -> str:
+        """URL that proxies to `port` inside the sandbox."""
+        return f"{self.client.url}{self._base}/ports/{port}{path if path.startswith('/') else '/' + path}"
+
     def delete(self) -> None:
         try:
             self.client._request("DELETE", self._base)
-        except AzamiError as e:
+        except JasmineError as e:
             if e.status != 404:
                 raise
 

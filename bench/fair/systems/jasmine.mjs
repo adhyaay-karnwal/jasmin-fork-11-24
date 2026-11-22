@@ -1,20 +1,20 @@
-// Azami through azamid's REST API on localhost (same host as every other system).
+// Jasmine through jasmined's REST API on localhost (same host as every other system).
 import http from "node:http";
 
-const BASE = new URL(process.env.AZAMI_URL ?? "http://127.0.0.1:7171");
+const BASE = new URL(process.env.JASMINE_URL ?? "http://127.0.0.1:7171");
 const agent = new http.Agent({ keepAlive: true, maxSockets: 256 });
 
 function request(method, path, body, { raw = false } = {}) {
   return new Promise((resolve, reject) => {
     const payload = body === undefined ? undefined : body instanceof Uint8Array ? Buffer.from(body) : Buffer.from(JSON.stringify(body));
     const headers = payload ? { "content-type": body instanceof Uint8Array ? "application/octet-stream" : "application/json", "content-length": payload.length } : {};
-    if (process.env.AZAMI_API_KEY) headers.authorization = `Bearer ${process.env.AZAMI_API_KEY}`;
+    if (process.env.JASMINE_API_KEY) headers.authorization = `Bearer ${process.env.JASMINE_API_KEY}`;
     const req = http.request({ host: BASE.hostname, port: BASE.port, method, path, agent, headers }, (res) => {
       const chunks = [];
       res.on("data", (c) => chunks.push(c));
       res.on("end", () => {
         const buf = Buffer.concat(chunks);
-        if (res.statusCode >= 400) return reject(new Error(`azami ${method} ${path}: ${res.statusCode} ${buf.toString().slice(0, 300)}`));
+        if (res.statusCode >= 400) return reject(new Error(`jasmine ${method} ${path}: ${res.statusCode} ${buf.toString().slice(0, 300)}`));
         if (raw) return resolve(new Uint8Array(buf));
         resolve(buf.length ? JSON.parse(buf.toString()) : null);
       });
@@ -25,7 +25,7 @@ function request(method, path, body, { raw = false } = {}) {
   });
 }
 
-export function azamiSystem({ name = "azami", template = "fair" } = {}) {
+export function jasmineSystem({ name = "jasmine", template = "fair" } = {}) {
   return {
     name,
     isolation: "microVM (Firecracker)",

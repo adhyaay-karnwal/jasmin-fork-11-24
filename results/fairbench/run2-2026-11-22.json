@@ -25,7 +25,7 @@
   },
   "startedAt": "2026-11-22T07:01:43.632Z",
   "systems": {
-    "azami": {
+    "jasmine": {
       "isolation": "microVM (Firecracker)",
       "available": true,
       "guestKernel": "6.1.155+",
@@ -58,7 +58,7 @@
     "ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 87.1303659999976,
           "ci95": [
@@ -103,9 +103,9 @@
           "max": 4058.335671000008
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -114,7 +114,7 @@
     "exec_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 4.101962999964599,
           "ci95": [
@@ -159,9 +159,9 @@
           "max": 45.93521500000497
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -170,7 +170,7 @@
     "files_1k_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 14.512305000040215,
           "ci95": [
@@ -217,7 +217,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -226,7 +226,7 @@
     "files_16m_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 433.26974299998255,
           "ci95": [
@@ -273,7 +273,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -282,7 +282,7 @@
     "compute_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 108.94875300000422,
           "ci95": [
@@ -329,7 +329,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -338,7 +338,7 @@
     "small_fsync_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 594.1008570000413,
           "ci95": [
@@ -385,7 +385,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -394,7 +394,7 @@
     "big_write_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 2727.546782999998,
           "ci95": [
@@ -441,7 +441,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -450,7 +450,7 @@
     "agent_trace_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 673.1475930000306,
           "ci95": [
@@ -495,9 +495,9 @@
           "max": 1866.0737879999797
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -506,7 +506,7 @@
     "task_python_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 5,
           "median": 6059.667022999987,
           "ci95": [
@@ -553,7 +553,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -562,7 +562,7 @@
     "task_node_build_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 5,
           "median": 4336.092759000021,
           "ci95": [
@@ -609,7 +609,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -618,7 +618,7 @@
     "destroy_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 15,
           "median": 75.32049199996982,
           "ci95": [
@@ -663,9 +663,9 @@
           "max": 519.6288449999993
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -674,7 +674,7 @@
     "burst_1_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 114.1240739999339,
           "ci95": [
@@ -719,9 +719,9 @@
           "max": 3524.68374899996
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -730,7 +730,7 @@
     "burst_5_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 398.34274600003846,
           "ci95": [
@@ -777,7 +777,7 @@
       },
       "winner": null,
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -786,7 +786,7 @@
     "burst_10_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 704.9171710000373,
           "ci95": [
@@ -831,9 +831,9 @@
           "max": 10869.971473999904
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -842,7 +842,7 @@
     "burst_25_all_ready_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 3,
           "median": 1588.0024880000856,
           "ci95": [
@@ -887,9 +887,9 @@
           "max": 25621.422594999894
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -898,7 +898,7 @@
     "idle_mem_used_per_sandbox_mib": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 1,
           "median": 5.4455078125,
           "ci95": [
@@ -945,7 +945,7 @@
       },
       "winner": "docker",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -954,7 +954,7 @@
     "idle_mem_available_drop_per_sandbox_mib": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 1,
           "median": 3.4513671875,
           "ci95": [
@@ -999,9 +999,9 @@
           "max": 345.2576171875
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -1010,7 +1010,7 @@
     "exec_under_neighbor_load_ms": {
       "better": "lower",
       "bySystem": {
-        "azami": {
+        "jasmine": {
           "n": 30,
           "median": 9.626921500021126,
           "ci95": [
@@ -1055,9 +1055,9 @@
           "max": 213.0420579999918
         }
       },
-      "winner": "azami",
+      "winner": "jasmine",
       "failures": {
-        "azami": 0,
+        "jasmine": 0,
         "docker": 0,
         "gvisor": 0,
         "kata": 0
@@ -1519,7 +1519,7 @@
         97.92700000002515
       ]
     },
-    "azami": {
+    "jasmine": {
       "ready_ms": [
         83.37606799999776,
         84.98037799999292,

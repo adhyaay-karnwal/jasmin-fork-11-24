@@ -7,7 +7,7 @@ version, and results from different versions are never compared.
 ## Rules
 
 1. **One host, one client.** Every system runs on the same machine, behind the same client process, over
-   local sockets: Docker's Engine API over its unix socket (no CLI process per call) and azamid over
+   local sockets: Docker's Engine API over its unix socket (no CLI process per call) and jasmined over
    localhost HTTP. There's no network distance and no hardware difference between systems.
 2. **Same work, same limits.** Same OCI image (`node:22-bookworm`), same CPU and memory limit (default
    2 vCPU / 4096 MiB), and the same commands for every system.
@@ -33,7 +33,7 @@ version, and results from different versions are never compared.
 
 | name | what | isolation |
 |---|---|---|
-| `azami` | this repo | Firecracker microVM, own kernel |
+| `jasmine` | this repo | Firecracker microVM, own kernel |
 | `docker` | Docker + runc | container, shares host kernel |
 | `gvisor` | Docker + runsc | user-space kernel (gVisor) |
 | `kata` | Docker + Kata Containers (QEMU) | microVM, own kernel |
@@ -67,10 +67,10 @@ Heavy tasks run in the first `--heavy-rounds` rounds; everything else runs every
 ## Run
 
 ```sh
-sudo -E node bench/fair/run.mjs --systems azami,docker,gvisor,kata --rounds 15 --out fairbench.json
+sudo -E node bench/fair/run.mjs --systems jasmine,docker,gvisor,kata --rounds 15 --out fairbench.json
 ```
 
-The CI workflow `.github/workflows/fairbench.yml` installs gVisor and Kata, builds Azami, and runs everything
+The CI workflow `.github/workflows/fairbench.yml` installs gVisor and Kata, builds Jasmine, and runs everything
 on one GitHub Actions runner. Systems that fail to install are listed as unavailable, never silently dropped.
 
 The Vite fixture is copied from opencoredev/sandbox-sdk (MIT); see `fixtures/vite-react/NOTICE`.

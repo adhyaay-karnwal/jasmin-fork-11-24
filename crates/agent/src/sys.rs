@@ -12,7 +12,7 @@ fn mount(src: &str, target: &str, fstype: &str, flags: libc::c_ulong, data: Opti
         let e = io::Error::last_os_error();
         // EBUSY = already mounted (e.g. devtmpfs automount); harmless.
         if e.raw_os_error() != Some(libc::EBUSY) {
-            eprintln!("azami-agent: mount {target}: {e}");
+            eprintln!("jasmine-agent: mount {target}: {e}");
         }
     }
 }
@@ -23,7 +23,7 @@ pub fn init_system() {
     unsafe {
         let root = c"/";
         if libc::mount(std::ptr::null(), root.as_ptr(), std::ptr::null(), libc::MS_REMOUNT | libc::MS_NOATIME, std::ptr::null()) != 0 {
-            eprintln!("azami-agent: remount / noatime: {}", io::Error::last_os_error());
+            eprintln!("jasmine-agent: remount / noatime: {}", io::Error::last_os_error());
         }
     }
     let nodev = libc::MS_NOSUID | libc::MS_NODEV | libc::MS_NOEXEC;
@@ -39,10 +39,10 @@ pub fn init_system() {
     }
     let _ = std::fs::remove_file("/dev/ptmx");
     let _ = std::os::unix::fs::symlink("pts/ptmx", "/dev/ptmx");
-    let host = b"azami";
+    let host = b"jasmine";
     unsafe { libc::sethostname(host.as_ptr().cast(), host.len()) };
     if let Err(e) = link_up("lo") {
-        eprintln!("azami-agent: lo up: {e}");
+        eprintln!("jasmine-agent: lo up: {e}");
     }
     unsafe { libc::setsid() };
 }
