@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Fully static site: `next build` writes plain HTML to out/ (deployed to GitHub Pages).
+  output: "export",
+  // Project pages live under /<repo>; set by the Pages workflow, empty locally.
+  basePath: process.env.PAGES_BASE_PATH || "",
   turbopack: {
     rules: {
       "*.css": {

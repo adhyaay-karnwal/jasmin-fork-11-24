@@ -3,7 +3,7 @@
 Open-source sandboxes for AI agents: hardware-isolated microVMs that create, fork and resume in milliseconds,
 run on any Linux box with KVM, and are measured in public against everyone else.
 
-Apache-2.0. Status: early but working end to end. Sandboxes boot, run commands, move files, reach the internet,
+Website: <https://arjunkshah12345-hash.github.io/azami/>. Apache-2.0. Status: early but working end to end. Sandboxes boot, run commands, move files, reach the internet,
 and pass the full correctness suite on every push (CI runs real Firecracker on KVM runners).
 
 ## Quick start (Linux host with KVM)
