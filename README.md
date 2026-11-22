@@ -9,13 +9,14 @@ and pass the full correctness suite on every push (CI runs real Firecracker on K
 ## Quick start (Linux host with KVM)
 
 ```sh
-sudo dev/setup-host.sh                    # firecracker, guest kernel, crane, XFS reflink data dir
-cargo build --release -p warrend
-cargo build --release -p warren-agent --target x86_64-unknown-linux-musl
-sudo install -D target/x86_64-unknown-linux-musl/release/warren-agent /usr/local/lib/warren/warren-agent
-sudo target/release/warrend build default python:3.12-slim   # any OCI image
-sudo target/release/warrend serve                              # http://127.0.0.1:7171
+curl -fsSL https://raw.githubusercontent.com/arjunkshah12345-hash/warren/master/install.sh | sudo sh
+sudo warrend build default python:3.12-slim      # any OCI image becomes a snapshot template
+sudo systemctl enable --now warrend              # API on http://127.0.0.1:7171
 ```
+
+The installer downloads a static release for x86_64 or aarch64, verifies its checksum, and prepares the host:
+Firecracker, the guest kernel, an XFS reflink store and the host tools. To build from source instead, see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```ts
 import { Warren } from "@warren/sdk";                      // sdk/typescript, zero deps
