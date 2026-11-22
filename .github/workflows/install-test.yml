@@ -1,0 +1,29 @@
+name: install-test
+# Installs a published release exactly the way users do, on a fresh runner, then runs the e2e suite against it.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version: { description: "release tag to test (default: latest)", default: "" }
+
+jobs:
+  install:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4   # only for bench/warren-e2e.mjs; nothing is built from source
+      - name: Install from the published release
+        run: |
+          V="${{ inputs.version || github.event.release.tag_name || '' }}"
+          curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/master/install.sh" | sudo WARREN_VERSION="$V" sh
+          warrend --version
+      - name: Build template and start the service
+        run: |
+          sudo warrend build default python:3.12-slim
+          sudo systemctl enable --now warrend
+          for i in $(seq 50); do curl -fs localhost:7171/healthz && break; sleep 0.2; done
+      - name: E2E against the installed build
+        run: node bench/warren-e2e.mjs --samples 10 --burst 5
+      - if: always()
+        run: sudo journalctl -u warrend --no-pager | tail -40
