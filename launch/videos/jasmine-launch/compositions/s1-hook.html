@@ -1,0 +1,33 @@
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Regular.woff2") format("woff2"); font-weight: 400; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: #f4f5f0; }
+    .mono { font-family: "JetBrains Mono", monospace; }
+    .h { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; letter-spacing: -0.045em; white-space: pre; }
+    #s1-k { position: absolute; left: 0; right: 0; top: 330px; text-align: center; font-size: 34px; color: #6b7068; }
+    #s1-a, #s1-b { top: 440px; font-size: 150px; line-height: 1; }
+    #s1-cur { display: inline-block; width: 0.5em; height: 0.82em; background: #a6e86b; margin-left: 0.08em; vertical-align: -0.06em; }
+  </style>
+  <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
+    <div id="s1-k" class="mono">agent ▸ wrote analyze.py, 214 lines</div>
+    <div id="s1-a" class="h"></div>
+    <div id="s1-b" class="h"><span id="s1-bt"></span><span id="s1-cur"></span></div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#s1-k", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 0.1);
+      JX.scramble(tl, "#s1-a", "Your agent writes code.", 0.3, 0.6);
+      tl.to("#s1-a", { opacity: 0, y: -24, duration: 0.15, ease: "power3.in" }, 1.85);
+      tl.to("#s1-k", { opacity: 0, duration: 0.15, ease: "power3.in" }, 1.85);
+      tl.set("#s1-cur", { opacity: 0 }, 0);
+      JX.scramble(tl, "#s1-bt", "Where does it run?", 2.0, 0.5);
+      tl.set("#s1-cur", { opacity: 1 }, 2.5);
+      tl.to("#s1-cur", { opacity: 0, duration: 0.25, repeat: 4, yoyo: true, ease: "steps(1)" }, 2.75);
+      tl.to("#s1-b", { opacity: 0, scale: 0.97, duration: 0.15, ease: "power3.in" }, 3.84);
+      window.__timelines["s1"] = tl;
+    })();
+  </script>
+</template>

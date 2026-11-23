@@ -1,0 +1,100 @@
+[
+ {
+  "t": "01 · Opening",
+  "n": "Unhurried. Let the title sit for a beat before you speak.",
+  "p": [
+   "This is <b>Jasmine</b>.",
+   "It gives AI agents somewhere safe to run code. Each sandbox is its own virtual machine, and it's ready in about <b>a hundred milliseconds</b>.",
+   "It's open source, and every number I'm about to show you, you can rerun yourself."
+  ]
+ },
+ {
+  "t": "02 · The problem",
+  "n": "Point at each card as you name it.",
+  "p": [
+   "Agents write code now. Lots of it. And that code has to run somewhere.",
+   "Your laptop is a bad answer. Production is a worse one. And a shared container still shares a kernel with everything else on the machine."
+  ]
+ },
+ {
+  "t": "03 · What it is",
+  "n": "",
+  "p": [
+   "So Jasmine gives every agent task its own computer: a <b>Firecracker microVM</b> with its own kernel.",
+   "It's never booted. It's restored from a snapshot of a machine that already booted. It has internet, but it can't reach your cloud metadata, your host, or other sandboxes.",
+   "And you can pause it, snapshot it, and start copies of it."
+  ]
+ },
+ {
+  "t": "04 · The number",
+  "n": "Slow down. This is the headline.",
+  "p": [
+   "Here's the headline. From asking for a sandbox to running its first command: <b>a tenth of a second</b>.",
+   "On aisandboxbench's own harness, the fastest of the thirteen hosted providers they publish was point three eight seconds."
+  ]
+ },
+ {
+  "t": "05 · Demo: Python",
+  "n": "Read the code aloud, slowly.",
+  "p": [
+   "Here's what using it looks like. Import it, create a sandbox, run a command, get the output. When the block ends, the sandbox is deleted.",
+   "The Python SDK is standard library only. The TypeScript one has zero dependencies. Underneath it's plain HTTP."
+  ]
+ },
+ {
+  "t": "06 · Demo: pause and fork",
+  "n": "Trace the arrows left to right.",
+  "p": [
+   "Agents work in turns, and most of the time they're thinking, not running. So pause the sandbox between turns. It keeps all its state and uses no CPU.",
+   "Or snapshot it, and start <b>four copies</b> from that exact moment. That's how you branch an agent's work, or fan out RL rollouts."
+  ]
+ },
+ {
+  "t": "07 · Demo: agent setup",
+  "n": "",
+  "p": [
+   "And you don't have to set any of this up by hand.",
+   "There's one prompt on the site. Paste it into Claude Code, Codex or Cursor, and your agent checks for KVM, installs Jasmine, starts it with a key, runs a smoke test, and then moves your model's code into sandboxes. It tells you what it changed."
+  ]
+ },
+ {
+  "t": "08 · Numbers: same machine",
+  "n": "Point at the bottom two rows. Own them.",
+  "p": [
+   "Now the numbers. First, <b>fairbench</b>: Jasmine, Docker, gVisor and Kata on one machine, same image, same limits.",
+   "Jasmine is ahead on starting sandboxes and on agent-loop latency: 87 milliseconds to a first command, four milliseconds per command.",
+   "And look at the bottom two rows. Docker wins raw CPU and builds, because it doesn't pay for a virtual machine. We put that on the slide on purpose."
+  ]
+ },
+ {
+  "t": "09 · Numbers: aisandboxbench",
+  "n": "Say the caveat clearly. Don't rush it.",
+  "p": [
+   "Second, aisandboxbench's own open-source harness, against the thirteen providers they publish. Jasmine's median comes first on <b>twelve of twenty-five</b> metrics.",
+   "It's weaker on big bursts, npm install and disk writes. And to be clear: these are results we ran ourselves, not a listing on their site."
+  ]
+ },
+ {
+  "t": "10 · How you get it",
+  "n": "",
+  "p": [
+   "The whole engine is open source, Apache two point oh, and it runs on any Linux machine with KVM.",
+   "If you'd rather not run it, Jasmine Cloud is in early access. Sign in on the site, make an API key, and request a spot."
+  ]
+ },
+ {
+  "t": "11 · Close",
+  "n": "Look at the camera. Smile on the last line.",
+  "p": [
+   "One command to install. It's all at <b>tryjasmine.dev</b>.",
+   "Give your agents their own computers."
+  ]
+ },
+ {
+  "t": "12 · Launch film",
+  "n": "Press play. Stay quiet for 44 seconds.",
+  "p": [
+   "(Play the launch film.)"
+  ]
+ }
+]

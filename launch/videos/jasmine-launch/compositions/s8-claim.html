@@ -1,0 +1,28 @@
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Regular.woff2") format("woff2"); font-weight: 400; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: #f4f5f0; }
+    .mono { font-family: "JetBrains Mono", monospace; }
+    .h { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; letter-spacing: -0.045em; white-space: pre; }
+    .s8-l { position: absolute; left: 300px; font-size: 150px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; white-space: pre; }
+    #s8-1 { top: 250px; } #s8-2 { top: 450px; color: #a6e86b; } #s8-3 { top: 650px; }
+  </style>
+  <div id="root" data-composition-id="s8" data-width="1920" data-height="1080">
+    <div id="s8-1" class="s8-l"></div>
+    <div id="s8-2" class="s8-l"></div>
+    <div id="s8-3" class="s8-l"></div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      [["#s8-1", "Open source."], ["#s8-2", "Apache-2.0."], ["#s8-3", "Any Linux box with KVM."]].forEach(([id, t], i) => {
+        tl.fromTo(id, { y: 30 }, { y: 0, duration: 0.4, ease: "expo.out" }, i * 0.6);
+        JX.scramble(tl, id, t, i * 0.6, 0.4);
+      });
+      tl.to(["#s8-1", "#s8-2", "#s8-3"], { opacity: 0, y: -30, duration: 0.3, stagger: 0.04, ease: "power3.in" }, 3.2);
+      window.__timelines["s8"] = tl;
+    })();
+  </script>
+</template>
