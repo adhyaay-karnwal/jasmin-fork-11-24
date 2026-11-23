@@ -13,7 +13,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const p = post((await params).slug);
-  return p ? { title: `${p.title} · Jasmine`, description: p.summary, openGraph: { title: p.title, description: p.summary, type: "article" } } : {};
+  return p ? { title: `${p.title} · Jasmine`, description: p.summary, openGraph: { title: p.title, description: p.summary, type: "article", images: ["/og.jpg"] }, twitter: { card: "summary_large_image", title: p.title, description: p.summary, images: ["/og.jpg"] } } : {};
 }
 
 export default async function BlogPost({ params }: PageProps<"/blog/[slug]">) {

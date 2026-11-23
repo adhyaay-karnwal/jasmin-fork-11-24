@@ -36,6 +36,9 @@ export const POSTS: Post[] = [
           sandbox is a Firecracker microVM with its own kernel, and every one is restored from a memory snapshot rather than booted, so it&apos;s
           ready for its first command in about 100 ms.
         </p>
+        <video className="my-8 w-full rounded-xl border border-white/10" controls playsInline preload="metadata" poster="/og.jpg">
+          <source src="/launch.mp4" type="video/mp4" />
+        </video>
         <h2>The numbers</h2>
         <p>
           We ran aisandboxbench&apos;s own open-source harness, with the flags from its collection plan, and compared against the 13 hosted providers
