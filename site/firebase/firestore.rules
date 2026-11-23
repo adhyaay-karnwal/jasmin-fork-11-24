@@ -1,0 +1,35 @@
+rules_version = '2';
+// Accounts for tryjasmine.dev. Every document belongs to one signed-in user.
+// API keys are stored as SHA-256 hashes; the plaintext is shown once in the browser and never written.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn(uid) { return request.auth != null && request.auth.uid == uid; }
+
+    match /users/{uid} {
+      allow read: if signedIn(uid);
+      allow create: if signedIn(uid)
+        && request.resource.data.keys().hasOnly(['email', 'plan', 'createdAt'])
+        && request.resource.data.plan == 'open-source';
+      // The plan can only be changed by billing, not by the client.
+      allow update: if signedIn(uid)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['plan']);
+
+      match /keys/{keyId} {
+        allow read, delete: if signedIn(uid);
+        allow create: if signedIn(uid)
+          && request.resource.data.keys().hasOnly(['name', 'prefix', 'hash', 'createdAt'])
+          && request.resource.data.name is string && request.resource.data.name.size() <= 64
+          && request.resource.data.hash is string && request.resource.data.hash.size() == 64
+          && request.resource.data.prefix is string && request.resource.data.prefix.size() <= 16;
+      }
+    }
+
+    match /access/{uid} {
+      allow read: if signedIn(uid);
+      allow create, update: if signedIn(uid)
+        && request.resource.data.keys().hasOnly(['email', 'tier', 'useCase', 'requestedAt'])
+        && request.resource.data.tier in ['cloud', 'enterprise']
+        && request.resource.data.useCase is string && request.resource.data.useCase.size() <= 2000;
+    }
+  }
+}
