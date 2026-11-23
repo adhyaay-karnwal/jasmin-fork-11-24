@@ -1,0 +1,35 @@
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Regular.woff2") format("woff2"); font-weight: 400; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: #f4f5f0; }
+    .mono { font-family: "JetBrains Mono", monospace; }
+    .h { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; letter-spacing: -0.045em; white-space: pre; }
+    .s2-l { position: absolute; left: 260px; font-size: 140px; font-weight: 600; letter-spacing: -0.045em; line-height: 1; white-space: pre; color: #f4f5f0; }
+    .s2-x { position: absolute; left: -16px; right: -16px; top: 52%; height: 22px; transform-origin: 0 50%;
+      background-image: repeating-linear-gradient(90deg, #a6e86b 0 6px, transparent 6px 9px), repeating-linear-gradient(0deg, transparent 0 4px, #070807 4px 6px); }
+    #s2-1 { top: 250px; } #s2-2 { top: 450px; } #s2-3 { top: 650px; }
+    #s2-n { position: absolute; right: 260px; top: 830px; font-size: 34px; color: #6b7068; }
+  </style>
+  <div id="root" data-composition-id="s2" data-width="1920" data-height="1080">
+    <div id="s2-1" class="s2-l"><span id="s2-1t"></span><i class="s2-x" id="s2-1x"></i></div>
+    <div id="s2-2" class="s2-l"><span id="s2-2t"></span><i class="s2-x" id="s2-2x"></i></div>
+    <div id="s2-3" class="s2-l"><span id="s2-3t"></span><i class="s2-x" id="s2-3x"></i></div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      const lines = [["#s2-1", "Your laptop?"], ["#s2-2", "Production?"], ["#s2-3", "A shared container?"]];
+      lines.forEach(([id, txt], i) => {
+        const at = i * 1.0;
+        tl.fromTo(id, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "expo.out" }, at);
+        JX.scramble(tl, id + "t", txt, at, 0.35);
+        tl.fromTo(id + "x", { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "expo.out" }, at + 0.5);
+        tl.to(id + "t", { color: "#6b7068", duration: 0.2 }, at + 0.5);
+      });
+      tl.to(["#s2-1", "#s2-2", "#s2-3"], { opacity: 0, y: -20, duration: 0.5, stagger: 0.06, ease: "power3.in" }, 3.2);
+      window.__timelines["s2"] = tl;
+    })();
+  </script>
+</template>

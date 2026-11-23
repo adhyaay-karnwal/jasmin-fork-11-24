@@ -1,0 +1,4 @@
+videos/*/renders/
+videos/*/.hyperframes/
+studio/*/assets/*.mp4
+studio/*/assets/cover.jpg

@@ -6,3 +6,5 @@ html { scroll-behavior: smooth; scroll-padding-top: 64px; }
 body { background: #070807; color: #e4e4e7; -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--leaf); color: #0b0d0a; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@keyframes ticker { to { transform: translateX(-50%); } }
+@keyframes dither-drift { to { background-position: 60px -30px; } }

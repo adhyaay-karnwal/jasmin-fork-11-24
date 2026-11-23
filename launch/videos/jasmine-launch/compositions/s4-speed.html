@@ -1,0 +1,68 @@
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Regular.woff2") format("woff2"); font-weight: 400; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: #f4f5f0; }
+    .mono { font-family: "JetBrains Mono", monospace; }
+    .h { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; letter-spacing: -0.045em; white-space: pre; }
+    #s4-a { position: absolute; inset: 0; }
+    #s4-k { position: absolute; left: 0; right: 0; top: 230px; text-align: center; font-size: 34px; color: #6b7068; }
+    #s4-n { top: 300px; font-size: 300px; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.06em; }
+    #s4-n small { font-size: 120px; color: #6b7068; letter-spacing: -0.03em; }
+    #s4-bar { position: absolute; left: 0; right: 0; top: 650px; text-align: center; font-size: 46px; letter-spacing: -0.04em; white-space: pre; }
+    #s4-bar .on { color: #a6e86b; } #s4-bar .off { color: #1d211b; }
+    #s4-s { top: 760px; font-size: 48px; font-weight: 500; letter-spacing: -0.02em; color: #f4f5f0; }
+    #s4-slow { position: absolute; right: 120px; top: 120px; font-size: 28px; color: #6b7068; }
+    #s4-b { position: absolute; left: 200px; top: 230px; width: 1520px; height: 620px; border: 2px solid rgba(244,245,240,0.1); border-radius: 26px; background: rgba(7,8,7,0.9); opacity: 0; }
+    #s4-bh { height: 72px; border-bottom: 2px solid rgba(244,245,240,0.08); display: flex; align-items: center; padding: 0 34px; font-size: 28px; color: #6b7068; }
+    .s4-r { position: absolute; left: 56px; font-size: 42px; line-height: 1; white-space: pre; color: #f4f5f0; }
+    .s4-r.o { color: #a6e86b; }
+    .s4-p { color: #6b7068; }
+  </style>
+  <div id="root" data-composition-id="s4" data-width="1920" data-height="1080">
+    <div id="s4-a">
+      <div id="s4-k" class="mono">create → ready for the first command</div>
+      <div id="s4-n" class="h"><span id="s4-v">000</span><small> ms</small></div>
+      <div id="s4-bar" class="mono"><span class="on" id="s4-on"></span><span class="off" id="s4-off"></span></div>
+      <div id="s4-s" class="h">Restored from a memory snapshot. Never booted.</div>
+      <div id="s4-slow" class="mono">shown 10× slower</div>
+    </div>
+    <div id="s4-b">
+      <div id="s4-bh" class="mono">python3 · jasmine_sdk</div>
+      <div class="s4-r mono" style="top:130px"><span class="s4-p">&gt;&gt;&gt; </span><span id="s4-l1"></span></div>
+      <div class="s4-r mono" style="top:210px"><span class="s4-p">&gt;&gt;&gt; </span><span id="s4-l2"></span></div>
+      <div class="s4-r mono o" style="top:290px" id="s4-l3"># ready in 0.10 s</div>
+      <div class="s4-r mono" style="top:390px"><span class="s4-p">&gt;&gt;&gt; </span><span id="s4-l4"></span></div>
+      <div class="s4-r mono o" style="top:470px" id="s4-l5">'42\n'</div>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      const N = 40, c = { v: 0 };
+      const paint = () => {
+        const v = Math.round(c.v);
+        document.getElementById("s4-v").textContent = String(v).padStart(3, "0");
+        const k = Math.round((c.v / 100) * N);
+        document.getElementById("s4-on").textContent = "█".repeat(k);
+        document.getElementById("s4-off").textContent = "░".repeat(N - k);
+      };
+      paint();
+      tl.fromTo(["#s4-k", "#s4-n", "#s4-bar", "#s4-slow"], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.04, ease: "expo.out" }, 0);
+      tl.fromTo(c, { v: 0 }, { v: 100, duration: 1.0, ease: "none", onUpdate: paint, immediateRender: false }, 0.5);
+      tl.fromTo("#s4-n", { scale: 1 }, { scale: 1.04, duration: 0.08, yoyo: true, repeat: 1, ease: "power2.out" }, 1.5);
+      tl.to("#s4-v", { color: "#a6e86b", duration: 0.1 }, 1.5);
+      tl.fromTo("#s4-s", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 1.4);
+      tl.to("#s4-a", { opacity: 0, scale: 0.96, duration: 0.25, ease: "power3.in" }, 3.35);
+      tl.fromTo("#s4-b", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, 3.5);
+      JX.type(tl, "#s4-l1", "from jasmine_sdk import Jasmine", 3.7, 70);
+      JX.type(tl, "#s4-l2", "sbx = Jasmine().create()", 4.25, 70);
+      tl.fromTo("#s4-l3", { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.2, ease: "expo.out" }, 5.0);
+      JX.type(tl, "#s4-l4", "sbx.exec(\"python3 -c 'print(6*7)'\").stdout", 5.15, 80);
+      tl.fromTo("#s4-l5", { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.2, ease: "expo.out" }, 5.75);
+      tl.to("#s4-b", { opacity: 0, y: -30, duration: 0.2, ease: "power3.in" }, 6.78);
+      window.__timelines["s4"] = tl;
+    })();
+  </script>
+</template>

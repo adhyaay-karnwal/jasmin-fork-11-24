@@ -5,6 +5,8 @@ import { GrainGradient } from "@/components/grain-gradient";
 import { DitherButton } from "@/components/dithercn/dither-button";
 import { LB, FB, metric, jasmineRow, fmt, REPO, INSTALL, CREDITS, img } from "@/lib/jasmine-data";
 import { Card, CopyInstall, Heading } from "./bits";
+import { useUser } from "@/lib/auth";
+import { DitherWordmark } from "./extra";
 
 const jr = (id: string) => jasmineRow(metric(id)).median!;
 
@@ -79,7 +81,7 @@ export function OpenSource() {
 const FAQ = [
   ["Is it production ready?", "It's v0.1. Everything on this page passes a 32-check end-to-end suite on real Firecracker on every push, but it runs on one host today: no multi-host scheduler yet, and running sandboxes don't survive a daemon restart."],
   ["What do I need to run it?", "A Linux machine with /dev/kvm: bare metal, or a cloud VM with nested virtualization. The installer brings Firecracker, the guest kernel and an XFS reflink store."],
-  ["Is there a hosted version?", "Not yet. Jasmine is self-hosted and Apache-2.0; you pay only for the machine."],
+  ["Is there a hosted version?", "Jasmine Cloud is in early access: request it from the pricing page. The open-source version is the same engine, self-hosted, and free forever."],
   ["How were the benchmarks run?", "With aisandboxbench's own open-source harness and published flags, compared to its published results; and with fairbench, which runs Docker, gVisor and Kata on the same machine as Jasmine. All raw data is in the repo."],
   ["Why a microVM instead of a container?", "Containers share the host kernel. Jasmine gives each sandbox its own kernel and still creates it faster than Docker does on the same machine."],
   ["Can I bring my own image?", "Yes, any OCI image. Templates can have their own vCPU and memory sizes, and a snapshot of a running sandbox is a template too."],
@@ -149,13 +151,15 @@ export function Cta() {
 
 export function Footer() {
   const cols = [
-    { h: "Product", l: [["Features", "#features"], ["SDKs", "#sdk"], ["How it works", "#how"], ["Benchmarks", "#benchmarks"]] },
+    { h: "Product", l: [["Features", "/#features"], ["SDKs", "/#sdk"], ["Benchmarks", "/#benchmarks"], ["Pricing", "/pricing"], ["Dashboard", "/dashboard"]] },
+    { h: "Learn", l: [["Docs", "/docs"], ["Blog", "/blog"], ["Agent setup prompt", "/docs/agents"], ["How it works", "/#how"]] },
     { h: "Open source", l: [["GitHub", REPO], ["Releases", `${REPO}/releases`], ["Contributing", `${REPO}/blob/master/CONTRIBUTING.md`], ["Security", `${REPO}/blob/master/SECURITY.md`]] },
     { h: "Benchmarks", l: [["fairbench", `${REPO}/tree/master/bench/fair`], ["aisandboxbench results", `${REPO}/blob/master/results/aisandboxbench-2026-11-21.md`], ["aisandboxbench.com", "https://aisandboxbench.com"]] },
   ];
   return (
     <footer className="border-t border-white/[0.06]">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <DitherWordmark />
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm text-zinc-500">Open-source sandboxes for AI agents. Firecracker microVMs, restored from snapshots.</p>
@@ -187,7 +191,7 @@ export function Footer() {
 
 export function Logo() {
   return (
-    <a href="#top" className="flex items-center gap-2 text-white">
+    <a href="/" className="flex items-center gap-2 text-white">
       <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
         {[0, 72, 144, 216, 288].map((a) => (
           <ellipse key={a} cx="12" cy="6.2" rx="2.6" ry="5.2" fill="currentColor" transform={`rotate(${a} 12 12)`} opacity={0.92} />
@@ -200,20 +204,32 @@ export function Logo() {
 }
 
 export function Nav() {
+  const user = useUser();
+  const links: [string, string][] = [
+    ["Features", "/#features"],
+    ["Benchmarks", "/#benchmarks"],
+    ["Docs", "/docs"],
+    ["Blog", "/blog"],
+    ["Pricing", "/pricing"],
+  ];
   return (
     <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#070807]/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-6">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm text-zinc-400 md:flex">
-          <a className="hover:text-white" href="#features">Features</a>
-          <a className="hover:text-white" href="#sdk">SDKs</a>
-          <a className="hover:text-white" href="#benchmarks">Benchmarks</a>
-          <a className="hover:text-white" href="#faq">FAQ</a>
+          {links.map(([t, h]) => (
+            <a key={t} className="hover:text-white" href={h}>{t}</a>
+          ))}
           <a className="hover:text-white" href={REPO}>GitHub</a>
         </nav>
-        <DitherButton asChild size="sm" color="var(--leaf)">
-          <a href="#install">Get started</a>
-        </DitherButton>
+        <div className="flex items-center gap-4">
+          {user ? null : (
+            <a href="/login" className="hidden text-sm text-zinc-400 hover:text-white sm:block">Sign in</a>
+          )}
+          <DitherButton asChild size="sm" color="var(--leaf)">
+            <a href={user ? "/dashboard" : "/login?mode=signup"}>{user ? "Dashboard" : "Get started"}</a>
+          </DitherButton>
+        </div>
       </div>
     </header>
   );

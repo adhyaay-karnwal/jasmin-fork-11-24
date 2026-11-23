@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jasmine · How we built it</title>
+<style>
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Regular.woff2") format("woff2"); font-weight: 400; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 400; }
+:root { --g: #070807; --ink: #f4f5f0; --ink2: #b4b9ae; --dim: #6b7068; --leaf: #a6e86b; --bud: #f0b7cc; --line: rgba(244,245,240,.1); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--g); color: var(--ink); font-family: "Geist", sans-serif; }
+.slide { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: var(--g); }
+.slide.on { display: flex; }
+.stage { position: relative; width: 1920px; height: 1080px; flex: none; transform-origin: center; overflow: hidden; }
+canvas.dith { position: absolute; inset: 0; width: 1920px; height: 1080px; image-rendering: pixelated; opacity: .55; }
+.pad { position: absolute; left: 150px; right: 150px; top: 130px; bottom: 110px; }
+.on .rise { animation: rise .7s cubic-bezier(.22,1,.36,1) both; }
+.on .rise.d1 { animation-delay: .08s } .on .rise.d2 { animation-delay: .16s } .on .rise.d3 { animation-delay: .24s } .on .rise.d4 { animation-delay: .32s }
+@keyframes rise { from { opacity: 0; transform: translateY(26px) } to { opacity: 1; transform: none } }
+.kick { font-family: "Geist Mono", monospace; font-size: 26px; letter-spacing: .14em; text-transform: uppercase; color: var(--leaf); margin-bottom: 30px; }
+.h1 { font-size: 132px; font-weight: 600; letter-spacing: -.05em; line-height: .98; }
+.h2 { font-size: 92px; font-weight: 600; letter-spacing: -.045em; line-height: 1.02; }
+.sub { font-size: 38px; line-height: 1.4; color: var(--ink2); margin-top: 34px; max-width: 1300px; }
+.leaf { color: var(--leaf); } .bud { color: var(--bud); } .dim { color: var(--dim); }
+.lock { display: flex; align-items: center; gap: 30px; }
+.mark { width: 120px; height: 120px; }
+.lock span { font-size: 120px; font-weight: 600; letter-spacing: -.05em; }
+.card { border: 2px solid var(--line); border-radius: 26px; background: rgba(13,15,12,.92); padding: 40px 46px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.card h3 { font-size: 38px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 16px; }
+.card p { font-size: 29px; line-height: 1.45; color: var(--ink2); }
+.mono, pre { font-family: "Geist Mono", monospace; }
+pre { font-size: 31px; line-height: 1.6; color: #d9ddd3; white-space: pre; }
+pre .p { color: var(--dim) } pre .o { color: var(--leaf) } pre .c { color: var(--dim) } pre .s { color: var(--bud) }
+.bar { height: 22px; border-radius: 4px; background: #2a2e27; }
+.bar.me { background: var(--leaf); }
+table { border-collapse: collapse; width: 100%; font-size: 31px; }
+th { text-align: right; font-weight: 500; color: var(--dim); font-size: 26px; padding: 0 0 18px 0; }
+th:first-child, td:first-child { text-align: left; }
+td { text-align: right; padding: 15px 0; border-top: 2px solid var(--line); font-variant-numeric: tabular-nums; }
+td.w { color: var(--leaf); font-weight: 600; }
+td.l { color: var(--ink2); }
+.chip { display: inline-block; font-family: "Geist Mono", monospace; font-size: 24px; padding: 8px 18px; border-radius: 30px; border: 2px solid rgba(166,232,107,.35); color: var(--leaf); }
+.chip.bud { border-color: rgba(240,183,204,.4); color: var(--bud); }
+.flow { display: flex; align-items: center; gap: 22px; }
+.flow .card { padding: 30px 34px; }
+.arrow { font-family: "Geist Mono", monospace; font-size: 40px; color: var(--leaf); }
+.big { font-size: 360px; font-weight: 600; letter-spacing: -.07em; line-height: .9; }
+.cmd { display: inline-block; font-family: "Geist Mono", monospace; font-size: 40px; padding: 26px 40px; border-radius: 18px; border: 2px solid rgba(166,232,107,.35); background: rgba(7,8,7,.85); }
+.foot { position: absolute; left: 150px; right: 150px; bottom: 64px; display: flex; justify-content: space-between; font-family: "Geist Mono", monospace; font-size: 22px; color: var(--dim); }
+video { width: 100%; height: 100%; object-fit: contain; background: var(--g); }
+.dl { position: absolute; right: 24px; bottom: 22px; padding: 8px 12px; border-radius: 8px; background: #121411; border: 1px solid #2a2e27; color: var(--ink); font-size: 13px; text-decoration: none; }
+ul.ticks { list-style: none; } ul.ticks li { font-size: 34px; line-height: 1.4; padding: 16px 0; border-top: 2px solid var(--line); display: flex; gap: 22px; }
+ul.ticks li b { font-weight: 500; color: var(--ink); } ul.ticks li span.n { font-family: "Geist Mono", monospace; color: var(--leaf); min-width: 70px; }
+</style>
+</head>
+<body>
+<!-- 0 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="low" width="480" height="270"></canvas>
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+  <div class="kick rise">Jasmine · engineering</div>
+  <div class="h1 rise d1">How a sandbox<br/>starts in <span class="leaf">100 ms</span>.</div>
+  <div class="sub rise d2">Snapshots instead of boots, reflinks instead of copies, and a PID 1 that does almost nothing.</div>
+</div><div class="foot"><span>tryjasmine.dev/blog/how-a-sandbox-starts-in-100ms</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 1 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Architecture</div>
+  <div class="flow rise d1" style="margin-top:30px">
+    <div class="card"><h3>SDK</h3><p>TypeScript, Python, curl</p></div><span class="arrow">→</span>
+    <div class="card"><h3>jasmined</h3><p>HTTP :7171 · Rust<br/>templates, lifecycle</p></div><span class="arrow">→</span>
+    <div class="card" style="border-color:rgba(166,232,107,.45)"><h3>Firecracker microVM</h3><p><span class="mono leaf">jasmine-agent</span> as PID 1</p></div>
+  </div>
+  <div class="grid3 rise d2" style="margin-top:50px">
+    <div class="card"><h3>vsock</h3><p>Host ↔ guest. Framed binary, one request per connection.</p></div>
+    <div class="card"><h3>XFS reflinks</h3><p>Per-sandbox disk is a copy-on-write clone of the template.</p></div>
+    <div class="card"><h3>netns pool</h3><p>One network namespace per sandbox, pre-built and recycled.</p></div>
+  </div>
+</div><div class="foot"><span>01 · the shape</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 2 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">1 · Build once</div>
+  <div class="h2 rise d1">A template is a VM that<br/>already booted.</div>
+  <div class="flow rise d2" style="margin-top:70px">
+    <div class="card"><pre style="font-size:28px">OCI image</pre></div><span class="arrow">→</span>
+    <div class="card"><pre style="font-size:28px">ext4, no journal</pre></div><span class="arrow">→</span>
+    <div class="card"><pre style="font-size:28px">boot once</pre></div><span class="arrow">→</span>
+    <div class="card"><pre style="font-size:28px">prewarm page cache</pre></div><span class="arrow">→</span>
+    <div class="card" style="border-color:rgba(166,232,107,.45)"><pre style="font-size:28px"><span class="o">snapshot</span></pre></div>
+  </div>
+  <div class="sub rise d3"><span class="mono">sudo jasmined build default python:3.12-slim</span>. About a minute, once. Memory and CPU state go into the snapshot.</div>
+</div><div class="foot"><span>02 · build</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 3 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="high" width="480" height="270"></canvas>
+<div class="pad">
+  <div class="kick rise">2 · Copy nothing</div>
+  <div class="grid2 rise d1" style="margin-top:20px">
+    <div class="card"><h3>Disk: XFS reflink</h3><p>Cloning the template disk takes the same time for 50 MB as for 5 GB. Create and fork are O(1) in image size.</p></div>
+    <div class="card"><h3>Memory: MAP_PRIVATE</h3><p>Snapshot memory is mapped lazily. Pages load when the guest touches them, and clean pages are shared by every sandbox through the host page cache.</p></div>
+  </div>
+  <div class="sub rise d2">Result: resume cost doesn't depend on how much RAM the sandbox has, and N sandboxes don't cost N copies.</div>
+</div><div class="foot"><span>03 · storage</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 4 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">3 · Nothing to boot</div>
+  <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:start">
+    <div class="rise d1"><div class="h2" style="font-size:84px">PID 1 is a small,<br/>static Rust binary.</div>
+      <ul class="ticks" style="margin-top:40px"><li><span class="n">no</span><span>systemd, shell or async runtime</span></li><li><span class="n">yes</span><span>mounts, zombie reaping, exec, files</span></li></ul></div>
+    <div class="card rise d2"><pre style="font-size:28px"><span class="c">// one request per vsock connection</span>
+frame  = len | type | payload
+exec   → stdout/stderr bytes, exit code
+files  → raw bytes, no base64
+<span class="o">no SSH handshake</span>
+<span class="o">no JSON on the hot path</span></pre></div>
+  </div>
+</div><div class="foot"><span>04 · guest</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 5 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">4 · Don't be the same machine twice</div>
+  <div class="h2 rise d1">One snapshot, many VMs:<br/>same RNG, same clock.</div>
+  <div class="grid3 rise d2" style="margin-top:70px">
+    <div class="card"><h3>Clock</h3><p>The host sets the guest clock on every restore.</p></div>
+    <div class="card"><h3>Entropy</h3><p>Fresh randomness injected with <span class="mono">RNDADDENTROPY</span>.</p></div>
+    <div class="card"><h3>VMGenID</h3><p>Tells the kernel to reseed. A CI test checks two sandboxes never share random bytes.</p></div>
+  </div>
+</div><div class="foot"><span>05 · snapshot safety</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 6 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="high" width="480" height="270"></canvas>
+<div class="pad">
+  <div class="kick rise">5 · Networking without a single ip call</div>
+  <div class="h2 rise d1">Every sandbox expects<br/>the same <span class="mono leaf">tap0</span>.</div>
+  <div class="sub rise d2">The snapshot has its network config baked in. So each sandbox gets its own namespace holding an identical tap, NATed out through a unique veth.</div>
+  <div class="sub rise d3">Namespaces are pre-built in a pool and recycled on delete. The create path never runs <span class="mono">ip</span> or <span class="mono">iptables</span>. Networking added nothing measurable.</div>
+</div><div class="foot"><span>06 · network</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 7 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">The bug · the first command was slow</div>
+  <div class="h2 rise d1">Ready in under 40 ms,<br/>then the first exec took as long again.</div>
+  <div class="rise d2" style="margin-top:70px">
+    <div style="display:flex;align-items:center;gap:30px;font-size:34px"><span style="width:300px" class="dim">before</span><div class="bar" style="width:800px"></div><span class="mono">40 ms</span></div>
+    <div style="display:flex;align-items:center;gap:30px;font-size:34px;margin-top:30px"><span style="width:300px" class="leaf">after prewarm</span><div class="bar me" style="width:380px"></div><span class="mono leaf">19 ms</span></div>
+  </div>
+  <div class="sub rise d3">Not host page faults: cold disk reads of libc and the binary. Now the build reads binaries, libraries and runtimes into the guest page cache before snapshotting.</div>
+</div><div class="foot"><span>07 · first exec</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 8 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">How we measure</div>
+  <ul class="ticks rise d1" style="margin-top:10px">
+    <li><span class="n">01</span><span><b>From the client.</b> Wall-clock through the public API, never server-reported timings.</span></li>
+    <li><span class="n">02</span><span><b>Same machine, or say so.</b> fairbench runs all four systems on one host, interleaved and randomly ordered.</span></li>
+    <li><span class="n">03</span><span><b>Don't tune to the test.</b> Workload seeded at run time. A 40-op agent trace we never looked at while tuning.</span></li>
+    <li><span class="n">04</span><span><b>Ties are ties.</b> Medians with bootstrap 95% CIs. A win needs its interval clear of every other system's.</span></li>
+    <li><span class="n">05</span><span><b>Publish the losses.</b> On the homepage, next to the wins. Raw data in the repo.</span></li>
+  </ul>
+</div><div class="foot"><span>08 · method</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 9 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Where we lose, and why</div>
+  <table class="rise d1" style="margin-top:10px">
+    <tr><th>fairbench median</th><th>Jasmine</th><th>Docker</th><th>gVisor</th><th>Kata</th></tr>
+    <tr><td>CPU-bound Python</td><td class="l">109 ms</td><td class="w">74</td><td>80</td><td>141</td></tr>
+    <tr><td>500 small fsync'd files</td><td class="l">594 ms</td><td class="w">341</td><td>454</td><td>694</td></tr>
+    <tr><td>Vite production build</td><td class="l">4.3 s</td><td class="w">2.6</td><td>4.3</td><td>4.9</td></tr>
+  </table>
+  <div class="grid2 rise d2" style="margin-top:50px">
+    <div class="card"><h3>The VM tax</h3><p>Docker shares the host kernel. Our CI runner adds nested virtualization, which inflates the tax for Jasmine and Kata.</p></div>
+    <div class="card"><h3>First touch</h3><p>The first file op in a fresh restore: 5.3 ms vs 1.1 ms for the second. Fix: pre-fault guest memory at restore.</p></div>
+  </div>
+</div><div class="foot"><span>09 · losses</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 10 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="low" width="480" height="270"></canvas>
+<div class="pad">
+  <div class="kick rise">What's next</div>
+  <ul class="ticks rise d1" style="margin-top:10px">
+    <li><span class="n">512×</span><span><b>2 MiB huge pages</b> with a userfaultfd restore handler, to cut post-restore EPT faults under bursts.</span></li>
+    <li><span class="n">fork</span><span><b>Fork a running sandbox</b> into N copies, plus PTY and streaming exec.</span></li>
+    <li><span class="n">net</span><span><b>Egress allowlists</b> and a secrets proxy, so API keys never enter the VM.</span></li>
+    <li><span class="n">fleet</span><span><b>Multi-host scheduler</b>, lazily pulled images, volumes, GPUs.</span></li>
+    <li><span class="n">api</span><span><b>E2B-compatible API</b> and an MCP server.</span></li>
+  </ul>
+</div><div class="foot"><span>10 · roadmap</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 11 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="low" width="480" height="270"></canvas>
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+  <div class="lock rise"><svg class="mark" viewBox="0 0 24 24"><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.7" fill="#a6e86b"/></svg><span>Jasmine</span></div>
+  <div class="sub rise d1" style="text-align:center;margin-top:50px">Read the code: github.com/arjunkshah12345-hash/jasmine-sandbox</div>
+  <div class="sub rise d2" style="text-align:center;margin-top:10px">Read the post: tryjasmine.dev/blog</div>
+</div></div></section>
+<script>
+const B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+document.querySelectorAll("canvas.dith").forEach((c, n) => {
+  const g = c.getContext("2d"), W = c.width, H = c.height, mode = c.dataset.mode || "low";
+  const img = g.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const nx = x / W, ny = y / H;
+    let v = 0.5 + 0.5 * Math.sin((nx * 3.1 - ny * 2.2) * Math.PI + n * 1.7 + Math.sin(ny * 4 + n) * 1.3);
+    v = v * v * (mode === "low" ? 0.55 * Math.pow(ny, 1.6) : 0.38 * (1 - ny * 0.4));
+    const lit = v > (B[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+    const bud = Math.sin(nx * 5 + ny * 3 + n) > 0.8;
+    const i = (y * W + x) * 4;
+    if (lit) { d[i] = bud ? 240 : 166; d[i + 1] = bud ? 183 : 232; d[i + 2] = bud ? 204 : 107; d[i + 3] = 150; }
+  }
+  g.putImageData(img, 0, 0);
+});
+const slides = [...document.querySelectorAll(".slide")];
+function fit() {
+  const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+  document.querySelectorAll(".stage").forEach((st) => (st.style.transform = `scale(${k})`));
+}
+window.show = function (i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, n) => s.classList.toggle("on", n === i));
+  const v = document.querySelector("video");
+  if (v && !slides[i].contains(v) && !v.paused) v.pause();
+  window.current = i;
+};
+addEventListener("resize", fit);
+fit();
+window.show(0);
+</script>
+</body>
+</html>

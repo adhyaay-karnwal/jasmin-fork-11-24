@@ -7,6 +7,7 @@ import { DitherButton } from "@/components/dithercn/dither-button";
 import { StatusDot } from "@/components/asciicn/status-dot";
 import { LB, metric, jasmineRow as jRow, fmt, ordinal, REPO, INSTALL } from "@/lib/jasmine-data";
 import { CopyInstall } from "./bits";
+import { Scramble } from "./extra";
 
 const cold = metric("cold");
 const racers = cold.rows.filter((r) => r.ranked && r.median != null).slice().sort((a, b) => a.name.localeCompare(b.name));
@@ -102,15 +103,15 @@ export function Hero() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_0%,#070807_75%)]" />
       </div>
       <div className="mx-auto max-w-6xl px-6 pt-20 pb-10 text-center md:pt-28">
-        <a href="#sdk" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[13px] text-zinc-300 backdrop-blur hover:border-white/20">
+        <a href="/blog/introducing-jasmine" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[13px] text-zinc-300 backdrop-blur hover:border-white/20">
           <StatusDot status="online" showLabel={false} size="sm" />
-          v0.1.1: pause, snapshot and preview URLs in both SDKs
+          Launch week: docs, blog and Jasmine Cloud early access
           <span className="text-zinc-500 transition group-hover:translate-x-0.5">→</span>
         </a>
         <h1 className="mx-auto mt-7 max-w-4xl text-[clamp(2.6rem,6.4vw,5rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-white">
           Sandboxes for AI agents,{" "}
           <br className="hidden sm:block" />
-          ready in {COLD_MS} ms.
+          ready in <Scramble text={`${COLD_MS} ms`} className="text-[var(--leaf)]" delay={250} />.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-400">
           Open-source Firecracker microVMs restored from memory snapshots. First on {LB.wins} of {LB.metrics.length} public
@@ -118,7 +119,7 @@ export function Hero() {
         </p>
         <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
           <DitherButton asChild size="lg" color="var(--leaf)">
-            <a href="#install">Get started</a>
+            <a href="/docs">Get started</a>
           </DitherButton>
           <DitherButton asChild size="lg" variant="outline" color="ink">
             <a href={REPO}>Star on GitHub</a>

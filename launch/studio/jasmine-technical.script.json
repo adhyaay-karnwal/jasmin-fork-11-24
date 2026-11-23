@@ -1,0 +1,99 @@
+[
+ {
+  "t": "01 · Opening",
+  "n": "Conversational. This one is for engineers.",
+  "p": [
+   "Jasmine starts a fresh virtual machine and runs its first command in about <b>a hundred milliseconds</b>.",
+   "This is how. It mostly comes down to three ideas: don't boot, don't copy, and don't run anything you don't need."
+  ]
+ },
+ {
+  "t": "02 · Architecture",
+  "n": "Walk the arrow left to right.",
+  "p": [
+   "The shape is simple. The SDKs talk HTTP to one daemon, <b>jasmined</b>, written in Rust.",
+   "jasmined runs a Firecracker microVM per sandbox, and inside each one our own agent is PID 1.",
+   "They talk over vsock. Disks are XFS reflinks. Networking comes from a pool of namespaces."
+  ]
+ },
+ {
+  "t": "03 · Build once",
+  "n": "",
+  "p": [
+   "Everything starts with a template. You give jasmined any OCI image. It unpacks it to an ext4 disk with no journal, boots it once, warms the page cache, and snapshots the whole VM: memory and CPU state.",
+   "That takes about a minute, once. Every sandbox after that is a restore, not a boot."
+  ]
+ },
+ {
+  "t": "04 · Copy nothing",
+  "n": "",
+  "p": [
+   "On create, we don't copy anything. The disk is an XFS reflink, which costs the same for fifty megabytes as for five gigabytes.",
+   "Memory is mapped <b>MAP_PRIVATE</b>. Pages load only when the guest touches them, and clean pages are shared by every sandbox through the host page cache."
+  ]
+ },
+ {
+  "t": "05 · Nothing to boot",
+  "n": "",
+  "p": [
+   "Inside the VM there's no systemd and no shell. PID 1 is <b>jasmine-agent</b>, a small static Rust binary with no async runtime.",
+   "It mounts the basics, reaps zombies, and serves requests over vsock. One connection per request, framed binary messages, raw bytes for output and files. No SSH, and no JSON on the hot path."
+  ]
+ },
+ {
+  "t": "06 · Snapshot safety",
+  "n": "This is the subtle one. Slow down.",
+  "p": [
+   "There's a sharp edge with restoring one snapshot into many VMs: they all wake up with the <b>same random number state</b> and the same clock.",
+   "So on every restore the host sets the clock and injects fresh entropy, and VMGenID tells the kernel to reseed. A test in CI checks that two sandboxes from one snapshot never produce the same random bytes."
+  ]
+ },
+ {
+  "t": "07 · Networking",
+  "n": "",
+  "p": [
+   "Networking had a similar problem. The snapshot has its network config baked in, so every sandbox expects the same tap device and the same IP.",
+   "So each sandbox gets its own namespace with an identical tap inside, NATed out through a unique veth. The namespaces are pre-built and recycled, so creating a sandbox never shells out to ip or iptables."
+  ]
+ },
+ {
+  "t": "08 · The first-command bug",
+  "n": "Tell it as a story.",
+  "p": [
+   "Here's a bug I liked. Early on, the sandbox was ready in under forty milliseconds, and then the first command took about as long again.",
+   "Profiling showed it wasn't host page faults. It was cold disk reads of libc and the binary itself. So now the build reads all of that into the guest page cache before the snapshot. First exec went from <b>forty milliseconds to nineteen</b>."
+  ]
+ },
+ {
+  "t": "09 · How we measure",
+  "n": "",
+  "p": [
+   "None of this matters if the benchmarks are soft. So here are the rules.",
+   "We measure from the client. We run everything on the same machine, or say clearly when we don't. The workload is seeded at run time, plus a trace we never tuned against. A tie is a tie unless the confidence intervals separate. And we publish the losses."
+  ]
+ },
+ {
+  "t": "10 · Where we lose",
+  "n": "Own it.",
+  "p": [
+   "And we do lose. Docker wins CPU-bound work, small synced writes and builds, because it shares the host kernel and pays no VM tax. Our CI runner uses nested virtualization, which makes that tax bigger than on bare metal.",
+   "There's also a first-touch cost on the first file operation after a restore. Pre-faulting memory at restore is the fix."
+  ]
+ },
+ {
+  "t": "11 · What's next",
+  "n": "",
+  "p": [
+   "Next up: huge pages with a userfaultfd restore handler, which should cut post-restore page faults about <b>five hundred times</b> under bursts.",
+   "Then forking a running sandbox, egress allowlists, a secrets proxy so keys never enter the VM, a multi-host scheduler, and an E2B-compatible API."
+  ]
+ },
+ {
+  "t": "12 · Close",
+  "n": "Look at the camera.",
+  "p": [
+   "It's all open source. The code's on GitHub, and the long version of this talk is on the blog at tryjasmine.dev.",
+   "Thanks for watching."
+  ]
+ }
+]
