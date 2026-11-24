@@ -1,0 +1,39 @@
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; }
+    #s2-cv { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+    #s2-fill { position: absolute; inset: 0; background: #a6e86b; opacity: 0; }
+    #s2-lock { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; justify-content: center; align-items: center; gap: 40px; color: #0b1006; }
+    #s2-m { width: 180px; height: 180px; overflow: visible; }
+    #s2-w { font-size: 190px; font-weight: 600; letter-spacing: -0.055em; line-height: 1; white-space: pre; }
+  </style>
+  <div id="root" data-composition-id="s2" data-width="1920" data-height="1080">
+    <canvas id="s2-cv" width="1920" height="1080"></canvas>
+    <div id="s2-fill"></div>
+    <div id="s2-lock">
+      <svg id="s2-m" viewBox="0 0 24 24"><ellipse class="pt" cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#0b1006"/><ellipse class="pt" cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#0b1006"/><ellipse class="pt" cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#0b1006"/><ellipse class="pt" cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#0b1006"/><ellipse class="pt" cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#0b1006"/><circle class="ctr" cx="12" cy="12" r="1.7" fill="#a6e86b"/></svg>
+      <div id="s2-w">Jasmine Cloud</div>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // world change: leaf dithers in over the zoomed URL, then goes solid
+      JX.bayer(tl, "#s2-cv", "#a6e86b", 0.0, 0.42, 1);
+      tl.set("#s2-fill", { opacity: 1 }, 0.42);
+      // the lockup: petals bloom, the wordmark wipes on
+      gsap.utils.toArray("#s2-m .pt").forEach((p, i) => {
+        tl.fromTo(p, { rotation: i * 72 - 120, scale: 0, svgOrigin: "12 12" }, { rotation: i * 72, scale: 1, svgOrigin: "12 12", duration: 0.6, ease: "expo.out", immediateRender: true }, 0.38 + i * 0.04);
+      });
+      tl.fromTo("#s2-m .ctr", { scale: 0, svgOrigin: "12 12" }, { scale: 1, svgOrigin: "12 12", duration: 0.4, ease: "back.out(2.4)", immediateRender: true }, 0.6);
+      tl.fromTo("#s2-w", { clipPath: "inset(0 100% 0 0)", x: -40 }, { clipPath: "inset(0 0% 0 0)", x: 0, duration: 0.5, ease: "expo.out", immediateRender: true }, 0.5);
+      tl.to("#s2-lock", { scale: 1.04, duration: 1.2, ease: "none" }, 0.5);
+      // out: the lockup clips away, the leaf dithers off to reveal the demo underneath
+      tl.to("#s2-lock", { clipPath: "inset(0 0 100% 0)", y: -40, duration: 0.3, ease: "power3.in" }, 1.6);
+      tl.set("#s2-fill", { opacity: 0 }, 1.95);
+      JX.bayer(tl, "#s2-cv", "#a6e86b", 1.95, 0.25, -1);
+      window.__timelines["s2"] = tl;
+    })();
+  </script>
+</template>

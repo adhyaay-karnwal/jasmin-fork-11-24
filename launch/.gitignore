@@ -2,3 +2,5 @@ videos/*/renders/
 videos/*/.hyperframes/
 studio/*/assets/*.mp4
 studio/*/assets/cover.jpg
+__pycache__/
+.DS_Store
