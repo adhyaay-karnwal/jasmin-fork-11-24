@@ -4,7 +4,7 @@
 // JASMINE_URL=https://api.tryjasmine.dev. On top of the daemon it adds:
 //   - per-user API keys (the ones made on the dashboard)
 //   - ownership: every sandbox and snapshot belongs to one account
-//   - limits, timeouts, a monthly spend cap, and metered billing
+//   - limits, timeouts, and prepaid credit (a free trial, then top-ups)
 // Building templates from arbitrary images is not offered on shared hosts.
 
 import http from "node:http";
@@ -33,14 +33,21 @@ async function authenticate(req) {
     hit = { account: await store.accountByKey(hash), at: Date.now() };
     keyCache.set(hash, hit);
   }
-  const a = hit.account;
+  let a = hit.account;
   if (!a) throw new HttpError(401, "missing or invalid API key (create one at tryjasmine.dev/dashboard)");
-  if (a.plan !== "cloud") throw new HttpError(402, "Jasmine Cloud is not enabled on this account. Turn it on at tryjasmine.dev/dashboard.");
-  if (a.suspended) throw new HttpError(402, "this account is suspended because a payment failed. Update your card at tryjasmine.dev/dashboard.");
+  if (a.suspended) throw new HttpError(403, "this account is suspended. Email support@tryjasmine.dev.");
+  if (!a.trialGranted) {
+    // First Cloud request from this account: grant the one-time trial credit.
+    await store.grantTrial(a.uid);
+    meter.balances.delete(a.uid);
+    a = { ...a, trialGranted: true };
+    hit.account = a;
+  }
   return a;
 }
 
-const limitsOf = (a) => ({ ...config.limits, ...(a.limits ?? {}) });
+// Trial accounts (no top-up yet) get tighter limits; a user doc can override either.
+const limitsOf = (a) => ({ ...config.limits, ...(a.paid ? {} : config.trialLimits), ...(a.limits ?? {}) });
 
 const createLog = new Map(); // uid -> timestamps (ms) of recent creates
 function rateLimit(a) {
@@ -52,9 +59,9 @@ function rateLimit(a) {
 }
 
 async function requireCompute(a, { resuming = false } = {}) {
-  if (await meter.overCap(a.uid, a)) {
-    throw new HttpError(402, `monthly spend limit of $${limitsOf(a).monthlySpendUsd} reached. Raise it at tryjasmine.dev/dashboard.`);
-  }
+  const over = await meter.overCap(a.uid, a);
+  if (over === "balance") throw new HttpError(402, "out of credit. Top up at tryjasmine.dev/dashboard (paused sandboxes are kept).");
+  if (over === "cap") throw new HttpError(402, `the monthly limit of $${limitsOf(a).monthlySpendUsd} set on this account is reached.`);
   const mine = meter.owned(a.uid);
   const L = limitsOf(a);
   if (mine.filter((s) => s.state === "running").length >= L.running)
@@ -169,15 +176,11 @@ async function me(a, res) {
   const mine = meter.owned(a.uid);
   send(res, 200, {
     uid: a.uid,
-    plan: a.plan,
+    balance_usd: round(await meter.balance(a.uid)),
+    trial: !a.paid,
     limits: limitsOf(a),
     rates: config.rates,
-    month: {
-      ...usage,
-      usd: round(usage.usd),
-      billable_usd: round(Math.max(0, usage.usd - config.rates.monthlyFreeUsd)),
-      free_usd: config.rates.monthlyFreeUsd,
-    },
+    month: { ...usage, usd: round(usage.usd) },
     sandboxes: { running: mine.filter((s) => s.state === "running").length, paused: mine.filter((s) => s.state === "paused").length },
   });
 }
@@ -273,7 +276,12 @@ const CORS = {
 async function billingRoute(req, res, url) {
   if (url.pathname === "/billing/webhook" && req.method === "POST") {
     const raw = (await readBody(req)).toString("utf8");
-    await billing.webhook(raw, req.headers["stripe-signature"]);
+    const uid = await billing.webhook(raw, req.headers["stripe-signature"]);
+    if (uid) {
+      // New credit and trial limits lifted: drop cached copies of this account.
+      meter.balances.delete(uid);
+      for (const [h, v] of keyCache) if (v.account?.uid === uid) keyCache.delete(h);
+    }
     return send(res, 200, { received: true });
   }
   if (req.method === "OPTIONS") {
@@ -287,12 +295,13 @@ async function billingRoute(req, res, url) {
   } catch {
     throw new HttpError(401, "sign in again");
   }
-  if (url.pathname === "/billing/checkout" && req.method === "POST")
-    return send(res, 200, { url: await billing.checkout(user.uid, user.email) }, CORS);
-  if (url.pathname === "/billing/portal" && req.method === "POST") return send(res, 200, { url: await billing.portal(user.uid) }, CORS);
+  if (url.pathname === "/billing/checkout" && req.method === "POST") {
+    const { amount } = await readJson(req);
+    return send(res, 200, { url: await billing.checkout(user.uid, user.email, amount) }, CORS);
+  }
   if (url.pathname === "/billing/usage" && req.method === "GET") {
     const u = await meter.monthUsage(user.uid);
-    return send(res, 200, { ...u, free_usd: config.rates.monthlyFreeUsd, rates: config.rates }, CORS);
+    return send(res, 200, { month: u, balance_usd: round(await meter.balance(user.uid)), top_ups_usd: config.topUpsUsd, rates: config.rates }, CORS);
   }
   throw new HttpError(404, "not found");
 }
@@ -349,7 +358,7 @@ server.on("upgrade", async (req, socket, head) => {
 });
 
 await meter.start();
-server.listen(config.port, () => console.log(`jasmine cloud gateway on :${config.port} (${hosts().length} host(s), store=${config.store}, billing=${billing.enabled})`));
+server.listen(config.port, () => console.log(`jasmine cloud gateway on :${config.port} (${hosts().length} host(s), store=${config.store}, payments=${billing.enabled})`));
 
 const shutdown = async () => {
   server.close();

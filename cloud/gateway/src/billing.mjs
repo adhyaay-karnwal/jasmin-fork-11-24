@@ -1,11 +1,13 @@
-// Stripe, over plain HTTPS (no SDK). One metered price: each unit is one
-// micro-dollar of usage, so every resource rate lives in config.rates, not Stripe.
+// Prepaid credits through Stripe Checkout, over plain HTTPS (no SDK).
 //
-// Flow: dashboard -> POST /billing/checkout -> Stripe Checkout (card + subscription)
-// -> webhook checkout.session.completed -> users/{uid}.plan = "cloud".
+// Customers buy credit before they use compute, so Jasmine never fronts the cost
+// of usage and an unpaid bill can't happen. Flow:
+//   dashboard -> POST /billing/checkout {amount} -> Stripe Checkout (one-time payment)
+//   -> webhook checkout.session.completed -> users/{uid}.balanceUsd += amount
+// The meter deducts usage from the balance; at $0 running sandboxes are paused.
 
 import { config } from "./config.mjs";
-import { day, HttpError, month, verifyStripeSignature } from "./util.mjs";
+import { HttpError, verifyStripeSignature } from "./util.mjs";
 
 const API = "https://api.stripe.com/v1";
 
@@ -39,8 +41,11 @@ export function billing(store) {
   return {
     enabled,
 
-    async checkout(uid, email) {
-      if (!enabled || !config.stripe.priceId) throw new HttpError(503, "billing is not configured");
+    /** Start a Checkout session for one of the fixed top-up amounts. */
+    async checkout(uid, email, amountUsd) {
+      if (!enabled) throw new HttpError(503, "payments are not configured yet");
+      const amount = Number(amountUsd);
+      if (!config.topUpsUsd.includes(amount)) throw new HttpError(400, `amount must be one of ${config.topUpsUsd.join(", ")}`);
       const account = (await store.accountByUid(uid)) ?? {};
       let customer = account.stripeCustomer;
       if (!customer) {
@@ -48,67 +53,42 @@ export function billing(store) {
         await store.updateUser(uid, { stripeCustomer: customer });
       }
       const s = await stripe("/checkout/sessions", {
-        mode: "subscription",
+        mode: "payment",
         customer,
         client_reference_id: uid,
-        line_items: { 0: { price: config.stripe.priceId } },
-        success_url: `${config.stripe.siteUrl}/dashboard/?cloud=welcome`,
+        line_items: {
+          0: {
+            quantity: 1,
+            price_data: {
+              currency: "usd",
+              unit_amount: Math.round(amount * 100),
+              product_data: { name: `Jasmine Cloud credit ($${amount})`, description: "Prepaid sandbox usage. Credit doesn't expire." },
+            },
+          },
+        },
+        metadata: { uid, credit_usd: amount },
+        payment_intent_data: { metadata: { uid, credit_usd: amount } },
+        invoice_creation: { enabled: true },
+        success_url: `${config.stripe.siteUrl}/dashboard/?cloud=paid`,
         cancel_url: `${config.stripe.siteUrl}/dashboard/?cloud=cancelled`,
-        subscription_data: { metadata: { uid } },
       });
       return s.url;
     },
 
-    async portal(uid) {
-      if (!enabled) throw new HttpError(503, "billing is not configured");
-      const account = (await store.accountByUid(uid)) ?? {};
-      if (!account.stripeCustomer) throw new HttpError(404, "no billing account yet");
-      const s = await stripe("/billing_portal/sessions", { customer: account.stripeCustomer, return_url: `${config.stripe.siteUrl}/dashboard/` });
-      return s.url;
-    },
-
+    /** Credit the balance once per paid Checkout session (Stripe retries webhooks). */
     async webhook(raw, signature) {
-      if (!verifyStripeSignature(raw, signature, config.stripe.webhookSecret)) throw new HttpError(400, "bad signature");
+      if (!config.stripe.webhookSecret || !verifyStripeSignature(raw, signature, config.stripe.webhookSecret)) {
+        throw new HttpError(400, "bad signature");
+      }
       const ev = JSON.parse(raw);
-      const o = ev.data.object;
-      const uid = o.client_reference_id ?? o.metadata?.uid ?? o.subscription_details?.metadata?.uid;
-      if (!uid) return;
-      switch (ev.type) {
-        case "checkout.session.completed":
-          await store.updateUser(uid, { plan: "cloud", stripeCustomer: o.customer, stripeSubscription: o.subscription, suspended: false });
-          break;
-        case "customer.subscription.deleted":
-          await store.updateUser(uid, { plan: "open-source" });
-          break;
-        case "invoice.payment_failed":
-          await store.updateUser(uid, { suspended: true });
-          break;
-        case "invoice.paid":
-          await store.updateUser(uid, { suspended: false });
-          break;
-      }
-    },
-
-    /** Send usage above the monthly free allowance that Stripe hasn't seen yet. */
-    async report(meter) {
-      const m = month();
-      for (const [k, u] of meter.months) {
-        const [uid, km] = k.split("/");
-        if (km !== m) continue;
-        const due = Math.max(0, u.usd - config.rates.monthlyFreeUsd) - (u.billedUsd ?? 0);
-        if (due < 0.01) continue;
-        const account = await store.accountByUid(uid);
-        if (!account?.stripeCustomer) continue;
-        const micro = Math.floor(due * 1e6);
-        await stripe("/billing/meter_events", {
-          event_name: config.stripe.meterEvent,
-          identifier: `${uid}-${m}-${Math.round((u.billedUsd ?? 0) * 1e6)}`,
-          payload: { stripe_customer_id: account.stripeCustomer, value: micro },
-        });
-        const billed = micro / 1e6;
-        u.billedUsd = (u.billedUsd ?? 0) + billed;
-        await store.addUsage(uid, m, day(), { billedUsd: billed });
-      }
+      const o = ev.data?.object ?? {};
+      if (ev.type !== "checkout.session.completed" && ev.type !== "checkout.session.async_payment_succeeded") return;
+      if (o.mode !== "payment" || o.payment_status !== "paid") return;
+      const uid = o.client_reference_id ?? o.metadata?.uid;
+      const credit = Number(o.metadata?.credit_usd ?? (o.amount_total ?? 0) / 100);
+      if (!uid || !(credit > 0)) return;
+      await store.credit(uid, credit, `checkout:${o.id}`, { stripeCustomer: o.customer, paid: true });
+      return uid;
     },
   };
 }

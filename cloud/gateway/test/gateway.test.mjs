@@ -19,10 +19,9 @@ const logs = [];
 const KEYS = {
   alice: "jsm_alice_key_0000000000000000",
   bob: "jsm_bob_key_00000000000000000000",
-  oss: "jsm_free_plan_key_0000000000000",
-  carol: "jsm_carol_zero_cap_000000000000", // spend cap $0
-  dave: "jsm_dave_tiny_cap_0000000000000", // spend cap $0.0005
-  erin: "jsm_erin_upgrades_0000000000000", // becomes "cloud" through the Stripe webhook
+  carol: "jsm_carol_zero_cap_000000000000", // $0 balance
+  dave: "jsm_dave_tiny_cap_0000000000000", // $0.0005 balance
+  erin: "jsm_erin_upgrades_0000000000000", // brand new: trial credit, then a Stripe top-up
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -48,17 +47,16 @@ before(async () => {
       JASMINE_HOST_KEY: HOST_KEY,
       JASMINE_STORE: "memory",
       JASMINE_DEV_KEYS: [
-        `${KEYS.alice}:alice`,
-        `${KEYS.bob}:bob`,
-        `${KEYS.oss}:oss:open-source`,
-        `${KEYS.carol}:carol:cloud:0`,
-        `${KEYS.dave}:dave:cloud:0.0005`,
-        `${KEYS.erin}:erin:open-source`,
+        `${KEYS.alice}:alice:1000:paid`,
+        `${KEYS.bob}:bob:1000:paid`,
+        `${KEYS.carol}:carol:0:paid`,
+        `${KEYS.dave}:dave:0.0005:paid`,
+        `${KEYS.erin}:erin`,
       ].join(","),
       LIMIT_RUNNING: "3",
       LIMIT_TOTAL: "5",
       LIMIT_SNAPSHOTS: "2",
-      FREE_USD_PER_MONTH: "0",
+      TRIAL_USD: "2",
       // $36 per vCPU-hour = 1 cent per vCPU-second, so spend shows up fast.
       RATE_VCPU_HOUR: "36",
       RATE_GIB_HOUR: "0",
@@ -85,12 +83,10 @@ after(() => {
   daemon.close();
 });
 
-test("rejects missing, unknown and non-Cloud keys", async () => {
+test("rejects missing and unknown keys", async () => {
   assert.equal((await req(null, "GET", "/v1/sandboxes")).status, 401);
   assert.equal((await req("jsm_not_a_real_key", "GET", "/v1/sandboxes")).status, 401);
-  const r = await req("oss", "GET", "/v1/sandboxes");
-  assert.equal(r.status, 402);
-  assert.match(r.body.error, /not enabled/);
+  assert.equal((await req("sk_live_wrong_prefix", "GET", "/v1/sandboxes")).status, 401);
 });
 
 test("sandboxes are private to their owner", async () => {
@@ -186,39 +182,59 @@ test("usage is metered and shown on /v1/me", async () => {
   const me = (await req("bob", "GET", "/v1/me")).body;
   assert.ok(me.month.cpuS > 1, JSON.stringify(me.month));
   assert.ok(me.month.usd > 0.01 && me.month.usd < 0.2, `usd ${me.month.usd}`);
+  assert.ok(me.balance_usd < 1000 && me.balance_usd > 999.5, `balance ${me.balance_usd}`);
+  assert.equal(me.trial, false);
   assert.equal(me.sandboxes.running, 1);
   await req("bob", "DELETE", `/v1/sandboxes/${s.id}`);
 });
 
-test("spend cap blocks new compute and pauses running sandboxes", async () => {
+test("an empty balance blocks new compute and pauses running sandboxes", async () => {
   const r = await req("carol", "POST", "/v1/sandboxes", {});
   assert.equal(r.status, 402);
-  assert.match(r.body.error, /spend limit/);
+  assert.match(r.body.error, /out of credit/);
+  assert.equal((await req("carol", "GET", "/v1/sandboxes")).status, 200, "reading is still allowed");
   const s = await req("dave", "POST", "/v1/sandboxes", {});
   assert.equal(s.status, 201);
   await sleep(1000);
-  assert.equal(daemon.sandboxes.get(s.body.id).state, "paused", "capped account's sandbox is paused, not deleted");
+  assert.equal(daemon.sandboxes.get(s.body.id).state, "paused", "an account out of credit has its sandbox paused, not deleted");
   assert.equal((await req("dave", "POST", `/v1/sandboxes/${s.body.id}/resume`)).status, 402);
   await req("dave", "DELETE", `/v1/sandboxes/${s.body.id}`);
 });
 
-test("Stripe webhook turns Cloud on, and rejects bad signatures", async () => {
-  const ev = JSON.stringify({ type: "checkout.session.completed", data: { object: { client_reference_id: "erin", customer: "cus_1", subscription: "sub_1" } } });
+test("new accounts get a one-time trial credit with trial limits; a top-up lifts them once", async () => {
+  const me = (await req("erin", "GET", "/v1/me")).body;
+  assert.equal(me.balance_usd, 2);
+  assert.equal(me.trial, true);
+  const ids = [];
+  for (let i = 0; i < 2; i++) ids.push((await req("erin", "POST", "/v1/sandboxes", {})).body.id);
+  assert.equal((await req("erin", "POST", "/v1/sandboxes", {})).status, 429, "trial: 2 running at most");
+  assert.equal((await req("erin", "GET", "/v1/me")).body.balance_usd <= 2, true, "trial is granted only once");
+
+  const ev = JSON.stringify({
+    type: "checkout.session.completed",
+    data: { object: { id: "cs_test_1", mode: "payment", payment_status: "paid", client_reference_id: "erin", customer: "cus_1", amount_total: 1000, metadata: { uid: "erin", credit_usd: "10" } } },
+  });
   const bad = await fetch(`${G}/billing/webhook`, { method: "POST", headers: { "stripe-signature": "t=1,v1=00" }, body: ev });
   assert.equal(bad.status, 400);
   const t = Math.floor(Date.now() / 1000);
   const sig = createHmac("sha256", WHSEC).update(`${t}.${ev}`).digest("hex");
-  const ok = await fetch(`${G}/billing/webhook`, { method: "POST", headers: { "stripe-signature": `t=${t},v1=${sig}` }, body: ev });
-  assert.equal(ok.status, 200);
-  const r = await req("erin", "POST", "/v1/sandboxes", {});
-  assert.equal(r.status, 201);
-  await req("erin", "DELETE", `/v1/sandboxes/${r.body.id}`);
+  for (let i = 0; i < 2; i++) {
+    // Stripe retries webhooks; the second delivery must not credit again.
+    const ok = await fetch(`${G}/billing/webhook`, { method: "POST", headers: { "stripe-signature": `t=${t},v1=${sig}` }, body: ev });
+    assert.equal(ok.status, 200);
+  }
+  const after = (await req("erin", "GET", "/v1/me")).body;
+  assert.ok(after.balance_usd > 11 && after.balance_usd <= 12, `balance ${after.balance_usd}`);
+  assert.equal(after.trial, false);
+  const third = await req("erin", "POST", "/v1/sandboxes", {});
+  assert.equal(third.status, 201, "paid limits apply right after the top-up");
+  for (const id of [...ids, third.body.id]) await req("erin", "DELETE", `/v1/sandboxes/${id}`);
 });
 
 test("billing endpoints need a signed-in user", async () => {
   assert.equal((await fetch(`${G}/billing/checkout`, { method: "POST" })).status, 401);
-  const r = await fetch(`${G}/billing/checkout`, { method: "POST", headers: { authorization: "Bearer dev:bob:bob@example.com" } });
-  assert.equal(r.status, 503, "billing not configured in tests");
+  const r = await fetch(`${G}/billing/checkout`, { method: "POST", headers: { authorization: "Bearer dev:bob:bob@example.com" }, body: JSON.stringify({ amount: 10 }) });
+  assert.equal(r.status, 503, "payments not configured in tests");
   const u = await fetch(`${G}/billing/usage`, { headers: { authorization: "Bearer dev:bob:bob@example.com" } });
   assert.equal(u.status, 200);
 });

@@ -5,22 +5,8 @@ import { DitherButton } from "@/components/dithercn/dither-button";
 import { Card, Heading } from "@/components/site2/bits";
 import { useUser } from "@/lib/auth";
 import { REPO } from "@/lib/jasmine-data";
+import { RATES, STD, stdHour, usd } from "@/lib/pricing";
 
-/**
- * Jasmine Cloud rates. One place, so the cards, the calculator and the dashboard
- * can't disagree. Must match cloud/gateway/src/config.mjs, which does the billing.
- */
-export const RATES = {
-  vcpuHour: 0.0045,
-  gibHour: 0.0015,
-  storageGibMonth: 0.05,
-  monthlyCredit: 5,
-};
-/** The machine the headline price is quoted for. */
-export const STD = { vcpus: 4, gib: 8 };
-export const stdHour = () => STD.vcpus * RATES.vcpuHour + STD.gib * RATES.gibHour;
-
-export const usd = (n: number, digits = 2) => `$${n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 
 export function Plans() {
   const user = useUser();
@@ -39,9 +25,9 @@ export function Plans() {
       badge: "Usage-based",
       price: usd(stdHour(), 3),
       per: `per hour for ${STD.vcpus} vCPU · ${STD.gib} GiB`,
-      blurb: `${usd(RATES.vcpuHour, 4)} per vCPU-hour plus ${usd(RATES.gibHour, 4)} per GiB-hour, billed per second. No minimum, no fee per start. ${usd(RATES.monthlyCredit, 0)} of usage free every month.`,
+      blurb: `${usd(RATES.vcpuHour, 4)} per vCPU-hour plus ${usd(RATES.gibHour, 4)} per GiB-hour, billed per second from prepaid credit that never expires. No minimum, no fee per start. ${usd(RATES.trialCredit, 0)} free to try, no card.`,
       cta: { label: "Start on Cloud", href: cloudHref, outline: false },
-      items: ["Nothing to run or patch", "Paused sandboxes keep memory and cost storage only", `Snapshots at ${usd(RATES.storageGibMonth)} per GiB-month`, "Spend cap you set; sandboxes time out on their own", "Usage and billing in the dashboard"],
+      items: ["Nothing to run or patch", "Paused sandboxes keep memory and cost storage only", `Snapshots at ${usd(RATES.storageGibMonth)} per GiB-month`, "Prepaid: you can never owe more than you put in", "Usage and billing in the dashboard"],
       featured: true,
     },
     {
@@ -114,7 +100,7 @@ export function Calculator() {
     const compute = hours * vcpus * RATES.vcpuHour;
     const memory = hours * mem * RATES.gibHour;
     const total = compute + memory;
-    return { hours, compute, memory, total, bill: Math.max(0, total - RATES.monthlyCredit) };
+    return { hours, compute, memory, total, bill: total };
   }, [perDay, minutes, vcpus, mem]);
 
   const blocks = 40;
@@ -137,7 +123,6 @@ export function Calculator() {
             <Row k="sandbox-hours / month" v={Math.round(hours).toLocaleString()} />
             <Row k={`vCPU @ ${usd(RATES.vcpuHour, 4)}/h`} v={usd(compute)} />
             <Row k={`memory @ ${usd(RATES.gibHour, 4)}/GiB-h`} v={usd(memory)} />
-            <Row k="monthly credit" v={`−${usd(Math.min(total, RATES.monthlyCredit))}`} />
           </div>
           <div className="mt-8">
             <p className="text-zinc-500">estimated monthly bill</p>
@@ -167,8 +152,8 @@ function Row({ k, v }: { k: string; v: string }) {
 
 const FAQ: [string, string][] = [
   ["Is the open-source version limited?", "No. Cloud runs the same binary you can install. We charge for running the machines, not for features."],
-  ["How do I start on Cloud?", "Sign in, turn on Cloud in your dashboard (card required, nothing charged until you pass the free allowance), and point JASMINE_URL at https://api.tryjasmine.dev."],
-  ["Can a runaway agent run up a bill?", "Every sandbox has a timeout (one hour unless you set another, up to a day), and every account has a monthly spend cap. At the cap, running sandboxes are paused, never deleted."],
+  ["How do I start on Cloud?", `Sign in, create an API key, and point JASMINE_URL at https://api.tryjasmine.dev. Every account starts with ${usd(RATES.trialCredit, 0)} of credit, no card needed. Top up from $10 when you want more.`],
+  ["Can a runaway agent run up a bill?", "Every sandbox has a timeout (one hour unless you set another, up to a day), and usage comes out of credit you bought up front, so you can never owe more than you put in. At $0, running sandboxes are paused, never deleted."],
   ["How does billing work?", "Per second, from create to delete, for the vCPUs and memory a sandbox was given. A paused sandbox keeps its memory and running processes and is billed only for the storage its snapshot uses. No minimum, no charge per start, no egress fees."],
   ["Do API keys work today?", `Yes. Create one in the dashboard and set it as JASMINE_API_KEY on your self-hosted daemon and in your agent; the same key will work on Cloud.`],
   ["Can I move between self-hosted and Cloud?", "Yes. The API and SDKs are the same; change JASMINE_URL."],
