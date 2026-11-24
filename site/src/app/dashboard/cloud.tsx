@@ -5,7 +5,7 @@ import type { User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { Card } from "@/components/site2/bits";
 import { firebase } from "@/lib/firebase";
-import { RATES, STD, stdHour, usd } from "../pricing/parts";
+import { RATES, STD, stdHour, usd } from "@/lib/pricing";
 
 /** The Cloud gateway's public URL. Unset means Cloud isn't open yet: the dashboard keeps the early-access form. */
 export const CLOUD_API = (process.env.NEXT_PUBLIC_CLOUD_API ?? "").replace(/\/$/, "");

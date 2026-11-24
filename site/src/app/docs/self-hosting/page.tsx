@@ -12,6 +12,7 @@ const env: [string, string, string][] = [
   ["JASMINE_NET_POOL", "32", "Network slots kept pre-built. More are built on demand, slower."],
   ["JASMINE_KERNEL", "/var/lib/jasmine/vmlinux", "Guest kernel."],
   ["JASMINE_FIRECRACKER", "/usr/local/bin/firecracker", "Firecracker binary."],
+  ["JASMINE_VM_UID_BASE", "unset", "Run each VMM as an unprivileged uid (base + 1 + slot) instead of root. Set it on hosts that run other people's code."],
 ];
 
 export default function SelfHosting() {
