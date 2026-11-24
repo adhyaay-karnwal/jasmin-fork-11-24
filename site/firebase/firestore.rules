@@ -10,9 +10,10 @@ service cloud.firestore {
       allow create: if signedIn(uid)
         && request.resource.data.keys().hasOnly(['email', 'plan', 'createdAt'])
         && request.resource.data.plan == 'open-source';
-      // The plan can only be changed by billing, not by the client.
+      // Plan, billing ids, limits and suspension are written only by the Cloud
+      // gateway (Admin SDK). The browser may only touch its email.
       allow update: if signedIn(uid)
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['plan']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email']);
 
       match /keys/{keyId} {
         allow read, delete: if signedIn(uid);
@@ -22,6 +23,16 @@ service cloud.firestore {
           && request.resource.data.hash is string && request.resource.data.hash.size() == 64
           && request.resource.data.prefix is string && request.resource.data.prefix.size() <= 16;
       }
+    }
+
+    // Metered by the Cloud gateway; read-only for the account it belongs to.
+    match /usage/{uid}/{period}/{id} {
+      allow read: if signedIn(uid);
+    }
+
+    // Snapshot ownership, written by the gateway.
+    match /snapshots/{name} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
     }
 
     match /access/{uid} {

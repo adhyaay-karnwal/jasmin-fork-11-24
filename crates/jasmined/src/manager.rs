@@ -49,6 +49,8 @@ pub struct Sandbox {
     pub id: String,
     pub template: String,
     pub created_unix: u64,
+    pub vcpus: u32,
+    pub mem_mib: u32,
     pub key: Option<String>,
     pub labels: BTreeMap<String, String>,
     /// Default environment for every exec in this sandbox.
@@ -65,6 +67,8 @@ pub struct SandboxInfo {
     pub id: String,
     pub template: String,
     pub created_unix: u64,
+    pub vcpus: u32,
+    pub mem_mib: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub key: Option<String>,
     pub labels: BTreeMap<String, String>,
@@ -91,6 +95,8 @@ impl Sandbox {
             id: self.id.clone(),
             template: self.template.clone(),
             created_unix: self.created_unix,
+            vcpus: self.vcpus,
+            mem_mib: self.mem_mib,
             key: self.key.clone(),
             labels: self.labels.clone(),
         }
@@ -314,10 +320,13 @@ impl Manager {
             }
         };
         timings.attempts = attempt;
+        let size: Option<TemplateMeta> = std::fs::read(tdir.join("meta.json")).ok().and_then(|b| serde_json::from_slice(&b).ok());
         let sbx = Arc::new(Sandbox {
             id: id.clone(),
             template: template.into(),
             created_unix: now_ns() / 1_000_000_000,
+            vcpus: size.as_ref().map_or(0, |m| m.vcpus),
+            mem_mib: size.as_ref().map_or(0, |m| m.mem_mib),
             key: opts.key,
             labels: opts.labels,
             env: opts.env,
