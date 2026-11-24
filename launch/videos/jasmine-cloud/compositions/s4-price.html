@@ -1,0 +1,61 @@
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: #0b1006; }
+    #s4-panel { position: absolute; inset: 0; clip-path: inset(220px 120px 160px 1200px round 28px); }
+    #s4-cv { position: absolute; left: 1200px; top: 220px; width: 600px; height: 700px; }
+    #s4-fill { position: absolute; inset: 0; background: #a6e86b; opacity: 0; }
+    #s4-price { position: absolute; left: 150px; top: 250px; transform-origin: 0 0; white-space: pre; }
+    #s4-big { font-size: 300px; font-weight: 600; letter-spacing: -0.06em; line-height: 1; }
+    #s4-big small { font-size: 110px; letter-spacing: -0.04em; margin-left: 20px; }
+    #s4-sub { margin-top: 26px; margin-left: 12px; font-size: 58px; font-weight: 500; letter-spacing: -0.02em; opacity: .72; }
+    #s4-rows { position: absolute; left: 150px; right: 150px; top: 420px; }
+    .row { display: grid; grid-template-columns: 400px 1fr; align-items: center; height: 104px; border-top: 2px solid rgba(11,16,6,.16); }
+    .row .n { font-size: 46px; font-weight: 600; letter-spacing: -0.03em; }
+    .row .track { display: flex; align-items: center; gap: 28px; }
+    .row .b { height: 42px; background: rgba(11,16,6,.55); border-radius: 4px; transform-origin: 0 50%; }
+    .row .v { font-family: "Geist Mono", monospace; font-size: 42px; letter-spacing: -0.03em; white-space: pre; }
+    .row .v em { font-style: normal; font-family: "Geist", sans-serif; font-size: 34px; font-weight: 500; opacity: .7; margin-left: 18px; }
+    .row.me .b { background: #070807; }
+    .row.me .v { background: #070807; color: #a6e86b; padding: 4px 16px; border-radius: 8px; }
+    #s4-foot { position: absolute; left: 150px; right: 150px; bottom: 54px; font-size: 28px; font-weight: 500; opacity: .62; }
+  </style>
+  <div id="root" data-composition-id="s4" data-width="1920" data-height="1080">
+    <div id="s4-panel"><canvas id="s4-cv" width="600" height="700"></canvas><div id="s4-fill"></div></div>
+    <div id="s4-price">
+      <div id="s4-big">$0.030<small>/ hour</small></div>
+      <div id="s4-sub">4 vCPU · 8 GiB · billed per second</div>
+    </div>
+    <div id="s4-rows">
+      <div class="row me"><span class="n">Jasmine Cloud</span><div class="track"><div class="b" style="width:91px"></div><span class="v">$0.030<em>no minimum</em></span></div></div>
+      <div class="row"><span class="n">Boat</span><div class="track"><div class="b" style="width:109px"></div><span class="v">$0.036<em>+ $20/month minimum</em></span></div></div>
+      <div class="row"><span class="n">E2B</span><div class="track"><div class="b" style="width:1000px"></div><span class="v">$0.331</span></div></div>
+      <div class="row"><span class="n">Daytona</span><div class="track"><div class="b" style="width:1000px"></div><span class="v">$0.331</span></div></div>
+    </div>
+    <div id="s4-foot">Hourly list prices, 4 vCPU · 8 GiB, checked 2026-11-23: docs.boat.dev · e2b.dev · daytona.io</div>
+  </div>
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      // the meter panel dithers to leaf, then grows to the full frame
+      JX.bayer(tl, "#s4-cv", "#a6e86b", 0.0, 0.3, 1, 20);
+      tl.set("#s4-fill", { opacity: 1 }, 0.3);
+      tl.to("#s4-panel", { clipPath: "inset(0px 0px 0px 0px round 0px)", duration: 0.6, ease: "power3.inOut" }, 0.3);
+      // the price lands on the beat
+      tl.fromTo("#s4-big", { clipPath: "inset(0 0 100% 0)", y: 80 }, { clipPath: "inset(0 0 0% 0)", y: 0, duration: 0.5, ease: "expo.out", immediateRender: true }, 0.85);
+      tl.fromTo("#s4-sub", { opacity: 0, y: 30 }, { opacity: 0.72, y: 0, duration: 0.45, ease: "expo.out", immediateRender: true }, 1.0);
+      // compare: the price steps up and back, the bars grow under it
+      tl.to("#s4-price", { scale: 0.5, y: -150, duration: 0.6, ease: "power3.inOut" }, 3.0);
+      gsap.utils.toArray("#s4-rows .row").forEach((r, i) => {
+        const at = 3.3 + i * 0.25;
+        tl.fromTo(r, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out", immediateRender: true }, at);
+        tl.fromTo(r.querySelector(".b"), { scaleX: 0 }, { scaleX: 1, duration: i > 1 ? 0.7 : 0.4, ease: "expo.out", immediateRender: true }, at + 0.05);
+        tl.fromTo(r.querySelector(".v"), { opacity: 0 }, { opacity: 1, duration: 0.25, immediateRender: true }, at + (i > 1 ? 0.45 : 0.25));
+      });
+      tl.fromTo("#s4-foot", { opacity: 0 }, { opacity: 0.62, duration: 0.4, immediateRender: true }, 0.9);
+      window.__timelines["s4"] = tl;
+    })();
+  </script>
+</template>

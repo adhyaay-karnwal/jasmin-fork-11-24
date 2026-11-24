@@ -1,0 +1,89 @@
+[
+ {
+  "t": "01 · Hook",
+  "n": "Look at the camera. Optional opener: \"I'm 14, and…\"",
+  "p": [
+   "Two weeks ago I open-sourced the fastest sandbox for AI agents I could build.",
+   "Today you can use it <b>without running a single server</b>. This is Jasmine Cloud."
+  ]
+ },
+ {
+  "t": "02 · Recap",
+  "n": "Quick. Ten seconds.",
+  "p": [
+   "Quick recap. Jasmine gives every agent task its own Firecracker microVM, with its own kernel.",
+   "It restores from a memory snapshot instead of booting, so a sandbox is ready in about <b>ninety milliseconds</b>. On aisandboxbench's open-source harness it came first on 12 of 25 metrics against 13 hosted providers."
+  ]
+ },
+ {
+  "t": "03 · The problem",
+  "n": "",
+  "p": [
+   "And the number one thing people told me was: I don't have a Linux box with KVM.",
+   "Self-hosting is free, but you need bare metal or nested virtualization. Most people just want an API key."
+  ]
+ },
+ {
+  "t": "04 · Introducing",
+  "n": "Slow down on the one-liner.",
+  "p": [
+   "So: Jasmine Cloud. Same engine, same API, same SDKs, running on our machines.",
+   "If you already use Jasmine, you change <b>one environment variable</b>. That's the whole migration."
+  ]
+ },
+ {
+  "t": "05 · Demo",
+  "n": "Cut to screen recording here if you have one.",
+  "p": [
+   "Here it is. Install the SDK, create a sandbox. It's ready in about a tenth of a second.",
+   "Run some code. Pause it: the memory and running processes are kept, and compute billing stops. Snapshot it, and start a copy from that exact moment."
+  ]
+ },
+ {
+  "t": "06 · Price",
+  "n": "This is the headline. Let it land.",
+  "p": [
+   "Now the price. For a 4 vCPU, 8 gig sandbox, Jasmine Cloud is <b>three cents an hour</b>.",
+   "Boat, the cheapest I could find, is three point six cents, with a twenty dollar monthly minimum. E2B and Daytona list about thirty-three cents for the same machine. So that's around eleven times cheaper."
+  ]
+ },
+ {
+  "t": "07 · Prepaid",
+  "n": "",
+  "p": [
+   "Billing is prepaid and per second. Every account gets two dollars free, no card.",
+   "After that you top up from ten dollars. When you hit zero, your sandboxes pause. Nothing gets deleted, and you can <b>never owe money</b>. No minimum, no fee per start."
+  ]
+ },
+ {
+  "t": "08 · Safety",
+  "n": "",
+  "p": [
+   "Running strangers' code means being careful. Every sandbox has its own kernel. The VM process on the host isn't root; it runs as its own unprivileged user.",
+   "Every sandbox has a timeout, so a forgotten loop stops itself. And the network is locked down: the internet works, but other sandboxes, the host and email relays don't."
+  ]
+ },
+ {
+  "t": "09 · Open source",
+  "n": "",
+  "p": [
+   "And it's still open source. The engine and the Cloud gateway are both Apache-2.0.",
+   "Same binary on your hardware or ours. If you ever want to leave, run it yourself and change that one variable back."
+  ]
+ },
+ {
+  "t": "10 · Who it's for",
+  "n": "",
+  "p": [
+   "It's built for coding agents that need a fresh computer per task, for RL rollouts that start thousands of copies from one snapshot, for code interpreters, and for live previews."
+  ]
+ },
+ {
+  "t": "11 · Close",
+  "n": "Smile. Hold for two seconds at the end.",
+  "p": [
+   "Go to <b>tryjasmine.dev</b>, sign in, make a key, and you've got two dollars to try it.",
+   "I'd love to hear what you build. Thanks for watching."
+  ]
+ }
+]

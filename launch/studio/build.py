@@ -496,7 +496,7 @@ TS = [
 
 assert len(L) == len(LS), (len(L), len(LS))
 assert len(T) == len(TS), (len(T), len(TS))
-for d, title, slides, script in (("jasmine-launch", "Jasmine · Launch", L, LS), ("jasmine-technical", "Jasmine · How we built it", T, TS)):
+for d, title, slides, script in ([] if __name__ != "__main__" else (("jasmine-launch", "Jasmine · Launch", L, LS), ("jasmine-technical", "Jasmine · How we built it", T, TS))):
     p = os.path.join(HERE, d)
     open(os.path.join(p, "slides.html"), "w").write(page(title, slides))
     json.dump(script, open(os.path.join(HERE, f"{d}.script.json"), "w"), ensure_ascii=False, indent=1)

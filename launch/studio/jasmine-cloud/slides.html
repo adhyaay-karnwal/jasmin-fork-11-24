@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Jasmine Cloud · Launch</title>
+<style>
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Regular.woff2") format("woff2"); font-weight: 400; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Medium.woff2") format("woff2"); font-weight: 500; }
+@font-face { font-family: "Geist"; src: url("assets/fonts/Geist-SemiBold.woff2") format("woff2"); font-weight: 600; }
+@font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono.woff2") format("woff2"); font-weight: 400; }
+:root { --g: #070807; --ink: #f4f5f0; --ink2: #b4b9ae; --dim: #6b7068; --leaf: #a6e86b; --bud: #f0b7cc; --line: rgba(244,245,240,.1); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--g); color: var(--ink); font-family: "Geist", sans-serif; }
+.slide { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: var(--g); }
+.slide.on { display: flex; }
+.stage { position: relative; width: 1920px; height: 1080px; flex: none; transform-origin: center; overflow: hidden; }
+canvas.dith { position: absolute; inset: 0; width: 1920px; height: 1080px; image-rendering: pixelated; opacity: .55; }
+.pad { position: absolute; left: 150px; right: 150px; top: 130px; bottom: 110px; }
+.on .rise { animation: rise .7s cubic-bezier(.22,1,.36,1) both; }
+.on .rise.d1 { animation-delay: .08s } .on .rise.d2 { animation-delay: .16s } .on .rise.d3 { animation-delay: .24s } .on .rise.d4 { animation-delay: .32s }
+@keyframes rise { from { opacity: 0; transform: translateY(26px) } to { opacity: 1; transform: none } }
+.kick { font-family: "Geist Mono", monospace; font-size: 26px; letter-spacing: .14em; text-transform: uppercase; color: var(--leaf); margin-bottom: 30px; }
+.h1 { font-size: 132px; font-weight: 600; letter-spacing: -.05em; line-height: .98; }
+.h2 { font-size: 92px; font-weight: 600; letter-spacing: -.045em; line-height: 1.02; }
+.sub { font-size: 38px; line-height: 1.4; color: var(--ink2); margin-top: 34px; max-width: 1300px; }
+.leaf { color: var(--leaf); } .bud { color: var(--bud); } .dim { color: var(--dim); }
+.lock { display: flex; align-items: center; gap: 30px; }
+.mark { width: 120px; height: 120px; }
+.lock span { font-size: 120px; font-weight: 600; letter-spacing: -.05em; }
+.card { border: 2px solid var(--line); border-radius: 26px; background: rgba(13,15,12,.92); padding: 40px 46px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.card h3 { font-size: 38px; font-weight: 600; letter-spacing: -.02em; margin-bottom: 16px; }
+.card p { font-size: 29px; line-height: 1.45; color: var(--ink2); }
+.mono, pre { font-family: "Geist Mono", monospace; }
+pre { font-size: 31px; line-height: 1.6; color: #d9ddd3; white-space: pre; }
+pre .p { color: var(--dim) } pre .o { color: var(--leaf) } pre .c { color: var(--dim) } pre .s { color: var(--bud) }
+.bar { height: 22px; border-radius: 4px; background: #2a2e27; }
+.bar.me { background: var(--leaf); }
+table { border-collapse: collapse; width: 100%; font-size: 31px; }
+th { text-align: right; font-weight: 500; color: var(--dim); font-size: 26px; padding: 0 0 18px 0; }
+th:first-child, td:first-child { text-align: left; }
+td { text-align: right; padding: 15px 0; border-top: 2px solid var(--line); font-variant-numeric: tabular-nums; }
+td.w { color: var(--leaf); font-weight: 600; }
+td.l { color: var(--ink2); }
+.chip { display: inline-block; font-family: "Geist Mono", monospace; font-size: 24px; padding: 8px 18px; border-radius: 30px; border: 2px solid rgba(166,232,107,.35); color: var(--leaf); }
+.chip.bud { border-color: rgba(240,183,204,.4); color: var(--bud); }
+.flow { display: flex; align-items: center; gap: 22px; }
+.flow .card { padding: 30px 34px; }
+.arrow { font-family: "Geist Mono", monospace; font-size: 40px; color: var(--leaf); }
+.big { font-size: 360px; font-weight: 600; letter-spacing: -.07em; line-height: .9; }
+.cmd { display: inline-block; font-family: "Geist Mono", monospace; font-size: 40px; padding: 26px 40px; border-radius: 18px; border: 2px solid rgba(166,232,107,.35); background: rgba(7,8,7,.85); }
+.foot { position: absolute; left: 150px; right: 150px; bottom: 64px; display: flex; justify-content: space-between; font-family: "Geist Mono", monospace; font-size: 22px; color: var(--dim); }
+video { width: 100%; height: 100%; object-fit: contain; background: var(--g); }
+.dl { position: absolute; right: 24px; bottom: 22px; padding: 8px 12px; border-radius: 8px; background: #121411; border: 1px solid #2a2e27; color: var(--ink); font-size: 13px; text-decoration: none; }
+ul.ticks { list-style: none; } ul.ticks li { font-size: 34px; line-height: 1.4; padding: 16px 0; border-top: 2px solid var(--line); display: flex; gap: 22px; }
+ul.ticks li b { font-weight: 500; color: var(--ink); } ul.ticks li span.n { font-family: "Geist Mono", monospace; color: var(--leaf); min-width: 70px; }
+</style>
+</head>
+<body>
+<!-- 0 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="low" width="480" height="270"></canvas>
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+  <div class="lock rise"><svg class="mark" viewBox="0 0 24 24"><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.7" fill="#a6e86b"/></svg><span>Jasmine Cloud</span></div>
+  <div class="h2 rise d1" style="margin-top:60px">The fastest sandboxes I could build.<br/>Now <span class="leaf">without a server</span>.</div>
+</div></div></section>
+<!-- 1 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Two weeks ago</div>
+  <div class="h2 rise d1">Jasmine: open-source sandboxes<br/>for AI agents.</div>
+  <div class="grid3 rise d2" style="margin-top:80px">
+    <div class="card"><h3 class="leaf">0.09 s</h3><p>to a ready sandbox. Restored from a memory snapshot, never booted.</p></div>
+    <div class="card"><h3 class="leaf">#1 on 12 of 25</h3><p>metrics against 13 hosted providers, on aisandboxbench's harness (self-run).</p></div>
+    <div class="card"><h3 class="leaf">Its own kernel</h3><p>Every sandbox is a Firecracker microVM, not a container.</p></div>
+  </div>
+</div><div class="foot"><span>results/aisandboxbench-2026-11-21.md</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 2 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="high" width="480" height="270"></canvas>
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+  <div class="kick rise">What people told me</div>
+  <div class="h1 rise d1">"I don't have a<br/>Linux box with KVM."</div>
+  <div class="sub rise d2">Self-hosting is free, but you need bare metal or nested virtualization. Most people just want an API key.</div>
+</div></div></section>
+<!-- 3 -->
+<section class="slide"><div class="stage">
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+  <div class="kick rise">Today</div>
+  <div class="h1 rise d1">Jasmine Cloud.</div>
+  <div class="sub rise d2">Same engine, same API, same SDKs, on our machines. You change one environment variable.</div>
+  <div class="rise d3" style="margin-top:70px"><span class="cmd"><span class="dim">export</span> JASMINE_URL=<span class="leaf">https://api.tryjasmine.dev</span></span></div>
+</div></div></section>
+<!-- 4 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Demo</div>
+  <div class="card rise d1" style="padding:50px 56px"><pre><span class="p">$</span> pip install jasmine-sdk
+<span class="p">$</span> python
+<span class="p">>>></span> from jasmine_sdk import Jasmine
+<span class="p">>>></span> sbx = Jasmine().create()          <span class="c"># ready in ~0.1 s</span>
+<span class="p">>>></span> sbx.exec("python3 -c 'print(2**64)'").stdout
+<span class="o">'18446744073709551616\n'</span>
+<span class="p">>>></span> sbx.pause()                       <span class="c"># memory kept, compute billing stops</span>
+<span class="p">>>></span> fork = Jasmine().create(template=sbx.snapshot()["name"])</pre></div>
+</div></div></section>
+<!-- 5 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Price · 4 vCPU · 8 GiB · per hour</div>
+  <div class="h2 rise d1">The cheapest I could find.</div>
+  <div class="rise d2" style="margin-top:60px"><div style="display:grid;grid-template-columns:330px 1fr 230px;align-items:center;gap:30px;padding:20px 0;border-top:2px solid var(--line)"><span style="font-size:38px;font-weight:600">Jasmine Cloud</span><div><div class="bar me" style="width:9.1%;height:30px"></div><div class="mono" style="font-size:22px;color:var(--dim);margin-top:10px">no minimum · no start fees</div></div><span class="mono" style="font-size:40px;text-align:right;color:var(--leaf)">$0.030</span></div><div style="display:grid;grid-template-columns:330px 1fr 230px;align-items:center;gap:30px;padding:20px 0;border-top:2px solid var(--line)"><span style="font-size:38px;color:var(--ink2)">Boat</span><div><div class="bar" style="width:10.9%;height:30px"></div><div class="mono" style="font-size:22px;color:var(--dim);margin-top:10px">+ $20/month minimum</div></div><span class="mono" style="font-size:40px;text-align:right;color:var(--ink2)">$0.036</span></div><div style="display:grid;grid-template-columns:330px 1fr 230px;align-items:center;gap:30px;padding:20px 0;border-top:2px solid var(--line)"><span style="font-size:38px;color:var(--ink2)">E2B</span><div><div class="bar" style="width:100.0%;height:30px"></div><div class="mono" style="font-size:22px;color:var(--dim);margin-top:10px"></div></div><span class="mono" style="font-size:40px;text-align:right;color:var(--ink2)">$0.331</span></div><div style="display:grid;grid-template-columns:330px 1fr 230px;align-items:center;gap:30px;padding:20px 0;border-top:2px solid var(--line)"><span style="font-size:38px;color:var(--ink2)">Daytona</span><div><div class="bar" style="width:100.0%;height:30px"></div><div class="mono" style="font-size:22px;color:var(--dim);margin-top:10px"></div></div><span class="mono" style="font-size:40px;text-align:right;color:var(--ink2)">$0.331</span></div></div>
+</div><div class="foot"><span>List prices checked 2026-11-23: docs.boat.dev/pricing, e2b.dev/docs/pricing, daytona.io/pricing</span><span>tryjasmine.dev</span></div></div></section>
+<!-- 6 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Billing</div>
+  <div class="h2 rise d1">Prepaid. Per second.<br/><span class="leaf">No surprise bills.</span></div>
+  <div class="grid3 rise d2" style="margin-top:70px">
+    <div class="card"><h3>$2 free</h3><p>Every account. No card needed to try it.</p></div>
+    <div class="card"><h3>Never owe money</h3><p>Top up from $10. At $0, sandboxes pause. Nothing is deleted.</p></div>
+    <div class="card"><h3>Paused = storage</h3><p>A paused sandbox keeps its memory and running processes, and costs only storage.</p></div>
+  </div>
+</div></div></section>
+<!-- 7 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Running strangers' code</div>
+  <div class="h2 rise d1">Built to be boring<br/>when it goes wrong.</div>
+  <ul class="ticks rise d2" style="margin-top:60px">
+    <li><span class="n">01</span><b>Own kernel per sandbox.</b> A microVM boundary, not a shared kernel.</li>
+    <li><span class="n">02</span><b>No root on the host.</b> Each VM's process runs as its own unprivileged user.</li>
+    <li><span class="n">03</span><b>Timeouts on everything.</b> A forgotten sandbox stops itself after an hour.</li>
+    <li><span class="n">04</span><b>Locked-down network.</b> The internet works; other sandboxes, the host and email relays don't.</li>
+  </ul>
+</div></div></section>
+<!-- 8 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="low" width="480" height="270"></canvas>
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center">
+  <div class="kick rise">No lock-in</div>
+  <div class="h1 rise d1">Same binary.<br/>Your hardware or ours.</div>
+  <div class="sub rise d2">The engine and the Cloud gateway are both open source, Apache-2.0. Leave whenever you want: run jasmined yourself and change one variable back.</div>
+</div></div></section>
+<!-- 9 -->
+<section class="slide"><div class="stage">
+<div class="pad">
+  <div class="kick rise">Made for</div>
+  <div class="grid2 rise d1" style="margin-top:30px">
+    <div class="card"><h3>Coding agents</h3><p>A fresh computer per task, so nothing touches your laptop or your keys.</p></div>
+    <div class="card"><h3>RL rollouts</h3><p>Snapshot once, start thousands of identical copies, fork mid-episode.</p></div>
+    <div class="card"><h3>Code interpreters</h3><p>Run model-written code in 0.1 s, pause between turns for storage cost.</p></div>
+    <div class="card"><h3>Previews</h3><p>Start a dev server and open its URL in the browser.</p></div>
+  </div>
+</div></div></section>
+<!-- 10 -->
+<section class="slide"><div class="stage"><canvas class="dith" data-mode="low" width="480" height="270"></canvas>
+<div class="pad" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+  <div class="lock rise"><svg class="mark" viewBox="0 0 24 24"><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(0 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(72 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(144 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(216 12 12)"/><ellipse cx="12" cy="6.2" rx="2.6" ry="5.2" fill="#f4f5f0" opacity=".94" transform="rotate(288 12 12)"/><circle cx="12" cy="12" r="1.7" fill="#a6e86b"/></svg><span>Jasmine Cloud</span></div>
+  <div class="h2 rise d1" style="margin-top:60px">tryjasmine.dev</div>
+  <div class="sub rise d2" style="text-align:center">Sign in, make a key, get $2 to try it.</div>
+</div></div></section>
+<script>
+const B = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+document.querySelectorAll("canvas.dith").forEach((c, n) => {
+  const g = c.getContext("2d"), W = c.width, H = c.height, mode = c.dataset.mode || "low";
+  const img = g.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const nx = x / W, ny = y / H;
+    let v = 0.5 + 0.5 * Math.sin((nx * 3.1 - ny * 2.2) * Math.PI + n * 1.7 + Math.sin(ny * 4 + n) * 1.3);
+    v = v * v * (mode === "low" ? 0.55 * Math.pow(ny, 1.6) : 0.38 * (1 - ny * 0.4));
+    const lit = v > (B[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+    const bud = Math.sin(nx * 5 + ny * 3 + n) > 0.8;
+    const i = (y * W + x) * 4;
+    if (lit) { d[i] = bud ? 240 : 166; d[i + 1] = bud ? 183 : 232; d[i + 2] = bud ? 204 : 107; d[i + 3] = 150; }
+  }
+  g.putImageData(img, 0, 0);
+});
+const slides = [...document.querySelectorAll(".slide")];
+function fit() {
+  const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+  document.querySelectorAll(".stage").forEach((st) => (st.style.transform = `scale(${k})`));
+}
+window.show = function (i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, n) => s.classList.toggle("on", n === i));
+  const v = document.querySelector("video");
+  if (v && !slides[i].contains(v) && !v.paused) v.pause();
+  window.current = i;
+};
+addEventListener("resize", fit);
+fit();
+window.show(0);
+</script>
+</body>
+</html>
