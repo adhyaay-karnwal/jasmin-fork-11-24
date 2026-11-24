@@ -1,0 +1,77 @@
+name: cloud
+on:
+  push:
+    paths: ["cloud/**", "crates/**", "sdk/**", ".github/workflows/cloud.yml"]
+  workflow_dispatch:
+
+jobs:
+  gateway-unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: cd cloud/gateway && npm test
+
+  gateway-on-firecracker:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      HOST_KEY: ci-host-key
+      ALICE: jsm_ci_alice_000000000000000000
+      BOB: jsm_ci_bob_00000000000000000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Build
+        run: |
+          rustup target add x86_64-unknown-linux-musl
+          cargo build -q --release -p jasmine-agent --target x86_64-unknown-linux-musl
+          cargo build -q --release -p jasmined
+      - name: Set up host
+        run: |
+          sudo JASMINE_XFS_IMG=$( [ -d /mnt ] && echo /mnt/jasmine-xfs.img || echo /var/jasmine-xfs.img ) dev/setup-host.sh
+          sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/jasmine-agent /usr/local/lib/jasmine/jasmine-agent
+          sudo install -m 0755 target/release/jasmined /usr/local/bin/jasmined
+          sudo jasmined build default python:3.12-slim
+      - name: Start daemon (host key) and gateway (memory store)
+        run: |
+          sudo bash -c "JASMINE_API_KEY=$HOST_KEY nohup jasmined serve > /tmp/jasmined.log 2>&1 &"
+          for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
+          (cd cloud/gateway && JASMINE_STORE=memory JASMINE_HOST_KEY=$HOST_KEY JASMINE_HOSTS=h1=http://127.0.0.1:7171 \
+            JASMINE_DEV_KEYS="$ALICE:alice,$BOB:bob" METER_INTERVAL_MS=1000 nohup node src/server.mjs > /tmp/gateway.log 2>&1 &)
+          for i in $(seq 100); do curl -fs localhost:8080/healthz && break; sleep 0.1; done
+      - name: Daemon reports size; host key required
+        run: |
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:7171/v1/sandboxes)" = 401
+          id=$(curl -fs -XPOST localhost:7171/v1/sandboxes -H "authorization: Bearer $HOST_KEY" -d '{}' -H 'content-type: application/json' | jq -r .id)
+          curl -fs localhost:7171/v1/sandboxes/$id -H "authorization: Bearer $HOST_KEY" | tee /dev/stderr | jq -e '.vcpus > 0 and .mem_mib > 0 and .state == "running"'
+          curl -fs -XDELETE localhost:7171/v1/sandboxes/$id -H "authorization: Bearer $HOST_KEY"
+      - name: SDK smoke tests through the gateway
+        env:
+          JASMINE_URL: http://127.0.0.1:8080
+        run: |
+          (cd sdk/typescript && npm install --silent --no-audit --no-fund && npm run --silent build)
+          JASMINE_API_KEY=$ALICE node sdk/smoke.mjs
+          JASMINE_API_KEY=$ALICE python3 sdk/smoke.py
+      - name: Accounts are isolated; SMTP is blocked; usage is metered
+        run: |
+          G=http://127.0.0.1:8080; J='content-type: application/json'
+          id=$(curl -fs -XPOST $G/v1/sandboxes -H "authorization: Bearer $ALICE" -H "$J" -d '{}' | jq -r .id)
+          test "$(curl -s -o /dev/null -w '%{http_code}' $G/v1/sandboxes/$id/exec -H "authorization: Bearer $BOB" -H "$J" -d '{"cmd":"id"}')" = 404
+          test "$(curl -fs $G/v1/sandboxes -H "authorization: Bearer $BOB" | jq length)" = 0
+          probe='import socket,sys
+          def ok(h,p):
+            try: socket.create_connection((h,p),timeout=4).close(); return True
+            except Exception: return False
+          print(ok("smtp.gmail.com",25), ok("www.google.com",443))'
+          out=$(curl -fs $G/v1/sandboxes/$id/exec -H "authorization: Bearer $ALICE" -H "$J" \
+            -d "$(jq -n --arg c "$probe" '{cmd:["python3","-c",$c]}')" | jq -r .stdout)
+          echo "smtp, https: $out"; test "$out" = "False True"
+          sleep 3
+          curl -fs $G/v1/me -H "authorization: Bearer $ALICE" | tee /dev/stderr | jq -e '.month.cpuS > 0'
+          curl -fs -XDELETE $G/v1/sandboxes/$id -H "authorization: Bearer $ALICE"
+      - name: Logs
+        if: always()
+        run: tail -50 /tmp/gateway.log; sudo tail -50 /tmp/jasmined.log

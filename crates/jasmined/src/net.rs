@@ -88,6 +88,8 @@ iptables -C FORWARD -d 10.200.0.0/16 -m conntrack --ctstate RELATED,ESTABLISHED 
 iptables -C FORWARD -s 10.200.0.0/16 -d 10.200.0.0/16 -j DROP 2>/dev/null || iptables -I FORWARD -s 10.200.0.0/16 -d 10.200.0.0/16 -j DROP
 iptables -C FORWARD -s 10.200.0.0/16 -d 169.254.0.0/16 -j DROP 2>/dev/null || iptables -I FORWARD -s 10.200.0.0/16 -d 169.254.0.0/16 -j DROP
 iptables -C INPUT -s 10.200.0.0/16 -j DROP 2>/dev/null || iptables -I INPUT -s 10.200.0.0/16 -j DROP
+# No outbound SMTP: a sandbox must not be usable as a spam relay.
+iptables -C FORWARD -s 10.200.0.0/16 -p tcp --dport 25 -j DROP 2>/dev/null || iptables -I FORWARD -s 10.200.0.0/16 -p tcp --dport 25 -j DROP
 {cleanup}"#))
         .await
         .context("host network setup (needs root, iproute2, iptables)")?;

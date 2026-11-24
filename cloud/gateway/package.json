@@ -1,0 +1,14 @@
+{
+  "name": "jasmine-cloud-gateway",
+  "private": true,
+  "type": "module",
+  "description": "Public API for Jasmine Cloud: per-user keys, ownership, limits and metered billing in front of jasmined hosts.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test --test-concurrency=1 test/gateway.test.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}

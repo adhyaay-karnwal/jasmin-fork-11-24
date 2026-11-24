@@ -22,10 +22,11 @@ import { firebase } from "@/lib/firebase";
 import { ensureProfile, useUser } from "@/lib/auth";
 import { newKey, sha256Hex } from "@/lib/keys";
 import { INSTALL } from "@/lib/jasmine-data";
+import { CLOUD_API, CloudPanel, useMonthUsage, type CloudProfile } from "./cloud";
 
 type Key = { id: string; name: string; prefix: string; createdAt: Timestamp | null };
 type Access = { tier: "cloud" | "enterprise"; useCase: string; requestedAt: Timestamp | null };
-type Profile = { email: string; plan: string };
+type Profile = CloudProfile & { email: string; plan: string };
 
 const MAX_KEYS = 10;
 
@@ -110,6 +111,9 @@ function Signed({ user }: { user: User }) {
             <p className="mt-2 text-xl font-medium tabular-nums text-white">{keys ? keys.length : "–"}<span className="text-zinc-600"> / {MAX_KEYS}</span></p>
             <p className="mt-1 text-sm text-zinc-500">Shown once, stored as SHA-256 hashes.</p>
           </Card>
+          {CLOUD_API ? (
+            <CloudCard uid={user.uid} on={profile?.plan === "cloud"} />
+          ) : (
           <Card className="p-6">
             <p className="text-sm text-zinc-500">Jasmine Cloud</p>
             <p className="mt-2 flex items-center gap-2 text-xl font-medium text-white">
@@ -119,11 +123,13 @@ function Signed({ user }: { user: User }) {
               {access ? `We'll email ${user.email} when your spot opens.` : "Hosted sandboxes, no servers to run."}
             </p>
           </Card>
+          )}
         </div>
 
         <Keys uid={user.uid} keys={keys} />
+        {CLOUD_API && <CloudPanel user={user} profile={profile} />}
         <Quickstart />
-        {access === null && (
+        {!CLOUD_API && access === null && (
           <div id="access" className="scroll-mt-20">
             <RequestAccess user={user} />
           </div>
@@ -242,6 +248,21 @@ function Keys({ uid, keys }: { uid: string; keys: Key[] | null }) {
           ))}
         </ul>
       )}
+    </Card>
+  );
+}
+
+function CloudCard({ uid, on }: { uid: string; on: boolean }) {
+  const usage = useMonthUsage(uid);
+  return (
+    <Card className="p-6">
+      <p className="text-sm text-zinc-500">Jasmine Cloud</p>
+      <p className="mt-2 flex items-center gap-2 text-xl font-medium text-white">
+        <StatusDot status={on ? "online" : "offline"} /> {on ? "On" : "Off"}
+      </p>
+      <p className="mt-1 text-sm text-zinc-500">
+        {on ? `$${(usage?.usd ?? 0).toFixed(2)} used this month.` : <a href="#cloud" className="text-[var(--leaf)] hover:underline">Turn it on below →</a>}
+      </p>
     </Card>
   );
 }
