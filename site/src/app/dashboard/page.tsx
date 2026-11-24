@@ -22,7 +22,7 @@ import { firebase } from "@/lib/firebase";
 import { ensureProfile, useUser } from "@/lib/auth";
 import { newKey, sha256Hex } from "@/lib/keys";
 import { INSTALL } from "@/lib/jasmine-data";
-import { CLOUD_API, CloudPanel, useMonthUsage, type CloudProfile } from "./cloud";
+import { CLOUD_API, CloudPanel, balanceOf, useMonthUsage, type CloudProfile } from "./cloud";
 
 type Key = { id: string; name: string; prefix: string; createdAt: Timestamp | null };
 type Access = { tier: "cloud" | "enterprise"; useCase: string; requestedAt: Timestamp | null };
@@ -102,8 +102,8 @@ function Signed({ user }: { user: User }) {
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="p-6">
             <p className="text-sm text-zinc-500">Plan</p>
-            <p className="mt-2 text-xl font-medium text-white">{profile?.plan === "cloud" ? "Cloud" : "Open source"}</p>
-            <p className="mt-1 text-sm text-zinc-500">{profile?.plan === "cloud" ? "Usage-based." : "Self-hosted, free forever."}</p>
+            <p className="mt-2 text-xl font-medium text-white">{profile?.paid ? "Cloud" : CLOUD_API ? "Cloud trial" : "Open source"}</p>
+            <p className="mt-1 text-sm text-zinc-500">{profile?.paid ? "Prepaid, billed per second." : CLOUD_API ? "Free credit to try Cloud. Self-hosting is free forever." : "Self-hosted, free forever."}</p>
             <a href="/pricing" className="mt-4 inline-block text-sm text-[var(--leaf)] hover:underline">Compare plans →</a>
           </Card>
           <Card className="p-6">
@@ -112,7 +112,7 @@ function Signed({ user }: { user: User }) {
             <p className="mt-1 text-sm text-zinc-500">Shown once, stored as SHA-256 hashes.</p>
           </Card>
           {CLOUD_API ? (
-            <CloudCard uid={user.uid} on={profile?.plan === "cloud"} />
+            <CloudCard uid={user.uid} profile={profile} />
           ) : (
           <Card className="p-6">
             <p className="text-sm text-zinc-500">Jasmine Cloud</p>
@@ -252,16 +252,17 @@ function Keys({ uid, keys }: { uid: string; keys: Key[] | null }) {
   );
 }
 
-function CloudCard({ uid, on }: { uid: string; on: boolean }) {
+function CloudCard({ uid, profile }: { uid: string; profile: CloudProfile | null }) {
   const usage = useMonthUsage(uid);
+  const balance = balanceOf(profile);
   return (
     <Card className="p-6">
-      <p className="text-sm text-zinc-500">Jasmine Cloud</p>
-      <p className="mt-2 flex items-center gap-2 text-xl font-medium text-white">
-        <StatusDot status={on ? "online" : "offline"} /> {on ? "On" : "Off"}
+      <p className="text-sm text-zinc-500">Cloud credit</p>
+      <p className="mt-2 flex items-center gap-2 text-xl font-medium tabular-nums text-white">
+        <StatusDot status={balance > 0 ? "online" : "offline"} /> ${balance.toFixed(2)}
       </p>
       <p className="mt-1 text-sm text-zinc-500">
-        {on ? `$${(usage?.usd ?? 0).toFixed(2)} used this month.` : <a href="#cloud" className="text-[var(--leaf)] hover:underline">Turn it on below →</a>}
+        ${(usage?.usd ?? 0).toFixed(2)} used this month. <a href="#cloud" className="text-[var(--leaf)] hover:underline">Add credit →</a>
       </p>
     </Card>
   );

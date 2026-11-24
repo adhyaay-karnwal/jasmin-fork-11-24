@@ -24,6 +24,10 @@ struct Cli {
     /// Network namespaces kept ready for new sandboxes.
     #[arg(long, env = "JASMINE_NET_POOL", default_value_t = 32, global = true)]
     net_pool: usize,
+    /// Run each microVM's VMM as an unprivileged uid (base + 1 + network slot)
+    /// instead of root; gid `base` is the shared group that can read templates. Recommended for hosts that run other people's code.
+    #[arg(long, env = "JASMINE_VM_UID_BASE", global = true)]
+    vm_uid_base: Option<u32>,
     #[command(subcommand)]
     cmd: Cmd,
 }
@@ -56,7 +60,7 @@ enum Cmd {
 async fn main() -> Result<()> {
     tracing_subscriber::fmt().with_env_filter(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into())).init();
     let cli = Cli::parse();
-    let cfg = manager::Config { data: cli.data, firecracker: cli.firecracker, kernel: cli.kernel, agent_bin: cli.agent };
+    let cfg = manager::Config { data: cli.data, firecracker: cli.firecracker, kernel: cli.kernel, agent_bin: cli.agent, vm_uid_base: cli.vm_uid_base };
     let server = matches!(cli.cmd, Cmd::Serve { .. });
     let mgr = manager::Manager::new(cfg, server, if server { cli.net_pool } else { 0 }).await?;
     match cli.cmd {

@@ -15,6 +15,9 @@ pub struct Config {
     pub firecracker: PathBuf,
     pub kernel: PathBuf,
     pub agent_bin: PathBuf,
+    /// Run VMMs unprivileged: network slot k's VMM runs as uid/gid `base + k + 1`, and
+    /// templates are readable through group `base`. None runs VMMs as root.
+    pub vm_uid_base: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -140,6 +143,11 @@ fn shell_quote(p: &Path) -> String {
 }
 
 impl Manager {
+    /// (uid, shared template group) for the VMM in `slot`, when VMMs run unprivileged.
+    fn vm_uid(&self, slot: &Slot) -> Option<(u32, u32)> {
+        self.cfg.vm_uid_base.map(|b| (b + slot.0 + 1, b))
+    }
+
     /// `owns_sandboxes`: true for the server, which clears sandboxes left by a
     /// previous run (they do not survive restarts). False for one-shot CLI use.
     pub async fn new(cfg: Config, owns_sandboxes: bool, net_pool: usize) -> Result<Arc<Self>> {
@@ -149,7 +157,15 @@ impl Manager {
             let _ = std::fs::remove_dir_all(&sbx);
         }
         std::fs::create_dir_all(&sbx)?;
-        let net = NetPool::new(net_pool, owns_sandboxes).await?;
+        if let Some(gid) = cfg.vm_uid_base {
+            // Templates built as root (e.g. by `jasmined build`) must be readable by
+            // unprivileged VMMs; snapshots of sandboxes stay group-only.
+            for e in std::fs::read_dir(cfg.data.join("templates"))?.flatten() {
+                let public = !e.file_name().to_string_lossy().starts_with("snap_");
+                crate::fc::seal(&e.path(), gid, public).with_context(|| format!("seal template {}", e.path().display()))?;
+            }
+        }
+        let net = NetPool::new(net_pool, owns_sandboxes, cfg.vm_uid_base).await?;
         Ok(Arc::new(Manager { cfg, net, sandboxes: Mutex::new(HashMap::new()) }))
     }
 
@@ -219,7 +235,7 @@ impl Manager {
 
         let slot = self.net.acquire().await?;
         let t0 = Instant::now();
-        let vm = match Vm::spawn(&self.cfg.firecracker, &dir, Some(&slot.netns_path())).await {
+        let vm = match Vm::spawn(&self.cfg.firecracker, &dir, Some(&slot.netns_path()), self.vm_uid(&slot)).await {
             Ok(vm) => vm,
             Err(e) => {
                 self.net.destroy(slot).await;
@@ -253,6 +269,9 @@ impl Manager {
         vm.kill().await;
         self.net.destroy(slot).await;
         let boot_ms = res?;
+        if let Some(gid) = self.cfg.vm_uid_base {
+            crate::fc::seal(&dir, gid, true).context("make template readable to VMMs")?;
+        }
         let meta = TemplateMeta {
             name: name.into(),
             image: image.into(),
@@ -355,7 +374,7 @@ impl Manager {
         let slot = self.net.acquire().await?;
         let result: Result<(Vm, CreateTimings)> = async {
             let t1 = Instant::now();
-            let vm = Vm::spawn(&self.cfg.firecracker, dir, Some(&slot.netns_path())).await?;
+            let vm = Vm::spawn(&self.cfg.firecracker, dir, Some(&slot.netns_path()), self.vm_uid(&slot)).await?;
             let t2 = Instant::now();
             if let Err(e) = vm.restore(vmstate, mem).await {
                 vm.kill().await;
@@ -458,6 +477,9 @@ impl Manager {
         std::fs::create_dir_all(&dst)?;
         let guard = sbx.vm.lock().await;
         let (vm, _) = guard.as_ref().ok_or_else(|| anyhow::anyhow!("sandbox is paused"))?;
+        if let Some(u) = vm.uid {
+            crate::fc::own(&dst, u, u)?; // the VMM writes the snapshot files itself
+        }
         let res: Result<()> = async {
             sbx.agent.sync().await?;
             vm.pause().await?;
@@ -476,6 +498,9 @@ impl Manager {
         if let Err(e) = res {
             let _ = std::fs::remove_dir_all(&dst);
             return Err(e);
+        }
+        if let Some(gid) = self.cfg.vm_uid_base {
+            crate::fc::seal(&dst, gid, false).context("seal snapshot")?;
         }
         let base: TemplateMeta = serde_json::from_slice(&std::fs::read(self.template_dir(&sbx.template).join("meta.json"))?)?;
         let meta = TemplateMeta {

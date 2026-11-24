@@ -35,18 +35,22 @@ jobs:
           sudo install -D -m 0755 target/x86_64-unknown-linux-musl/release/jasmine-agent /usr/local/lib/jasmine/jasmine-agent
           sudo install -m 0755 target/release/jasmined /usr/local/bin/jasmined
           sudo jasmined build default python:3.12-slim
-      - name: Start daemon (host key) and gateway (memory store)
+      - name: Start daemon (host key, unprivileged VMMs) and gateway (memory store)
         run: |
-          sudo bash -c "JASMINE_API_KEY=$HOST_KEY nohup jasmined serve > /tmp/jasmined.log 2>&1 &"
+          sudo bash -c "JASMINE_API_KEY=$HOST_KEY JASMINE_VM_UID_BASE=900000 nohup jasmined serve > /tmp/jasmined.log 2>&1 &"
           for i in $(seq 100); do curl -fs localhost:7171/healthz && break; sleep 0.1; done
           (cd cloud/gateway && JASMINE_STORE=memory JASMINE_HOST_KEY=$HOST_KEY JASMINE_HOSTS=h1=http://127.0.0.1:7171 \
-            JASMINE_DEV_KEYS="$ALICE:alice,$BOB:bob" METER_INTERVAL_MS=1000 nohup node src/server.mjs > /tmp/gateway.log 2>&1 &)
+            JASMINE_DEV_KEYS="$ALICE:alice:100:paid,$BOB:bob:100:paid" METER_INTERVAL_MS=1000 nohup node src/server.mjs > /tmp/gateway.log 2>&1 &)
           for i in $(seq 100); do curl -fs localhost:8080/healthz && break; sleep 0.1; done
       - name: Daemon reports size; host key required
         run: |
           test "$(curl -s -o /dev/null -w '%{http_code}' localhost:7171/v1/sandboxes)" = 401
           id=$(curl -fs -XPOST localhost:7171/v1/sandboxes -H "authorization: Bearer $HOST_KEY" -d '{}' -H 'content-type: application/json' | jq -r .id)
           curl -fs localhost:7171/v1/sandboxes/$id -H "authorization: Bearer $HOST_KEY" | tee /dev/stderr | jq -e '.vcpus > 0 and .mem_mib > 0 and .state == "running"'
+          echo "VMM users:"; ps -o user=,pid=,args= -C firecracker
+          test -z "$(ps -o user= -C firecracker | grep -x root)"
+          test -n "$(ps -o uid= -C firecracker | awk '$1 > 900000')"
+          sudo stat -c '%U %a %n' /var/lib/jasmine/sandboxes/$id /var/lib/jasmine/templates/default/mem.snap
           curl -fs -XDELETE localhost:7171/v1/sandboxes/$id -H "authorization: Bearer $HOST_KEY"
       - name: SDK smoke tests through the gateway
         env:

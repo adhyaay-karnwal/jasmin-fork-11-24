@@ -29,6 +29,8 @@ pub const KERNEL_IP_ARG: &str = "ip=172.16.0.2::172.16.0.1:255.255.255.252::eth0
 const MAX_SLOTS: u32 = 16_000;
 
 pub struct NetPool {
+    /// When set, slot k's tap belongs to uid `base + k + 1`, the uid its VMM runs as.
+    pub vm_uid_base: Option<u32>,
     free: Mutex<VecDeque<u32>>,
     next: AtomicU32,
     min_free: usize,
@@ -66,7 +68,7 @@ impl NetPool {
     /// `server`: true for the long-running daemon, which owns slots 0..MAX_SLOTS and
     /// clears leftovers from a previous run. One-shot CLI builds use a private slot
     /// above that range and leave the server's slots alone.
-    pub async fn new(min_free: usize, server: bool) -> Result<Arc<Self>> {
+    pub async fn new(min_free: usize, server: bool, vm_uid_base: Option<u32>) -> Result<Arc<Self>> {
         let cleanup = if server {
             r#"
 for ns in $(ip netns list | awk '{print $1}' | grep '^wrn[0-9]*$' || true); do ip netns del "$ns"; done
@@ -94,7 +96,7 @@ iptables -C FORWARD -s 10.200.0.0/16 -p tcp --dport 25 -j DROP 2>/dev/null || ip
         .await
         .context("host network setup (needs root, iproute2, iptables)")?;
         let first = if server { 0 } else { MAX_SLOTS + 1 + std::process::id() % 300 };
-        let pool = Arc::new(NetPool { free: Mutex::new(VecDeque::new()), next: AtomicU32::new(first), min_free, wake: Notify::new() });
+        let pool = Arc::new(NetPool { vm_uid_base, free: Mutex::new(VecDeque::new()), next: AtomicU32::new(first), min_free, wake: Notify::new() });
         // Fill synchronously to the minimum so the first creates are fast, then keep topped up.
         for _ in 0..min_free {
             let k = pool.build_slot().await?;
@@ -124,6 +126,7 @@ iptables -C FORWARD -s 10.200.0.0/16 -p tcp --dport 25 -j DROP 2>/dev/null || ip
             bail!("out of network slots");
         }
         let (ns, (host_ip, ns_ip)) = (ns_name(k), veth_ips(k));
+        let owner = self.vm_uid_base.map(|b| format!(" user {u} group {u}", u = b + k + 1)).unwrap_or_default();
         sh(&format!(
             r#"
 ip netns add {ns}
@@ -135,7 +138,7 @@ link set lo up
 addr add {ns_ip}/30 dev veth0
 link set veth0 up
 route add default via {host_ip}
-tuntap add {TAP} mode tap
+tuntap add {TAP} mode tap{owner}
 link set {TAP} address {GATEWAY_MAC}
 addr add {GATEWAY_IP}/30 dev {TAP}
 link set {TAP} up

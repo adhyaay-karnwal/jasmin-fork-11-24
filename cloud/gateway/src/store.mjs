@@ -1,10 +1,11 @@
-// Accounts, snapshot ownership and usage totals.
+// Accounts, balances, snapshot ownership and usage totals.
 //
 // Firestore layout (shared with the dashboard on tryjasmine.dev):
-//   users/{uid}                    plan ("open-source" | "cloud"), stripeCustomer, suspended, limits{}
+//   users/{uid}                    balanceUsd, paid, trialGranted, stripeCustomer, limits{}
 //   users/{uid}/keys/{id}          hash = sha256(key) hex, written by the dashboard
+//   payments/{id}                  one per credited Checkout session (makes webhooks idempotent)
 //   snapshots/{name}               uid, host, memMib, createdAt
-//   usage/{uid}/months/{yyyy-mm}   cpuS, gibS, storageGibS, usd, billedUsd
+//   usage/{uid}/months/{yyyy-mm}   cpuS, gibS, storageGibS, usd
 //   usage/{uid}/days/{yyyy-mm-dd}  cpuS, gibS, storageGibS, usd
 //
 // Sandboxes themselves are not stored: their owner and expiry live in daemon
@@ -17,20 +18,20 @@ export async function openStore() {
   return config.store === "memory" ? memoryStore() : firestoreStore();
 }
 
-function emptyUsage() {
-  return { cpuS: 0, gibS: 0, storageGibS: 0, usd: 0, billedUsd: 0 };
-}
+const emptyUsage = () => ({ cpuS: 0, gibS: 0, storageGibS: 0, usd: 0 });
 
 function memoryStore() {
   const keys = new Map(); // hash -> uid
   const users = new Map(); // uid -> user doc
   for (const entry of config.devKeys.split(",").filter(Boolean)) {
-    const [key, uid, plan = "cloud", cap] = entry.split(":");
+    const [key, uid, balance, paid] = entry.split(":");
     keys.set(sha256(key), uid);
-    users.set(uid, { plan, ...(cap === undefined ? {} : { limits: { monthlySpendUsd: Number(cap) } }) });
+    users.set(uid, balance === undefined ? {} : { balanceUsd: Number(balance), trialGranted: true, paid: paid === "paid" });
   }
   const snaps = new Map();
   const months = new Map(); // `${uid}/${month}` -> usage
+  const payments = new Set();
+  const user = (uid) => users.get(uid) ?? users.set(uid, {}).get(uid);
   return {
     // Tests sign in with "dev:<uid>:<email>" instead of a Firebase ID token.
     async verifyIdToken(token) {
@@ -40,13 +41,28 @@ function memoryStore() {
     },
     async accountByKey(hash) {
       const uid = keys.get(hash);
-      return uid ? { uid, ...users.get(uid) } : null;
+      return uid ? { uid, ...user(uid) } : null;
     },
     async accountByUid(uid) {
       return users.has(uid) ? { uid, ...users.get(uid) } : null;
     },
     async updateUser(uid, fields) {
-      users.set(uid, { ...(users.get(uid) ?? {}), ...fields });
+      Object.assign(user(uid), fields);
+    },
+    async grantTrial(uid) {
+      const u = user(uid);
+      if (u.trialGranted) return false;
+      u.trialGranted = true;
+      u.balanceUsd = (u.balanceUsd ?? 0) + config.trialUsd;
+      return true;
+    },
+    async credit(uid, usd, id, fields = {}) {
+      if (payments.has(id)) return false;
+      payments.add(id);
+      const u = user(uid);
+      Object.assign(u, fields);
+      u.balanceUsd = (u.balanceUsd ?? 0) + usd;
+      return true;
     },
     async putSnapshot(s) {
       snaps.set(s.name, s);
@@ -63,11 +79,14 @@ function memoryStore() {
     async monthUsage(uid, month) {
       return { ...emptyUsage(), ...(months.get(`${uid}/${month}`) ?? {}) };
     },
+    /** Record usage and take its cost off the balance. */
     async addUsage(uid, month, _day, d) {
       const k = `${uid}/${month}`;
       const u = { ...emptyUsage(), ...(months.get(k) ?? {}) };
       for (const f of Object.keys(d)) u[f] += d[f];
       months.set(k, u);
+      const acc = user(uid);
+      acc.balanceUsd = (acc.balanceUsd ?? 0) - d.usd;
     },
   };
 }
@@ -75,8 +94,8 @@ function memoryStore() {
 async function firestoreStore() {
   const { initializeApp, applicationDefault } = await import("firebase-admin/app");
   const { getFirestore, FieldValue } = await import("firebase-admin/firestore");
-  initializeApp({ credential: applicationDefault() });
   const { getAuth } = await import("firebase-admin/auth");
+  initializeApp({ credential: applicationDefault() });
   const db = getFirestore();
   return {
     async verifyIdToken(token) {
@@ -95,6 +114,24 @@ async function firestoreStore() {
     },
     async updateUser(uid, fields) {
       await db.doc(`users/${uid}`).set(fields, { merge: true });
+    },
+    async grantTrial(uid) {
+      const ref = db.doc(`users/${uid}`);
+      return db.runTransaction(async (t) => {
+        const u = await t.get(ref);
+        if (u.data()?.trialGranted) return false;
+        t.set(ref, { trialGranted: true, balanceUsd: FieldValue.increment(config.trialUsd) }, { merge: true });
+        return true;
+      });
+    },
+    async credit(uid, usd, id, fields = {}) {
+      const pay = db.doc(`payments/${id.replace(/[/:]/g, "_")}`);
+      return db.runTransaction(async (t) => {
+        if ((await t.get(pay)).exists) return false;
+        t.set(pay, { uid, usd, at: FieldValue.serverTimestamp() });
+        t.set(db.doc(`users/${uid}`), { ...fields, balanceUsd: FieldValue.increment(usd) }, { merge: true });
+        return true;
+      });
     },
     async putSnapshot(s) {
       await db.doc(`snapshots/${s.name}`).set(s);
@@ -117,8 +154,8 @@ async function firestoreStore() {
       const inc = Object.fromEntries(Object.entries(d).map(([k, v]) => [k, FieldValue.increment(v)]));
       const b = db.batch();
       b.set(db.doc(`usage/${uid}/months/${month}`), inc, { merge: true });
-      const { billedUsd, ...daily } = inc;
-      b.set(db.doc(`usage/${uid}/days/${day}`), daily, { merge: true });
+      b.set(db.doc(`usage/${uid}/days/${day}`), inc, { merge: true });
+      b.set(db.doc(`users/${uid}`), { balanceUsd: FieldValue.increment(-d.usd) }, { merge: true });
       await b.commit();
     },
   };

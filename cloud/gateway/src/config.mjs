@@ -18,7 +18,7 @@ export const config = {
 
   // "firestore" in production; "memory" for tests (accounts come from devKeys).
   store: env("JASMINE_STORE", "firestore"),
-  // "jsm_key:uid[:plan[:monthlySpendUsd]],..." — only read by the memory store.
+  // "jsm_key:uid[:balanceUsd[:paid]],..." — only read by the memory store.
   devKeys: env("JASMINE_DEV_KEYS", ""),
 
   // Prices in USD. Change here and on site/src/app/pricing/parts.tsx together.
@@ -26,8 +26,10 @@ export const config = {
     vcpuHour: num("RATE_VCPU_HOUR", 0.0045),
     gibHour: num("RATE_GIB_HOUR", 0.0015),
     storageGibMonth: num("RATE_STORAGE_GIB_MONTH", 0.05),
-    monthlyFreeUsd: num("FREE_USD_PER_MONTH", 5),
   },
+  // Prepaid: one free trial credit per account (no card), then top-ups.
+  trialUsd: num("TRIAL_USD", 2),
+  topUpsUsd: env("TOP_UPS_USD", "10,25,100").split(",").map(Number),
 
   // Per-account defaults; a user document can override any of these.
   limits: {
@@ -35,10 +37,13 @@ export const config = {
     total: num("LIMIT_TOTAL", 100), // running + paused
     maxVcpus: num("LIMIT_MAX_VCPUS", 8),
     maxMemMib: num("LIMIT_MAX_MEM_MIB", 16384),
-    monthlySpendUsd: num("LIMIT_MONTHLY_SPEND_USD", 100),
+    // Optional extra cap on top of the balance; 0 = none. Users can lower it.
+    monthlySpendUsd: num("LIMIT_MONTHLY_SPEND_USD", 0),
     createsPerMinute: num("LIMIT_CREATES_PER_MINUTE", 120),
     snapshots: num("LIMIT_SNAPSHOTS", 50),
   },
+  // Until the first top-up an account is on the trial and gets less.
+  trialLimits: { running: num("TRIAL_LIMIT_RUNNING", 2), total: num("TRIAL_LIMIT_TOTAL", 5), maxVcpus: 4, maxMemMib: 8192, snapshots: 3 },
   // Sandboxes stop by themselves so a forgotten loop can't run up a bill.
   timeoutDefaultS: num("TIMEOUT_DEFAULT_S", 3600),
   timeoutMinS: num("TIMEOUT_MIN_S", 10),
@@ -51,9 +56,6 @@ export const config = {
   stripe: {
     secretKey: env("STRIPE_SECRET_KEY", ""),
     webhookSecret: env("STRIPE_WEBHOOK_SECRET", ""),
-    // Meter event name; its price is $0.000001 per unit (one unit = one micro-dollar).
-    meterEvent: env("STRIPE_METER_EVENT", "jasmine_usage_microusd"),
-    priceId: env("STRIPE_PRICE_ID", ""),
     siteUrl: env("SITE_URL", "https://tryjasmine.dev"),
   },
 };

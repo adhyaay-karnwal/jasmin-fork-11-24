@@ -21,28 +21,76 @@ pub const ROOTFS: &str = "rootfs.ext4";
 pub struct Vm {
     pub dir: PathBuf,
     pub child: Child,
+    /// Unprivileged uid the VMM runs as (`--vm-uid-base`), or None for root.
+    pub uid: Option<u32>,
+}
+
+/// Give `dir` and the files directly in it to `uid:gid`, mode 0700 on the dir.
+/// While a VM runs its sandbox directory belongs to the VM's uid; when it stops it
+/// goes back to root, so a later VM reusing that uid can't read what it left.
+pub fn own(dir: &Path, uid: u32, gid: u32) -> std::io::Result<()> {
+    use std::os::unix::fs::{chown, PermissionsExt};
+    chown(dir, Some(uid), Some(gid))?;
+    std::fs::set_permissions(dir, std::fs::Permissions::from_mode(0o700))?;
+    for e in std::fs::read_dir(dir)? {
+        let p = e?.path();
+        if !p.is_symlink() {
+            chown(&p, Some(uid), Some(gid))?;
+        }
+    }
+    Ok(())
+}
+
+/// Make a template readable by VMMs: root-owned, group `gid`. Built-in templates
+/// (`public`) are world-readable; snapshots of sandboxes are group-only.
+pub fn seal(dir: &Path, gid: u32, public: bool) -> std::io::Result<()> {
+    use std::os::unix::fs::{chown, PermissionsExt};
+    let (d, f) = if public { (0o755, 0o644) } else { (0o750, 0o640) };
+    chown(dir, Some(0), Some(gid))?;
+    std::fs::set_permissions(dir, std::fs::Permissions::from_mode(d))?;
+    for e in std::fs::read_dir(dir)? {
+        let p = e?.path();
+        if p.is_file() {
+            chown(&p, Some(0), Some(gid))?;
+            std::fs::set_permissions(&p, std::fs::Permissions::from_mode(f))?;
+        }
+    }
+    Ok(())
 }
 
 impl Vm {
     /// Start a Firecracker process in `dir` and wait for its API socket.
     /// `netns`: path of the network namespace to run in (`/var/run/netns/...`).
-    pub async fn spawn(firecracker: &Path, dir: &Path, netns: Option<&str>) -> Result<Vm> {
+    /// `user`: run the VMM as this unprivileged (uid, shared group) instead of root.
+    /// Its primary gid equals its uid; the shared group lets it read templates.
+    pub async fn spawn(firecracker: &Path, dir: &Path, netns: Option<&str>, user: Option<(u32, u32)>) -> Result<Vm> {
+        let uid = user.map(|(u, _)| u);
         let _ = std::fs::remove_file(dir.join(API_SOCK));
         let _ = std::fs::remove_file(dir.join(VSOCK_SOCK));
         let console = std::fs::File::create(dir.join("console.log"))?;
+        if let Some(u) = uid {
+            own(dir, u, u).with_context(|| format!("chown {} to vm uid {u}", dir.display()))?;
+        }
         let mut cmd = Command::new(firecracker);
-        if let Some(ns) = netns {
-            use std::os::fd::AsRawFd;
-            let nsf = std::fs::File::open(ns).with_context(|| format!("open netns {ns}"))?;
-            // Enter the slot's netns between fork and exec: no `ip netns exec` hop.
-            unsafe {
-                cmd.pre_exec(move || {
-                    if libc::setns(nsf.as_raw_fd(), libc::CLONE_NEWNET) != 0 {
+        let nsf = netns.map(|ns| std::fs::File::open(ns).with_context(|| format!("open netns {ns}"))).transpose()?;
+        // Between fork and exec: enter the slot's netns (no `ip netns exec` hop),
+        // then drop root. setns needs CAP_SYS_ADMIN, so it must come first.
+        unsafe {
+            cmd.pre_exec(move || {
+                use std::os::fd::AsRawFd;
+                if let Some(f) = &nsf {
+                    if libc::setns(f.as_raw_fd(), libc::CLONE_NEWNET) != 0 {
                         return Err(std::io::Error::last_os_error());
                     }
-                    Ok(())
-                });
-            }
+                }
+                if let Some((u, shared)) = user {
+                    let groups = [u as libc::gid_t, shared as libc::gid_t];
+                    if libc::setgroups(2, groups.as_ptr()) != 0 || libc::setgid(u) != 0 || libc::setuid(u) != 0 {
+                        return Err(std::io::Error::last_os_error());
+                    }
+                }
+                Ok(())
+            });
         }
         let child = cmd
             .args(["--api-sock", API_SOCK, "--level", "Warning"])
@@ -53,7 +101,7 @@ impl Vm {
             .kill_on_drop(true)
             .spawn()
             .with_context(|| format!("spawn {}", firecracker.display()))?;
-        let vm = Vm { dir: dir.to_path_buf(), child };
+        let vm = Vm { dir: dir.to_path_buf(), child, uid };
         let sock = dir.join(API_SOCK);
         let deadline = Instant::now() + Duration::from_secs(5);
         while UnixStream::connect(&sock).await.is_err() {
@@ -86,6 +134,9 @@ impl Vm {
     pub async fn kill(mut self) {
         let _ = self.child.start_kill();
         let _ = self.child.wait().await;
+        if self.uid.is_some() {
+            let _ = own(&self.dir, 0, 0); // the dir may already be gone (delete)
+        }
     }
 
     /// Cold boot (template builds only; sandboxes are always restored).

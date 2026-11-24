@@ -1,7 +1,7 @@
 // The meter: polls every host, keeps the sandbox registry (id -> owner, host,
 // state, size), bills elapsed time, and enforces timeouts and spend caps.
 //
-// Billing rule: a running sandbox is charged for its vCPUs and memory; a paused
+// Usage is drawn from the account's prepaid balance. Billing rule: a running sandbox is charged for its vCPUs and memory; a paused
 // sandbox and a saved snapshot are charged storage for their memory image. Time
 // the gateway was down is not billed (rounding goes in the customer's favour).
 
@@ -26,6 +26,7 @@ export class Meter {
     this.hostUp = new Map(); // host id -> last poll ok
     this.pending = new Map(); // uid -> unflushed usage delta
     this.months = new Map(); // `${uid}/${month}` -> month usage (flushed + pending)
+    this.balances = new Map(); // uid -> { usd, at }: balance in the store as of `at`
     this.snapshots = [];
     this.last = Date.now();
   }
@@ -174,14 +175,28 @@ export class Meter {
         s.state = "paused";
         s.pausedSince = nowS();
       }
-      console.log(`spend cap reached for ${uid}; running sandboxes paused`);
+      console.log(`${uid} is out of credit or at its cap; running sandboxes paused`);
     }
   }
 
+  /** Prepaid balance right now: the store's figure minus usage not yet flushed. */
+  async balance(uid) {
+    let b = this.balances.get(uid);
+    if (!b || Date.now() - b.at > 30_000) {
+      const a = (await this.store.accountByUid(uid)) ?? {};
+      b = { usd: a.balanceUsd ?? 0, at: Date.now() };
+      this.balances.set(uid, b);
+    }
+    return b.usd - (this.pending.get(uid)?.usd ?? 0);
+  }
+
+  /** Out of credit, or past the account's own optional monthly cap. */
   async overCap(uid, account) {
+    if ((await this.balance(uid)) <= 0) return "balance";
     account ??= (await this.store.accountByUid(uid)) ?? {};
     const cap = account.limits?.monthlySpendUsd ?? config.limits.monthlySpendUsd;
-    return (await this.monthUsd(uid)) >= cap + config.rates.monthlyFreeUsd;
+    if (cap > 0 && (await this.monthUsd(uid)) >= cap) return "cap";
+    return false;
   }
 
   async flush() {
@@ -190,6 +205,7 @@ export class Meter {
     for (const [uid, d] of batch) {
       try {
         await this.store.addUsage(uid, month(), day(), d);
+        this.balances.delete(uid); // re-read the balance the store now holds
       } catch (e) {
         // Put it back; it will go out with the next flush.
         console.error(`usage flush for ${uid} failed: ${e.message}`);
@@ -198,6 +214,5 @@ export class Meter {
         this.pending.set(uid, p);
       }
     }
-    if (this.billing.enabled) await this.billing.report(this).catch((e) => console.error("billing report:", e.message));
   }
 }
